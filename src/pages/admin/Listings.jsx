@@ -102,7 +102,7 @@ export default function Listings() {
                     return;
                 }
 
-                const res = await fetchWithAuth(`${API_BASE_URL}/admin/import`, {
+                const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/import`, {
                     method: "POST",
                     body: JSON.stringify(payload)
                 });
