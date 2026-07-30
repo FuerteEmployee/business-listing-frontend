@@ -502,7 +502,7 @@ export default function Listings() {
                             onClick={() => fileInputRef.current?.click()}
                             isLoading={importLoading}
                         >
-                            Import Excel
+                            Import CSV
                         </Button>
                         <Button variant="outline" leftIcon={FileSpreadsheet} onClick={downloadImportTemplate}>Download Template</Button>
                         <Button variant="ghost" leftIcon={Info} onClick={() => setFormatModalOpen(true)}>Format</Button>

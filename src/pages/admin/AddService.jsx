@@ -16,7 +16,7 @@ export default function AddService() {
     const { id } = useParams();
     const isEditMode = Boolean(id);
     const { user: currentUser } = useAuth();
-    const isBrandOwner = currentUser?.role === 'Brand Owner' || currentUser?.role === 'Company Owner';
+    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
     const basePath = isBrandOwner ? '/brand' : '/admin';
     
     // Form State

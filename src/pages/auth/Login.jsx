@@ -43,8 +43,8 @@ export default function Login() {
                 // Redirect based on role
                 if (data.user.role === 'Super Admin') {
                     navigate('/admin/dashboard');
-                } else if (data.user.role === 'Brand Owner' || data.user.role === 'Company Owner') {
-                    navigate('/brand/dashboard');
+                } else if (['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(data.user.role)) {
+                    navigate('/brand/products');
                 } else {
                     navigate('/');
                 }

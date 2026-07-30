@@ -16,7 +16,7 @@ import AdminHeader from '../../components/admin/AdminHeader';
 export default function Products() {
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
-    const isBrandOwner = currentUser?.role === 'Brand Owner' || currentUser?.role === 'Company Owner';
+    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
     const basePath = isBrandOwner ? '/brand' : '/admin';
     
     const [products, setProducts] = useState([]);
@@ -37,7 +37,7 @@ export default function Products() {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const url = isBrandOwner ? `${getApiUrl('products')}?owned=true` : getApiUrl('products');
+            const url = getApiUrl('products');
             const response = await fetchWithAuth(url);
             const data = await response.json();
             if (data.success) {

@@ -240,7 +240,7 @@ export default function App() {
             <Route
               path="/brand"
               element={
-                <ProtectedRoute allowedRoles={['Brand Owner', 'Company Owner', 'Merchant']}>
+                <ProtectedRoute allowedRoles={['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER']}>
                   <BrandOwnerLayout />
                 </ProtectedRoute>
               }

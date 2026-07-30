@@ -8,13 +8,14 @@ import FormTextarea from '../../components/ui/FormTextarea';
 import FormSelect from '../../components/ui/FormSelect';
 import AdminHeader from '../../components/admin/AdminHeader';
 import Alert from '../../components/ui/Alert';
+import { toast } from 'react-hot-toast';
 
 export default function AddProduct() {
     const navigate = useNavigate();
     const { id } = useParams();
     const isEditMode = Boolean(id);
     const { user: currentUser } = useAuth();
-    const isBrandOwner = currentUser?.role === 'Brand Owner' || currentUser?.role === 'Company Owner';
+    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
     const basePath = isBrandOwner ? '/brand' : '/admin';
     
     // Form State
@@ -22,7 +23,7 @@ export default function AddProduct() {
         name: '',
         shortDescription: '',
         description: '',
-        listingId: '',
+        listingId: currentUser?.companyId || currentUser?.company || '',
         categoryId: '',
         subCategoryId: '',
         price: '',
@@ -54,8 +55,13 @@ export default function AddProduct() {
         fetchCategories();
         if (isEditMode) {
             fetchProductDetails();
+        } else if (currentUser) {
+            const userCompanyId = currentUser.companyId || currentUser.company;
+            if (userCompanyId) {
+                setFormData(prev => ({ ...prev, listingId: userCompanyId }));
+            }
         }
-    }, [id]);
+    }, [id, currentUser]);
 
     const fetchProductDetails = async () => {
         try {
@@ -211,6 +217,7 @@ export default function AddProduct() {
             const data = await response.json();
 
             if (response.ok) {
+                toast.success(isEditMode ? 'Product updated successfully' : 'Product added successfully');
                 navigate(`${basePath}/products`);
             } else {
                 setErrors({ submit: data.error || data.msg || 'Failed to update product' });

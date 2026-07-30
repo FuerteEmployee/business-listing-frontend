@@ -18,7 +18,7 @@ const MerchantCatalogue = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!user || !['Brand Owner', 'Company Owner'].includes(user.role)) {
+        if (!user || !['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(user.role)) {
             navigate('/auth');
             return;
         }

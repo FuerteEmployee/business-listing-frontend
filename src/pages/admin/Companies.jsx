@@ -20,7 +20,7 @@ import { useAuth } from "../../context/AuthContext";
 export default function Companies() {
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
-    const isBrandOwner = currentUser?.role === 'Brand Owner' || currentUser?.role === 'Company Owner';
+    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
     const [searchTerm, setSearchTerm] = useState("");
 
     const [isModalOpen, setIsModalOpen] = useState(false);
