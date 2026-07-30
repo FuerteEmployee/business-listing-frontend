@@ -39,13 +39,13 @@ export const USER_COLUMNS = [
 ];
 
 export const LISTING_COLUMNS = [
-    { header: "Business Name", key: "name", required: true, aliases: ["companyname", "business", "company"], note: "Business name. A same-name listing in the same city is updated instead of duplicated.", example: "Shree Industries" },
-    { header: "Primary Category", key: "category", required: true, aliases: ["categories", "product", "products", "service", "services", "industry", "facia", "facianame"], note: "Category name. Created automatically if it does not exist yet.", example: "Industrial Machinery" },
+    { header: "Business Name", key: "name", required: true, aliases: ["companyname", "business", "company", "businessname", "companyname", "name", "bname"], note: "Business name. A same-name listing in the same city is updated instead of duplicated.", example: "Shree Industries" },
+    { header: "Primary Category", key: "category", required: true, aliases: ["categories", "product", "products", "service", "services", "industry", "facia", "facianame", "category", "catrgory", "catagory", "categroy", "primarycategory", "cat", "type", "sector"], note: "Category name. Created automatically if it does not exist yet.", example: "Industrial Machinery" },
     { header: "Sub Category", key: "subCategory", note: "Free-text sub-category label.", example: "CNC Machines" },
     { header: "Tagline", key: "tagline", note: "Short strapline, max 100 characters.", example: "Precision engineering since 1998" },
     { header: "Description", key: "description", aliases: ["desc", "about", "details"], note: "Full business description.", example: "Manufacturer and exporter of CNC machines." },
     { header: "Owner Email", key: "ownerEmail", note: "Email of the assigned owner. Matched against the Users sheet first, then existing users. Created as a Merchant if unknown.", example: "ramesh@shreeindustries.com" },
-    { header: "Owner Name", key: "ownerName", aliases: ["owner", "assignedowner", "assignedownername", "user", "merchant", "personname"], note: "Used only to look up an owner when Owner Email is blank. No account is created from a name alone.", example: "Ramesh Patel" },
+    { header: "Owner Name", key: "ownerName", aliases: ["owner", "assignedowner", "assignedownername", "user", "merchant", "personname", "person", "contactperson", "ownername", "name"], note: "Used only to look up an owner when Owner Email is blank. No account is created from a name alone.", example: "Ramesh Patel" },
     { header: "Country", key: "country", note: "Must already exist in the location master, otherwise left blank.", example: "India" },
     { header: "State", key: "state", note: "Must already exist under the country.", example: "Gujarat" },
     { header: "City", key: "city", aliases: ["town", "district"], note: "Must already exist under the state. Resolves the state automatically when the state cell is blank.", example: "Ahmedabad" },
@@ -53,8 +53,8 @@ export const LISTING_COLUMNS = [
     { header: "Address", key: "address", aliases: ["street", "addr"], note: "Street address.", example: "Plot 42, GIDC Estate" },
     { header: "Latitude", key: "latitude", note: "Decimal degrees, e.g. 23.0225. Needed for map and nearby search.", example: "23.0225" },
     { header: "Longitude", key: "longitude", note: "Decimal degrees, e.g. 72.5714.", example: "72.5714" },
-    { header: "Phone", key: "phone", aliases: ["contact", "contactno", "mobile", "tel", "telephone", "phoneno"], note: "Primary contact number. Format the column as Text.", example: "9876543210" },
-    { header: "Email", key: "email", aliases: ["mail", "emailaddress"], note: "Public business email.", example: "info@shreeindustries.com" },
+    { header: "Phone", key: "phone", aliases: ["contact", "contactno", "mobile", "tel", "telephone", "phoneno", "number", "mobilenumber", "phonenumber", "contactnumber", "no"], note: "Primary contact number. Format the column as Text.", example: "9876543210" },
+    { header: "Email", key: "email", aliases: ["mail", "emailaddress", "mailid", "emailid", "email", "contactemail"], note: "Public business email.", example: "info@shreeindustries.com" },
     { header: "Website", key: "website", aliases: ["web", "url", "link"], note: "Full URL including https://.", example: "https://shreeindustries.com" },
     { header: "WhatsApp", key: "whatsapp", note: "WhatsApp number if different from Phone.", example: "9876543210" },
     { header: "Status", key: "status", note: "Pending, Approved, Rejected, Active, Inactive, Flagged or Suspended. Default: Active.", example: "Active" },
