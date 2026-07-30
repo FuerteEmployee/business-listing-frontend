@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { 
     AlertCircle, CheckCircle, ExternalLink, X, Info, ShieldCheck, Flag, Copy, 
     Trash2, Calendar, Download, MoreVertical, Eye, History, Edit3, Check, Filter,
-    Building2, MapPin, Tag, User, Mail, Phone, ChevronRight, Search, Upload
+    Building2, MapPin, Tag, User, Mail, Phone, ChevronRight, Search, Upload, FileSpreadsheet
 } from "lucide-react";
 import { API_BASE_URL, fetchWithAuth, getApiUrl } from "../../config/api";
-import * as XLSX from "xlsx";
+import { parseImportWorkbook, downloadImportTemplate, IMPORT_SHEETS } from "../../utils/importTemplate";
 
 // System Standard Components
 import DataTable from "../../components/admin/DataTable";
@@ -63,89 +63,21 @@ export default function Listings() {
     const [cities, setCities] = useState([]);
     const [plans, setPlans] = useState([]);
 
-    // CSV Import State and Handlers
+    // Spreadsheet Import State and Handlers
     const fileInputRef = useRef(null);
     const [importLoading, setImportLoading] = useState(false);
-    const [importResultModal, setImportResultModal] = useState({ 
-        isOpen: false, 
-        msg: "", 
-        successCount: 0, 
-        failedCount: 0, 
-        errors: [] 
+    const [formatModalOpen, setFormatModalOpen] = useState(false);
+    const [importResultModal, setImportResultModal] = useState({
+        isOpen: false,
+        msg: "",
+        totals: null,
+        results: null,
+        generatedCredentials: [],
+        warnings: [],
+        usedSheets: []
     });
 
-    const normalizeHeader = (header) => {
-        if (!header) return "";
-        return header
-            .toString()
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, "")
-            .trim();
-    };
-
-    const findHeaderRowAndIndices = (rows) => {
-        for (let r = 0; r < rows.length; r++) {
-            const row = rows[r];
-            if (!row || !Array.isArray(row) || row.length === 0) continue;
-
-            const normalizedRow = row.map(cell => normalizeHeader(cell));
-
-            // Try to find Name column
-            let nameIdx = normalizedRow.findIndex(val => 
-                val === "businessname" || 
-                val === "companyname" || 
-                val === "name" || 
-                val === "business" || 
-                val === "company"
-            );
-
-            // Try to find Category column
-            let categoryIdx = normalizedRow.findIndex(val => 
-                val === "category" || 
-                val === "categories" || 
-                val === "product" || 
-                val === "products" || 
-                val === "service" || 
-                val === "services" || 
-                val === "industry" || 
-                val === "facia" || 
-                val === "facianame"
-            );
-
-            if (nameIdx !== -1 && categoryIdx !== -1) {
-                const ownerIdx = normalizedRow.findIndex(val => val === "owner" || val === "assignedowner" || val === "assignedownername" || val === "user" || val === "merchant" || val === "personname" || val === "personname" || val === "me");
-                const cityIdx = normalizedRow.findIndex(val => val === "city" || val === "town" || val === "location" || val === "district");
-                const addressIdx = normalizedRow.findIndex(val => val === "address" || val === "street" || val === "addr");
-                const phoneIdx = normalizedRow.findIndex(val => val === "phone" || val === "contact" || val === "contactno" || val === "mobile" || val === "tel" || val === "telephone" || val === "phoneno");
-                const emailIdx = normalizedRow.findIndex(val => val === "email" || val === "mail" || val === "emailaddress");
-                const websiteIdx = normalizedRow.findIndex(val => val === "website" || val === "web" || val === "url" || val === "link");
-                const planIdx = normalizedRow.findIndex(val => val === "plan" || val === "package" || val === "subscription");
-                const statusIdx = normalizedRow.findIndex(val => val === "status" || val === "active");
-                const descIdx = normalizedRow.findIndex(val => val === "description" || val === "desc" || val === "about" || val === "details");
-
-                return {
-                    headerRowIndex: r,
-                    indices: {
-                        nameIdx,
-                        categoryIdx,
-                        ownerIdx,
-                        cityIdx,
-                        addressIdx,
-                        phoneIdx,
-                        emailIdx,
-                        websiteIdx,
-                        planIdx,
-                        statusIdx,
-                        descIdx
-                    },
-                    rawHeaders: row.map(h => (h || "").toString().trim())
-                };
-            }
-        }
-        return null;
-    };
-
-    const handleImportCSV = async (e) => {
+    const handleImportSpreadsheet = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -157,108 +89,40 @@ export default function Listings() {
             try {
                 setImportLoading(true);
                 setError(null);
-                
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, { type: "array" });
-                
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                
-                const parsedRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-                
-                if (parsedRows.length === 0) {
-                    setError("The uploaded file is empty.");
-                    setImportLoading(false);
-                    return;
-                }
 
-                // Detect headers and row index
-                const headerDetection = findHeaderRowAndIndices(parsedRows);
-                
-                if (!headerDetection) {
-                    // Gather first non-empty row for diagnostics
-                    const diagnosticRow = parsedRows.find(r => r && r.some(cell => cell !== "")) || parsedRows[0] || [];
-                    const foundHeadersStr = diagnosticRow.map(h => `"${(h || '').toString().trim()}"`).join(", ");
-                    
+                const { payload, warnings, usedSheets } = parseImportWorkbook(event.target.result);
+                const rowCount = payload.categories.length + payload.users.length + payload.listings.length;
+
+                if (rowCount === 0) {
                     setError(
-                        `Import failed: Required columns are missing.\n` +
-                        `We need at least a "Business Name" (e.g. COMPANY NAME, name, company) and a "Category" (e.g. PRODUCT, category, product) column.\n\n` +
-                        `Headers detected in the file: [${foundHeadersStr || "No headers found"}]`
+                        (warnings.length ? warnings.join("\n") : "No data rows were found in the uploaded file.")
+                        + "\n\nUse \"Download Template\" to get the expected format."
                     );
                     setImportLoading(false);
                     return;
                 }
 
-                const { headerRowIndex, indices, rawHeaders } = headerDetection;
-                const {
-                    nameIdx,
-                    categoryIdx,
-                    ownerIdx,
-                    cityIdx,
-                    addressIdx,
-                    phoneIdx,
-                    emailIdx,
-                    websiteIdx,
-                    planIdx,
-                    statusIdx,
-                    descIdx
-                } = indices;
+                const res = await fetchWithAuth(`${API_BASE_URL}/admin/import`, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
 
-                const listingsToImport = [];
-                for (let i = headerRowIndex + 1; i < parsedRows.length; i++) {
-                    const row = parsedRows[i];
-                    if (!row || row.length === 0) continue;
-                    
-                    // Skip if row is empty
-                    if (row.every(cell => cell === "")) continue;
-
-                    const name = row[nameIdx];
-                    const category = row[categoryIdx];
-                    
-                    if (!name || name.toString().trim() === "") continue;
-                    if (!category || category.toString().trim() === "") continue;
-
-                    listingsToImport.push({
-                        name: name.toString().trim(),
-                        category: category.toString().trim(),
-                        owner: ownerIdx !== -1 && row[ownerIdx] ? row[ownerIdx].toString().trim() : "",
-                        city: cityIdx !== -1 && row[cityIdx] ? row[cityIdx].toString().trim() : "",
-                        address: addressIdx !== -1 && row[addressIdx] ? row[addressIdx].toString().trim() : "",
-                        phone: phoneIdx !== -1 && row[phoneIdx] ? row[phoneIdx].toString().trim() : "",
-                        email: emailIdx !== -1 && row[emailIdx] ? row[emailIdx].toString().trim() : "",
-                        website: websiteIdx !== -1 && row[websiteIdx] ? row[websiteIdx].toString().trim() : "",
-                        plan: planIdx !== -1 && row[planIdx] ? row[planIdx].toString().trim() : "Free",
-                        status: statusIdx !== -1 && row[statusIdx] ? row[statusIdx].toString().trim() : "Active",
-                        description: descIdx !== -1 && row[descIdx] ? row[descIdx].toString().trim() : ""
-                    });
-                }
-
-                if (listingsToImport.length === 0) {
-                    setError("No valid listings containing both name and category/product data were found in the file.");
-                    setImportLoading(false);
+                const data = await res.json();
+                if (!res.ok) {
+                    setError(data.msg || "Failed to import the spreadsheet");
                     return;
                 }
 
-                // Send to backend
-                const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/import`, {
-                    method: "POST",
-                    body: JSON.stringify({ listings: listingsToImport })
+                setImportResultModal({
+                    isOpen: true,
+                    msg: data.msg,
+                    totals: data.totals,
+                    results: data.results,
+                    generatedCredentials: data.generatedCredentials || [],
+                    warnings,
+                    usedSheets
                 });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    setImportResultModal({
-                        isOpen: true,
-                        msg: data.msg,
-                        successCount: data.successCount,
-                        failedCount: data.failedCount,
-                        errors: data.errors || []
-                    });
-                    await fetchListings(1);
-                } else {
-                    const data = await res.json();
-                    setError(data.msg || "Failed to import listings");
-                }
+                await fetchListings(1);
             } catch (err) {
                 console.error("Error reading sheet:", err);
                 setError(`Error parsing spreadsheet file: ${err.message}`);
@@ -627,19 +491,21 @@ export default function Listings() {
                         <input 
                             type="file" 
                             ref={fileInputRef} 
-                            onChange={handleImportCSV} 
-                            accept=".csv, .xlsx, .xls" 
-                            className="hidden" 
+                            onChange={handleImportSpreadsheet}
+                            accept=".csv, .xlsx, .xls"
+                            className="hidden"
                         />
                         <Button variant="primary" leftIcon={Building2} onClick={() => navigate('/admin/listings/create')}>Create Listing</Button>
-                        <Button 
-                            variant="outline" 
-                            leftIcon={Upload} 
+                        <Button
+                            variant="outline"
+                            leftIcon={Upload}
                             onClick={() => fileInputRef.current?.click()}
                             isLoading={importLoading}
                         >
-                            Insert CSV
+                            Import Excel
                         </Button>
+                        <Button variant="outline" leftIcon={FileSpreadsheet} onClick={downloadImportTemplate}>Download Template</Button>
+                        <Button variant="ghost" leftIcon={Info} onClick={() => setFormatModalOpen(true)}>Format</Button>
                         <Button variant="outline" leftIcon={Download} onClick={handleExportCSV}>Export CSV</Button>
                         {selectedListings.length > 0 && (
                             <div className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-2xl animate-in fade-in slide-in-from-right-4 duration-300">
@@ -885,38 +751,157 @@ export default function Listings() {
             <Modal
                 isOpen={importResultModal.isOpen}
                 onClose={() => setImportResultModal(prev => ({ ...prev, isOpen: false }))}
-                title="CSV Import Results"
+                title="Spreadsheet Import Results"
                 footer={
                     <div className="flex justify-end w-full">
                         <Button variant="primary" onClick={() => setImportResultModal(prev => ({ ...prev, isOpen: false }))}>OK</Button>
                     </div>
                 }
             >
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4 text-center">
-                        <div className="bg-emerald-50 text-emerald-800 p-4 rounded-2xl border border-emerald-100">
-                            <div className="text-3xl font-bold">{importResultModal.successCount}</div>
-                            <div className="text-sm font-semibold mt-1">Successfully Imported</div>
-                        </div>
-                        <div className="bg-rose-50 text-rose-800 p-4 rounded-2xl border border-rose-100">
-                            <div className="text-3xl font-bold">{importResultModal.failedCount}</div>
-                            <div className="text-sm font-semibold mt-1">Failed to Import</div>
-                        </div>
-                    </div>
-
-                    {importResultModal.errors.length > 0 && (
-                        <div className="space-y-2">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Failed Rows Details</p>
-                            <div className="max-h-[200px] overflow-y-auto border border-slate-200 rounded-2xl p-4 bg-slate-50 space-y-2 text-sm">
-                                {importResultModal.errors.map((err, idx) => (
-                                    <div key={idx} className="flex justify-between gap-2 border-b border-slate-100 pb-2 last:border-b-0 last:pb-0 font-medium">
-                                        <span className="text-slate-700">Row {err.row}: {err.name}</span>
-                                        <span className="text-rose-600 font-bold">{err.error}</span>
-                                    </div>
-                                ))}
+                <div className="space-y-5">
+                    {importResultModal.totals && (
+                        <div className="grid grid-cols-4 gap-3 text-center">
+                            <div className="bg-emerald-50 text-emerald-800 p-3 rounded-2xl border border-emerald-100">
+                                <div className="text-2xl font-bold">{importResultModal.totals.created}</div>
+                                <div className="text-xs font-semibold mt-1 uppercase tracking-wide">Created</div>
+                            </div>
+                            <div className="bg-sky-50 text-sky-800 p-3 rounded-2xl border border-sky-100">
+                                <div className="text-2xl font-bold">{importResultModal.totals.updated}</div>
+                                <div className="text-xs font-semibold mt-1 uppercase tracking-wide">Updated</div>
+                            </div>
+                            <div className="bg-slate-50 text-slate-700 p-3 rounded-2xl border border-slate-200">
+                                <div className="text-2xl font-bold">{importResultModal.totals.skipped}</div>
+                                <div className="text-xs font-semibold mt-1 uppercase tracking-wide">Skipped</div>
+                            </div>
+                            <div className="bg-rose-50 text-rose-800 p-3 rounded-2xl border border-rose-100">
+                                <div className="text-2xl font-bold">{importResultModal.totals.failed}</div>
+                                <div className="text-xs font-semibold mt-1 uppercase tracking-wide">Failed</div>
                             </div>
                         </div>
                     )}
+
+                    {importResultModal.usedSheets.length > 0 && (
+                        <p className="text-xs text-slate-500 font-medium">
+                            Sheets read: {importResultModal.usedSheets.join(", ")}
+                        </p>
+                    )}
+
+                    {/* Per-sheet breakdown with row-level messages */}
+                    {importResultModal.results && IMPORT_SHEETS.map((sheet) => {
+                        const result = importResultModal.results[sheet.payloadKey];
+                        if (!result) return null;
+                        const touched = result.created + result.updated + result.skipped + result.failed;
+                        if (!touched && !result.messages.length) return null;
+
+                        return (
+                            <div key={sheet.payloadKey} className="space-y-2">
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                    {sheet.label} — {result.created} created, {result.updated} updated, {result.skipped} skipped, {result.failed} failed
+                                </p>
+                                {result.messages.length > 0 && (
+                                    <div className="max-h-[180px] overflow-y-auto border border-slate-200 rounded-2xl p-3 bg-slate-50 space-y-2 text-sm">
+                                        {result.messages.map((msg, idx) => (
+                                            <div key={idx} className="flex justify-between gap-3 border-b border-slate-100 pb-2 last:border-b-0 last:pb-0">
+                                                <span className="text-slate-700 font-medium whitespace-nowrap">
+                                                    {msg.row ? `Row ${msg.row}` : "Sheet"}{msg.name ? `: ${msg.name}` : ""}
+                                                </span>
+                                                <span className={
+                                                    msg.level === "error" ? "text-rose-600 font-semibold text-right"
+                                                        : msg.level === "warning" ? "text-amber-600 font-semibold text-right"
+                                                            : "text-slate-500 text-right"
+                                                }>
+                                                    {msg.message}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+
+                    {/* Auto-generated passwords are shown once and never again */}
+                    {importResultModal.generatedCredentials.length > 0 && (
+                        <div className="space-y-2">
+                            <p className="text-xs font-bold text-amber-600 uppercase tracking-widest">
+                                New accounts — passwords shown only once
+                            </p>
+                            <div className="max-h-[180px] overflow-y-auto border border-amber-200 rounded-2xl p-3 bg-amber-50 space-y-1 text-sm font-mono">
+                                {importResultModal.generatedCredentials.map((cred, idx) => (
+                                    <div key={idx} className="flex justify-between gap-3">
+                                        <span className="text-slate-700">{cred.email}</span>
+                                        <span className="text-slate-900 font-bold">{cred.password}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <Button
+                                variant="outline"
+                                leftIcon={Copy}
+                                onClick={() => navigator.clipboard?.writeText(
+                                    importResultModal.generatedCredentials.map(c => `${c.email}\t${c.password}`).join("\n")
+                                )}
+                            >
+                                Copy credentials
+                            </Button>
+                        </div>
+                    )}
+
+                    {importResultModal.warnings.length > 0 && (
+                        <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-2xl p-3 space-y-1">
+                            {importResultModal.warnings.map((w, idx) => <p key={idx}>{w}</p>)}
+                        </div>
+                    )}
+                </div>
+            </Modal>
+
+            {/* Sheet Format Reference */}
+            <Modal
+                isOpen={formatModalOpen}
+                onClose={() => setFormatModalOpen(false)}
+                title="Import Sheet Format"
+                footer={
+                    <div className="flex justify-end gap-3 w-full">
+                        <Button variant="outline" leftIcon={FileSpreadsheet} onClick={downloadImportTemplate}>Download Template</Button>
+                        <Button variant="primary" onClick={() => setFormatModalOpen(false)}>Close</Button>
+                    </div>
+                }
+            >
+                <div className="space-y-6">
+                    <div className="text-sm text-slate-600 space-y-2">
+                        <p>
+                            One workbook, three sheets named <strong>Categories</strong>, <strong>Users</strong> and <strong>Listings</strong>.
+                            Every sheet is optional and they are processed in that order, so a listing can point at a
+                            category or owner defined in the same file.
+                        </p>
+                        <p>
+                            Columns marked <span className="text-rose-600 font-bold">*</span> are mandatory; the rest can be
+                            reordered or removed. Attach an owner to a listing through the <strong>Owner Email</strong> column.
+                            Locations and plans must already exist; categories are created on the fly.
+                        </p>
+                    </div>
+
+                    {IMPORT_SHEETS.map((sheet) => (
+                        <div key={sheet.payloadKey} className="space-y-2">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                {sheet.label} sheet — {sheet.columns.length} columns
+                            </p>
+                            <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                                <table className="w-full text-sm">
+                                    <tbody>
+                                        {sheet.columns.map((column) => (
+                                            <tr key={column.key} className="border-b border-slate-100 last:border-b-0 align-top">
+                                                <td className="p-2 font-semibold text-slate-800 whitespace-nowrap w-48">
+                                                    {column.header}
+                                                    {column.required && <span className="text-rose-600">*</span>}
+                                                </td>
+                                                <td className="p-2 text-slate-500">{column.note}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </Modal>
         </div>
