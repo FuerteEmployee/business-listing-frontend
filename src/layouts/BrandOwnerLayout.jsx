@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { 
+import {
     LayoutDashboard, FolderTree, Building2, LogOut, MapPin,
     Package, Wrench, Megaphone, BarChart3, CreditCard, LifeBuoy, Star,
-    AlertTriangle, X, Bell
+    AlertTriangle, X, Bell, UserCircle
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
@@ -67,6 +67,7 @@ export default function BrandOwnerLayout() {
         { label: "Plans & Billing", path: "/brand/billing", icon: CreditCard },
         { label: "Notification Center", path: "/brand/notifications/settings", icon: Bell },
         { label: "Help & Support", path: "/brand/support", icon: LifeBuoy },
+        { label: "My Profile", path: "/profile", icon: UserCircle },
     ].filter(item => {
         // Check if feature is hidden by Master Control
         const featureKey = item.label.toLowerCase().replace(/\s+/g, '').replace(/&/g, '');
@@ -127,13 +128,15 @@ export default function BrandOwnerLayout() {
                     <div className="flex items-center gap-4 ml-auto">
                         <NotificationBell />
                         <div className="h-8 w-[1px] bg-slate-200 mx-2 hidden md:block"></div>
-                        <div className="flex flex-col items-end hidden md:flex">
-                            <span className="text-sm font-semibold text-slate-900">{user?.name || 'Brand Owner'}</span>
-                            <span className="text-xs text-slate-500">{user?.email}</span>
-                        </div>
-                        <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border border-indigo-200 uppercase">
-                            {user?.name?.substring(0, 2) || 'BO'}
-                        </div>
+                        <NavLink to="/profile" className="flex items-center gap-3 group">
+                            <div className="flex flex-col items-end hidden md:flex">
+                                <span className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{user?.name || 'Brand Owner'}</span>
+                                <span className="text-xs text-slate-500">{user?.email}</span>
+                            </div>
+                            <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border border-indigo-200 uppercase group-hover:ring-2 group-hover:ring-indigo-300 transition-all">
+                                {user?.name?.substring(0, 2) || 'BO'}
+                            </div>
+                        </NavLink>
                     </div>
                 </header>
 
