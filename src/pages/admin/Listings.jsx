@@ -611,7 +611,7 @@ export default function Listings() {
                 size="xl"
             >
                 <div className="flex gap-4 border-b border-slate-100 mb-6">
-                    {['summary', 'audit'].map(tab => (
+                    {['summary', 'photos', 'audit'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setDetailModal(prev => ({ ...prev, activeTab: tab }))}
@@ -621,7 +621,7 @@ export default function Listings() {
                                 : 'border-transparent text-slate-400 hover:text-slate-600'
                             }`}
                         >
-                            {tab}
+                            {tab} {tab === 'photos' && detailModal.listing?.images?.length ? `(${detailModal.listing.images.length})` : ''}
                         </button>
                     ))}
                 </div>
@@ -675,6 +675,85 @@ export default function Listings() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                ) : detailModal.activeTab === 'photos' ? (
+                    <div className="space-y-4 py-2 max-h-[400px] overflow-y-auto pr-2">
+                        {!detailModal.listing?.images || detailModal.listing.images.length === 0 ? (
+                            <div className="text-center py-12 text-slate-400 italic">No images uploaded for this listing</div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                {detailModal.listing.images.map((img) => (
+                                    <div key={img._id} className="relative group bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm flex flex-col justify-between">
+                                        <div className="aspect-square bg-slate-50 relative overflow-hidden">
+                                            <img src={img.url} alt="" className="w-full h-full object-cover" />
+                                            <div className="absolute top-2 right-2">
+                                                <Badge variant={img.status === 'Approved' ? 'success' : img.status === 'Rejected' ? 'danger' : 'warning'}>
+                                                    {img.status || 'Pending'}
+                                                </Badge>
+                                            </div>
+                                            {img.isCover && (
+                                                <div className="absolute top-2 left-2 px-2 py-0.5 bg-indigo-600 text-white text-[9px] font-black rounded-md uppercase">
+                                                    Cover
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="p-2 flex gap-1 bg-slate-50 border-t border-slate-100">
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/${detailModal.listing._id}/photos/${img._id}`, {
+                                                            method: 'PUT',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ status: 'Approved' })
+                                                        });
+                                                        if (res.ok) {
+                                                            const data = await res.json();
+                                                            setDetailModal(prev => ({
+                                                                ...prev,
+                                                                listing: {
+                                                                    ...prev.listing,
+                                                                    images: prev.listing.images.map(i => i._id === img._id ? { ...i, status: 'Approved' } : i)
+                                                                }
+                                                            }));
+                                                        }
+                                                    } catch (err) {
+                                                        console.error('Photo approval error', err);
+                                                    }
+                                                }}
+                                                className="flex-1 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg text-[10px] font-black uppercase transition-colors"
+                                            >
+                                                Approve
+                                            </button>
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/${detailModal.listing._id}/photos/${img._id}`, {
+                                                            method: 'PUT',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ status: 'Rejected' })
+                                                        });
+                                                        if (res.ok) {
+                                                            setDetailModal(prev => ({
+                                                                ...prev,
+                                                                listing: {
+                                                                    ...prev.listing,
+                                                                    images: prev.listing.images.map(i => i._id === img._id ? { ...i, status: 'Rejected' } : i)
+                                                                }
+                                                            }));
+                                                        }
+                                                    } catch (err) {
+                                                        console.error('Photo rejection error', err);
+                                                    }
+                                                }}
+                                                className="flex-1 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg text-[10px] font-black uppercase transition-colors"
+                                            >
+                                                Reject
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="space-y-4 py-2 max-h-[400px] overflow-y-auto pr-2">

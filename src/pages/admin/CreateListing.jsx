@@ -139,7 +139,15 @@ export default function CreateListing() {
             const finalLogo = formData.logo || imageUrl;
 
             const payload = { ...formData, logo: finalLogo, image: finalLogo };
-            console.log('Sending payload:', payload);
+
+            // Don't send sentinel 'manual' values as location IDs — the backend
+            // expects ObjectIds or null, never the dropdown sentinel string.
+            ['country_id', 'state_id', 'city_id', 'area_id'].forEach(f => {
+                if (payload[f] === 'manual' || payload[f] === 'null' || payload[f] === '') {
+                    delete payload[f];
+                }
+            });
+
             const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

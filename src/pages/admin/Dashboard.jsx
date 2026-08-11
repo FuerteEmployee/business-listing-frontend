@@ -56,6 +56,7 @@ const KPI_CONFIG = [
         key: "leadsToday",
         label: "Leads Today",
         sub: "Active Enquiries",
+        compare: "vs yesterday",
         icon: Zap,
         glowClass: "bg-amber-50",
         iconClass: "bg-amber-50 text-amber-600"
@@ -133,7 +134,7 @@ export default function Dashboard() {
                 setIsLoading(true);
                 setError("");
 
-                const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/stats`);
+                const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/stats?range=${chartRange}`);
                 const data = await res.json().catch(() => null);
 
                 if (!res.ok) {
@@ -159,7 +160,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         fetchStats();
-    }, []);
+    }, [chartRange]);
 
     const handleExportSnapshot = () => {
         if (!stats) {
@@ -307,7 +308,7 @@ export default function Dashboard() {
                                     : Number(kpi.value || 0).toLocaleString()}
                             </h3>
                             <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{kpi.label}</p>
-                            <p className="text-[10px] font-bold text-slate-300 mt-2 italic">{kpi.sub} / vs previous 30 days</p>
+                            <p className="text-[10px] font-bold text-slate-300 mt-2 italic">{kpi.sub} / {kpi.compare || "vs previous 30 days"}</p>
                         </div>
                     </div>
                 ))}
@@ -504,8 +505,8 @@ export default function Dashboard() {
                                     </div>
 
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="text-sm font-black text-slate-800 truncate">{activity.title}</h4>
-                                        <p className="text-xs font-bold text-slate-400 mt-0.5">{activity.detail}</p>
+                                        <h4 className="text-sm font-black text-slate-800 truncate" title={activity.title}>{activity.title}</h4>
+                                        <p className="text-xs font-bold text-slate-400 mt-0.5 truncate" title={activity.detail}>{activity.detail}</p>
                                     </div>
 
                                     <div className="text-right flex-shrink-0">

@@ -1,11 +1,10 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { 
-    LayoutDashboard, FolderTree, Building2, Users as UsersIcon, Settings, LogOut, MapPin,
-    Package, Wrench, CalendarCheck, Star, Megaphone, Ticket, Zap,
-    Shield, History, AlertOctagon, List, DollarSign, Receipt, RotateCcw, FileText,
-    FileBarChart2, AlertCircle, Wallet, Monitor, BarChart3 as PerformanceIcon, Image as ImageIcon,
-    MessageSquare, Search, Volume2, UserCheck, FileCheck, ShieldAlert
+import {
+    LayoutDashboard, FolderTree, Users as UsersIcon, Settings, LogOut, MapPin,
+    Package, Wrench, Star, Megaphone,
+    Shield, History, AlertOctagon, List,
+    MessageSquare, UserCheck, FileCheck, Image as ImageIcon
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
@@ -60,51 +59,20 @@ export default function SuperAdminLayout() {
         { label: "Products",      path: "/admin/products",     icon: Package,            show: can('listingManagement') },
         { label: "Services",      path: "/admin/services",     icon: Wrench,             show: can('listingManagement') },
         { label: "Reviews",       path: "/admin/reviews",      icon: Star,               show: can('reviewModeration') },
+        { label: "Photos",        path: "/admin/photos",       icon: ImageIcon,          show: can('listingManagement') },
+        { label: "Claims",        path: "/admin/claims",       icon: FileCheck,          show: can('listingManagement') },
         { label: "Leads",         path: "/admin/leads",        icon: Megaphone,          show: can('userManagement') },
         { label: "Admin Team",    path: "/admin/admins",       icon: UserCheck,          show: can('adminManagement') },
         { label: "Roles",         path: "/admin/roles",        icon: Shield,             show: can('roleManagement') },
         { label: "Fraud",         path: "/admin/fraud",        icon: AlertOctagon,       show: isSuperAdmin },
         { label: "Audit Logs",    path: "/admin/audit-logs",   icon: History,            show: can('auditLog') },
-        { label: "Broadcasting",  path: "/admin/broadcasts",   icon: Volume2,            show: can('messaging') },
-        { label: "Claims",        path: "/admin/claims",       icon: FileCheck,          show: can('listingManagement') },
-        { label: "Discovery",     path: "/admin/discovery",    icon: Search,             show: can('listingManagement') },
         { label: "Locations",     path: "/admin/locations",    icon: MapPin,             show: isSuperAdmin },
-        { label: "Plans",         path: "/admin/plans",        icon: Zap,                show: isSuperAdmin },
-        { label: "Coupons",       path: "/admin/coupons",      icon: Ticket,             show: isSuperAdmin },
-        { label: "Overrides",     path: "/admin/subscriptions",icon: ShieldAlert,        show: isSuperAdmin },
         { label: "FAQs",          path: "/admin/faqs",         icon: MessageSquare,      show: can('cmsManagement') },
         { label: "Settings",      path: "/admin/settings",     icon: Settings,           show: isSuperAdmin },
-        { label: "Reports",       path: "/admin/reports",      icon: FileBarChart2,      show: can('reporting') },
     ].filter(item => {
         if (!item.show) return false;
         return !hiddenFeatures.includes(getFeatureKey(item.label));
     });
-
-    const revenueNavItems = [
-        { label: "Revenue Dashboard", path: "/admin/revenue",                    icon: DollarSign },
-        { label: "Transactions",      path: "/admin/revenue/transactions",       icon: Receipt },
-        { label: "Refund Queue",      path: "/admin/revenue/refunds",            icon: RotateCcw },
-        { label: "Invoices",          path: "/admin/revenue/invoices",           icon: FileText },
-        { label: "GST Report",        path: "/admin/revenue/gst-report",         icon: FileBarChart2 },
-        { label: "Failed Payments",   path: "/admin/revenue/failed-payments",    icon: AlertCircle },
-        { label: "Payouts",           path: "/admin/revenue/payouts",            icon: Wallet },
-    ].filter(item => !hiddenFeatures.includes(getFeatureKey(item.label)));
-
-    const advertisementNavItems = [
-        { label: "Ad Dashboard",  path: "/admin/ads/analytics", icon: PerformanceIcon },
-        { label: "Manage Ads",    path: "/admin/ads",           icon: ImageIcon },
-        { label: "Ad Slot Config",path: "/admin/ads/slots",     icon: Monitor },
-    ].filter(item => !hiddenFeatures.includes(getFeatureKey(item.label)));
-
-    const cmsNavItems = [
-        { label: "CMS Dashboard",  path: "/admin/cms",           icon: LayoutDashboard },
-        { label: "Articles / Blogs",path: "/admin/cms/articles", icon: FileText },
-        { label: "Static Pages",   path: "/admin/cms/pages",     icon: FileText },
-        { label: "FAQ Manager",    path: "/admin/cms/faqs",       icon: MessageSquare },
-        { label: "Home Banners",   path: "/admin/cms/banners",    icon: ImageIcon },
-        { label: "SEO Blocks",     path: "/admin/cms/seo",        icon: Search },
-        { label: "Media Library",  path: "/admin/cms/media",      icon: ImageIcon },
-    ].filter(item => !hiddenFeatures.includes(getFeatureKey(item.label)));
 
     return (
         <div className="flex h-screen bg-slate-50 overflow-hidden">
@@ -151,84 +119,6 @@ export default function SuperAdminLayout() {
                                     </NavLink>
                                 ))}
                             </nav>
-
-                            {/* CMS & Content Section - only show if has CMS access */}
-                            {can('cmsManagement') && (
-                                <>
-                                <div className="px-4 mt-5 mb-2 text-xs font-semibold text-purple-500 uppercase tracking-wider flex items-center gap-2">
-                                    <FileText className="w-3 h-3" /> CMS & Content
-                                </div>
-                                <nav className="flex-1 px-3 space-y-1">
-                                    {cmsNavItems.map((item) => (
-                                        <NavLink
-                                            key={item.path}
-                                            to={item.path}
-                                            className={({ isActive }) =>
-                                                `flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-semibold transition-colors ${isActive
-                                                    ? "bg-slate-100 text-slate-900 shadow-sm"
-                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                                                }`
-                                            }
-                                        >
-                                            <item.icon className="w-5 h-5" />
-                                            {item.label}
-                                        </NavLink>
-                                    ))}
-                                </nav>
-                                </>
-                            )}
-
-                            {/* Revenue & Finance Section - only show if Super Admin or has analytics access */}
-                            {(isSuperAdmin || can('analytics') || can('reporting')) && !hiddenFeatures.includes('revenue') && (
-                                <>
-                                <div className="px-4 mt-5 mb-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-                                    <DollarSign className="w-3 h-3" /> Revenue & Finance
-                                </div>
-                                <nav className="flex-1 px-3 space-y-1">
-                                    {revenueNavItems.map((item) => (
-                                        <NavLink
-                                            key={item.path}
-                                            to={item.path}
-                                            className={({ isActive }) =>
-                                                `flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-semibold transition-colors ${isActive
-                                                    ? "bg-slate-100 text-slate-900 shadow-sm"
-                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                                                }`
-                                            }
-                                        >
-                                            <item.icon className="w-5 h-5" />
-                                            {item.label}
-                                        </NavLink>
-                                    ))}
-                                </nav>
-                                </>
-                            )}
-
-                            {/* Advertisements Section - only Super Admin */}
-                            {isSuperAdmin && !hiddenFeatures.includes('ads') && (
-                                <>
-                                <div className="px-4 mt-5 mb-2 text-xs font-semibold text-emerald-500 uppercase tracking-wider flex items-center gap-2">
-                                    <Monitor className="w-3 h-3" /> Advertisements
-                                </div>
-                                <nav className="flex-1 px-3 space-y-1 pb-10">
-                                    {advertisementNavItems.map((item) => (
-                                        <NavLink
-                                            key={item.path}
-                                            to={item.path}
-                                            className={({ isActive }) =>
-                                                `flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-semibold transition-colors ${isActive
-                                                    ? "bg-slate-100 text-slate-900 shadow-sm"
-                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                                                }`
-                                            }
-                                        >
-                                            <item.icon className="w-5 h-5" />
-                                            {item.label}
-                                        </NavLink>
-                                    ))}
-                                </nav>
-                                </>
-                            )}
                         </>
                     )}
                 </div>

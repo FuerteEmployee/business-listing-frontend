@@ -90,7 +90,8 @@ export default function RoleManager() {
                 body: JSON.stringify({
                     name: createModal.formData.name,
                     description: createModal.formData.description,
-                    cloneFrom: createModal.formData.cloneFrom || null
+                    // API field is `baseRole`; the UI calls the same thing "Clone Permissions From"
+                    baseRole: createModal.formData.cloneFrom || null
                 })
             });
             if (res.ok) {

@@ -33,14 +33,11 @@ export default function MerchantLeads() {
         try {
             setLoading(true);
             setError(null);
-            // Merchants only get their assigned leads
-            const url = getApiUrl('leads');
+            // Brand-scoped endpoint - filters by the merchant's own business server-side.
+            const url = getApiUrl('merchant/leads');
             const response = await fetchWithAuth(url);
             const data = await response.json();
             if (response.ok && data.success) {
-                // In a real scenario, the backend would filter by req.user.id
-                // For this implementation, we'll filter on frontend if needed, 
-                // but assume the API is protected to return only relevant leads.
                 setLeads(data.leads);
             } else {
                 setError(data.message || data.msg || 'Failed to fetch your leads');
@@ -56,7 +53,7 @@ export default function MerchantLeads() {
     const handleUpdate = async (id, field, value) => {
         try {
             setUpdatingId(id);
-            const res = await fetchWithAuth(`${API_BASE_URL}/leads/${id}/status`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/merchant/leads/${id}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ [field]: value })
@@ -81,7 +78,7 @@ export default function MerchantLeads() {
 
         try {
             setIsSavingNote(true);
-            const res = await fetchWithAuth(`${API_BASE_URL}/leads/${selectedLead._id}/notes`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/merchant/leads/${selectedLead._id}/notes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: noteText })
@@ -131,7 +128,7 @@ export default function MerchantLeads() {
         e.preventDefault();
         try {
             setIsSavingReply(true);
-            const res = await fetchWithAuth(`${API_BASE_URL}/leads/${selectedLead._id}/status`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/merchant/leads/${selectedLead._id}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ merchantReply: merchantReplyText })

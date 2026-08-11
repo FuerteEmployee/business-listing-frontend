@@ -90,8 +90,11 @@ export default function Companies() {
     useEffect(() => {
         fetchCompanies();
         fetchCategories();
-        fetchUsers();
-    }, []);
+        // /api/users is admin-only and only feeds the owner-assignment dropdown, which
+        // is already hidden for brand owners (`!isBrandOwner` below) - skip the call
+        // entirely for them rather than let it 403.
+        if (!isBrandOwner) fetchUsers();
+    }, [isBrandOwner]);
 
     const defaultFormState = {
         name: "", category: "", description: "",

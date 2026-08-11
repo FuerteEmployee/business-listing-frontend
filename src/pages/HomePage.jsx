@@ -33,16 +33,23 @@ export default function HomePage() {
         // Listen for location detection events
         const handleLocationDetected = (event) => {
             const { latitude, longitude } = event.detail;
-            const nearest = findNearestCity(latitude, longitude, cities);
-            if (nearest) {
-                console.log('Nearest city detected from event:', nearest.name);
-                setSelectedCity(nearest);
-            }
+            setUserLocation({ latitude, longitude });
         };
 
         window.addEventListener('locationdetected', handleLocationDetected);
         return () => window.removeEventListener('locationdetected', handleLocationDetected);
     }, []);
+
+    // Synchronize default city once both cities and userLocation are loaded
+    useEffect(() => {
+        if (cities.length > 0 && userLocation && !selectedCity?.isManuallySelected) {
+            const nearest = findNearestCity(userLocation.latitude, userLocation.longitude, cities);
+            if (nearest) {
+                console.log('Nearest city detected:', nearest.name);
+                setSelectedCity(nearest);
+            }
+        }
+    }, [cities, userLocation, selectedCity?.isManuallySelected]);
 
     const fetchCities = async () => {
         try {
@@ -73,34 +80,16 @@ export default function HomePage() {
             const location = await getDeviceLocation();
             setUserLocation(location);
             console.log('Device location:', location);
-
-            // Wait for cities to load before finding nearest
-            setTimeout(() => {
-                if (cities.length > 0) {
-                    const nearest = findNearestCity(location.latitude, location.longitude, cities);
-                    if (nearest) {
-                        console.log('Nearest city detected:', nearest.name);
-                        setSelectedCity(nearest);
-                    }
-                } else {
-                    const nearest = findNearestCity(location.latitude, location.longitude, cities);
-                    if (nearest) {
-                        console.log('Nearest city detected:', nearest.name);
-                        setSelectedCity(nearest);
-                    }
-                }
-            }, 300);
         } catch (err) {
             console.warn('Geolocation not available:', err.message);
             setLocationError(err.message);
-            // Will use default city
         }
     };
 
     const handleCityChange = (cityId) => {
         const city = cities.find(c => c._id === cityId);
         if (city) {
-            setSelectedCity(city);
+            setSelectedCity({ ...city, isManuallySelected: true });
         }
     };
 

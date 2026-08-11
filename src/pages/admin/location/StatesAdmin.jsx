@@ -177,6 +177,13 @@ export default function StatesAdmin() {
                                 </td>
                             </tr>
                         ))}
+                        {filteredStates.length === 0 && (
+                            <tr>
+                                <td colSpan="4" className="px-6 py-8 text-center text-slate-500 content-center">
+                                    No states found matching your search.
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>

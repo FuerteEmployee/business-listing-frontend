@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Plus, Search, Edit2, Trash2, Image as ImageIcon, X, AlertTriangle, ChevronRight, Home, ChevronLeft, Tag, Trash } from "lucide-react";
 import ImageUploadBox from "../../components/ui/ImageUploadBox";
 import FormInput from "../../components/ui/FormInput";
@@ -62,12 +62,14 @@ export default function Categories() {
     }, [currentParent]);
 
     const [allCategories, setAllCategories] = useState([]); // Used for parent selection dropdown
+    const [rawCategories, setRawCategories] = useState([]); // Unflattened, for descendant checks
     useEffect(() => {
         const fetchAll = async () => {
             try {
                 const res = await fetchWithAuth(`${API_BASE_URL}/categories`); // No parentId filter
                 if (res.ok) {
                     const data = await res.json();
+                    setRawCategories(data);
                     const parents = data.filter(c => !c.parent);
                     const structured = [];
                     parents.forEach(p => {
@@ -86,8 +88,17 @@ export default function Categories() {
             if (isBrandOwner) {
                 // Fetch brands for the owner so they can link categories to them
                 const fetchBrands = async () => {
-                    const res = await fetchWithAuth(`${API_BASE_URL}/companies`);
-                    if (res.ok) setBrands(await res.json());
+                    // owned=true scopes this to the brand owner's own businesses - without
+                    // it, the "Link to Brand" dropdown listed up to 20 random public
+                    // listings platform-wide instead of just the ones this user can pick.
+                    const res = await fetchWithAuth(`${API_BASE_URL}/companies?owned=true`);
+                    if (res.ok) {
+                        // GET /companies returns { data, pagination }, not a bare array -
+                        // storing the raw response crashed brands.map() below with
+                        // "brands.map is not a function".
+                        const body = await res.json();
+                        setBrands(Array.isArray(body) ? body : body.data || []);
+                    }
                 };
                 fetchBrands();
             }
@@ -104,6 +115,25 @@ export default function Categories() {
     const filteredCategories = categories.filter(cat =>
         cat.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Categories that must not be offered as a parent for the one being edited: itself,
+    // plus every descendant. Selecting a descendant would close a parent loop.
+    const invalidParentIds = useMemo(() => {
+        const blocked = new Set();
+        if (!editingId) return blocked;
+
+        blocked.add(editingId);
+        let frontier = [editingId];
+        while (frontier.length) {
+            const children = rawCategories
+                .filter(c => c.parent && frontier.includes(c.parent.toString()))
+                .map(c => c._id)
+                .filter(id => !blocked.has(id));
+            children.forEach(id => blocked.add(id));
+            frontier = children;
+        }
+        return blocked;
+    }, [editingId, rawCategories]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -346,7 +376,7 @@ export default function Categories() {
                         <tbody>
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                    <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
                                         Loading data from database...
                                     </td>
                                 </tr>
@@ -421,7 +451,7 @@ export default function Categories() {
 
                             {!isLoading && filteredCategories.length === 0 && (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                    <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
                                         No categories found matching your search.
                                     </td>
                                 </tr>
@@ -526,7 +556,9 @@ export default function Categories() {
                             options={[
                                 { label: "None (Top Level)", value: "" },
                                 ...allCategories
-                                    .filter(cat => cat._id !== editingId)
+                                    // Exclude this category AND its descendants - picking a child
+                                    // as your own parent creates a loop the tree can't resolve.
+                                    .filter(cat => !invalidParentIds.has(cat._id))
                                     .map(cat => ({ label: cat.name, value: cat._id }))
                             ]}
                             placeholder="Select Parent Category"

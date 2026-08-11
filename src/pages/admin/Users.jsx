@@ -36,6 +36,7 @@ import UserDetailCard from "../../components/admin/UserDetailCard";
 import LoginHistory from "../../components/admin/users/LoginHistory";
 import FormInput from "../../components/ui/FormInput";
 import FormSelect from "../../components/ui/FormSelect";
+import SearchableSelect from "../../components/ui/SearchableSelect";
 import toast from "react-hot-toast";
 
 export default function Users() {
@@ -44,6 +45,8 @@ export default function Users() {
     const [error, setError] = useState(null);
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
+    const [brands, setBrands] = useState([]);
+    const [brandsLoaded, setBrandsLoaded] = useState(false);
 
     // Filter state
     const [filters, setFilters] = useState({
@@ -71,7 +74,7 @@ export default function Users() {
         loading: false,
         formData: {
             name: '', email: '', password: '', mobileNumber: '',
-            role: 'User', status: 'Active', isEmailVerified: false, performanceScore: 100
+            role: 'User', status: 'Active', isEmailVerified: false, performanceScore: 100, assignedBrand: ''
         }
     });
 
@@ -113,6 +116,20 @@ export default function Users() {
     useEffect(() => {
         fetchUsers(1);
     }, [filters]);
+
+    const fetchBrands = useCallback(async () => {
+        if (brandsLoaded) return;
+        try {
+            const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings?limit=1000`);
+            if (res.ok) {
+                const data = await res.json();
+                setBrands(data.listings || []);
+                setBrandsLoaded(true);
+            }
+        } catch (e) {
+            console.error("Failed to fetch brands", e);
+        }
+    }, [brandsLoaded]);
 
     const fetchUserDetail = async (userId) => {
         try {
@@ -333,21 +350,39 @@ export default function Users() {
         {
             label: "Edit Profile",
             icon: Edit2,
-            onClick: (user) => setUserModal({
-                isOpen: true,
-                type: 'edit',
-                user,
-                loading: false,
-                formData: {
-                    name: user.name || '',
-                    email: user.email || '',
-                    mobileNumber: user.mobileNumber || '',
-                    role: user.role || 'User',
-                    status: user.status || 'Active',
-                    isEmailVerified: user.isEmailVerified || false,
-                    performanceScore: user.performanceScore || 100
+            onClick: async (user) => {
+                fetchBrands();
+                let assignedBrand = '';
+                if (user.role === 'Merchant' || user.role === 'Brand Owner' || user.role === 'Company Owner') {
+                    try {
+                        const res = await fetchWithAuth(`${API_BASE_URL}/admin/users/${user._id}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.ownedCompany) {
+                                assignedBrand = data.ownedCompany._id;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to fetch owned company');
+                    }
                 }
-            })
+                setUserModal({
+                    isOpen: true,
+                    type: 'edit',
+                    user,
+                    loading: false,
+                    formData: {
+                        name: user.name || '',
+                        email: user.email || '',
+                        mobileNumber: user.mobileNumber || '',
+                        role: user.role || 'User',
+                        status: user.status || 'Active',
+                        isEmailVerified: user.isEmailVerified || false,
+                        performanceScore: user.performanceScore || 100,
+                        assignedBrand
+                    }
+                });
+            }
         },
         {
             label: "View Explorer",
@@ -414,10 +449,13 @@ export default function Users() {
                         <Button variant="outline" leftIcon={Download} onClick={exportToCSV}>
                             Export Registry
                         </Button>
-                        <Button variant="primary" leftIcon={Plus} onClick={() => setUserModal({
-                            isOpen: true, type: 'create', user: null, loading: false,
-                            formData: { name: '', email: '', password: '', mobileNumber: '', role: 'User', status: 'Active', isEmailVerified: true, performanceScore: 100 }
-                        })}>
+                        <Button variant="primary" leftIcon={Plus} onClick={() => {
+                            fetchBrands();
+                            setUserModal({
+                                isOpen: true, type: 'create', user: null, loading: false,
+                                formData: { name: '', email: '', password: '', mobileNumber: '', role: 'User', status: 'Active', isEmailVerified: true, performanceScore: 100, assignedBrand: '' }
+                            });
+                        }}>
                             Create Member
                         </Button>
                     </div>
@@ -447,7 +485,7 @@ export default function Users() {
                             { label: 'All Tiers', value: '' },
                             { label: 'Super Admin', value: 'Super Admin' },
                             { label: 'Admin', value: 'Admin' },
-                            { label: 'Merchants & Owners', value: 'Merchant' },
+                            { label: 'Merchant / Owner', value: 'Merchant' },
                             { label: 'User', value: 'User' }
                         ]}
                         className="!mb-0"
@@ -771,9 +809,8 @@ export default function Users() {
                             value={userModal.formData.role}
                             onChange={(e) => setUserModal(prev => ({ ...prev, formData: { ...prev.formData, role: e.target.value } }))}
                             options={[
-                                { label: 'Regular User', value: 'User' },
-                                { label: 'Merchant / Owner', value: 'Merchant' },
-                                { label: 'Brand Owner', value: 'Brand Owner' }
+                                { label: 'User', value: 'User' },
+                                { label: 'Merchant / Owner', value: 'Merchant' }
                             ]}
                             required
                         />
@@ -789,6 +826,21 @@ export default function Users() {
                             ]}
                         />
                     </div>
+
+                    {userModal.formData.role === 'Merchant' && (
+                        <div className="grid grid-cols-1 gap-4">
+                            <SearchableSelect 
+                                label="Assigned Brand (Listing)"
+                                placeholder="Select a brand to assign..."
+                                value={userModal.formData.assignedBrand || ''}
+                                onChange={(e) => setUserModal(prev => ({ ...prev, formData: { ...prev.formData, assignedBrand: e.target.value } }))}
+                                options={[
+                                    { label: 'Select a brand to assign...', value: '' },
+                                    ...brands.map(brand => ({ label: brand.name, value: brand._id }))
+                                ]}
+                            />
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-2 gap-4">
                         <FormSelect 

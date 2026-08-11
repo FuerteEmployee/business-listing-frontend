@@ -240,6 +240,13 @@ export default function CitiesAdmin() {
                                 </td>
                             </tr>
                         ))}
+                        {filteredCities.length === 0 && (
+                            <tr>
+                                <td colSpan="5" className="px-6 py-8 text-center text-slate-500 content-center">
+                                    No cities found matching your search.
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>

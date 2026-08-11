@@ -25,13 +25,13 @@ export default function Billing() {
             if (data.success) {
                 setBusinesses(data.data);
                 // Fetch subscription for each business
-                const subPromises = data.data.map(b => 
+                const subPromises = data.data.map(b =>
                     fetch(`${API_BASE_URL}/subscriptions/business/${b._id}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }).then(r => r.ok ? r.json() : null)
                 );
                 const subResults = await Promise.all(subPromises);
-                setSubscriptions(subResults.filter(Boolean));
+                setSubscriptions(subResults.map(r => r?.subscription).filter(Boolean));
             }
 
             // Fetch Transactions (Simplified: using revenue endpoint if available or dedicated user transactions)

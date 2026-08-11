@@ -60,6 +60,31 @@ export default function BusinessDetail() {
     const [isSubmittingQuestion, setIsSubmittingQuestion] = useState(false);
     const [similarBusinesses, setSimilarBusinesses] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);
+
+    // Lightbox Keydown Listener
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (!isLightboxOpen) return;
+            if (e.key === 'Escape') setIsLightboxOpen(false);
+            if (e.key === 'ArrowRight' && business?.photos?.length > 1) {
+                setActivePhotoIndex(prev => (prev === business.photos.length - 1 ? 0 : prev + 1));
+            }
+            if (e.key === 'ArrowLeft' && business?.photos?.length > 1) {
+                setActivePhotoIndex(prev => (prev === 0 ? business.photos.length - 1 : prev - 1));
+            }
+        };
+
+        if (isLightboxOpen) {
+            window.addEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'unset';
+        };
+    }, [isLightboxOpen, business?.photos]);
+
     useEffect(() => {
         const fetchQuestions = async () => {
             if (!business?._id) return;
@@ -787,13 +812,16 @@ export default function BusinessDetail() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex flex-col lg:flex-row gap-8">
                         {/* Left Column: Tab Content */}
-                        <div className="lg:col-span-2 flex-1 space-y-8">
+                        {/* min-w-0: a flex item's intrinsic min-width defaults to its content's
+                            width, which overrides child break-words for a long unbroken string -
+                            without this the About text pushes the column wide instead of wrapping */}
+                        <div className="lg:col-span-2 flex-1 min-w-0 space-y-8">
                             
                             {activeTab === 'overview' && (
                                 <>
                                     <section className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
                                         <h3 className="text-xl font-bold text-slate-900 mb-6">About {business.name}</h3>
-                                        <p className="text-slate-600 leading-relaxed whitespace-pre-wrap text-sm md:text-base">
+                                        <p className="text-slate-600 leading-relaxed whitespace-pre-wrap break-words text-sm md:text-base">
                                             {business.description || `${business.name} is a leading provider in ${typeof business.category === 'object' ? business.category.name : (business.category || 'their industry')}, known for quality and excellence in ${business.city_id?.name || 'their region'}.`}
                                         </p>
                                     </section>
@@ -1879,20 +1907,60 @@ export default function BusinessDetail() {
             {/* Lightbox / Photo Viewer */}
             {isLightboxOpen && business.photos?.length > 0 && (
                 <div className="fixed inset-0 z-[120] bg-slate-900/95 backdrop-blur-xl flex flex-col p-4 md:p-10">
-                    <button onClick={() => setIsLightboxOpen(false)} className="absolute top-10 right-10 text-white/60 hover:text-white p-2 transition-colors"><X className="w-8 h-8" /></button>
-                    <div className="flex-1 flex items-center justify-center relative select-none">
-                        <img src={business.photos[activePhotoIndex]} alt="Gallery" className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl animate-in zoom-in duration-300" />
+                    <button 
+                        onClick={() => setIsLightboxOpen(false)} 
+                        className="absolute top-4 right-4 md:top-10 md:right-10 text-white/60 hover:text-white p-3 transition-colors z-50 bg-black/20 hover:bg-black/50 rounded-full"
+                        aria-label="Close"
+                    >
+                        <X className="w-6 h-6 md:w-8 md:h-8" />
+                    </button>
+                    
+                    <div className="flex-1 flex items-center justify-center relative select-none w-full max-w-6xl mx-auto">
+                        <img 
+                            src={business.photos[activePhotoIndex]} 
+                            alt="Gallery" 
+                            className="max-w-full max-h-[70vh] md:max-h-[80vh] object-contain rounded-lg shadow-2xl animate-in zoom-in duration-300" 
+                        />
                         {business.photos.length > 1 && (
                             <>
-                                <button onClick={() => setActivePhotoIndex(prev => (prev === 0 ? business.photos.length - 1 : prev - 1))} className="absolute left-0 p-4 text-white/40 hover:text-white transition-colors"><ChevronRight className="w-12 h-12 rotate-180" /></button>
-                                <button onClick={() => setActivePhotoIndex(prev => (prev === business.photos.length - 1 ? 0 : prev + 1))} className="absolute right-0 p-4 text-white/40 hover:text-white transition-colors"><ChevronRight className="w-12 h-12" /></button>
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActivePhotoIndex(prev => (prev === 0 ? business.photos.length - 1 : prev - 1));
+                                    }} 
+                                    className="absolute left-2 md:-left-12 top-1/2 -translate-y-1/2 p-3 md:p-4 text-white/60 hover:text-white transition-colors z-50 bg-black/20 hover:bg-black/50 rounded-full backdrop-blur-md"
+                                >
+                                    <ChevronRight className="w-8 h-8 md:w-10 md:h-10 rotate-180" />
+                                </button>
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActivePhotoIndex(prev => (prev === business.photos.length - 1 ? 0 : prev + 1));
+                                    }} 
+                                    className="absolute right-2 md:-right-12 top-1/2 -translate-y-1/2 p-3 md:p-4 text-white/60 hover:text-white transition-colors z-50 bg-black/20 hover:bg-black/50 rounded-full backdrop-blur-md"
+                                >
+                                    <ChevronRight className="w-8 h-8 md:w-10 md:h-10" />
+                                </button>
                             </>
                         )}
                     </div>
-                    <div className="flex justify-center gap-3 mt-10 overflow-x-auto no-scrollbar max-w-7xl mx-auto">
-                        {business.photos.map((p, idx) => (
-                            <button key={idx} onClick={() => setActivePhotoIndex(idx)} className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${idx === activePhotoIndex ? 'border-orange-500 scale-110 shadow-lg' : 'border-transparent opacity-50 hover:opacity-100'}`}><img src={p} className="w-full h-full object-cover" /></button>
-                        ))}
+                    
+                    <div className="w-full max-w-5xl mx-auto mt-6 pb-2">
+                        <div className="flex gap-3 overflow-x-auto no-scrollbar px-4 py-4 sm:justify-center">
+                            {business.photos.map((p, idx) => (
+                                <button 
+                                    key={idx} 
+                                    onClick={() => setActivePhotoIndex(idx)} 
+                                    className={`w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 focus:outline-none ${
+                                        idx === activePhotoIndex 
+                                        ? 'border-orange-500 scale-110 shadow-xl opacity-100 z-10 relative ring-4 ring-orange-500/20' 
+                                        : 'border-transparent opacity-40 hover:opacity-100 hover:scale-105'
+                                    }`}
+                                >
+                                    <img src={p} className="w-full h-full object-cover" />
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}

@@ -97,8 +97,6 @@ export default function HomepageSettingsManager({ settings, onSave }) {
 
     useEffect(() => {
         if (settings?.homepage) {
-            console.log("📋 HomepageSettingsManager received settings:", settings.homepage);
-            console.log("📋 Current social links in settings:", settings.homepage.socialLinks);
             setLocalSettings(prev => {
                 const sectionsFromAPI = settings.homepage.footerSections;
                 const hasAPISections = Array.isArray(sectionsFromAPI) && sectionsFromAPI.length > 0;
@@ -111,6 +109,12 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                     showFooter: settings.homepage.showFooter ?? settings.showFooter ?? prev.showFooter,
                     footerText: settings.homepage.footerText ?? settings.footerText ?? prev.footerText,
                     footerSections: hasAPISections ? sectionsFromAPI : (prev.footerSections || []),
+                    // discoveryChipSchema sets `_id: false` and identifies chips by `id`, so chips
+                    // saved before that was honoured come back with no identifier at all - and an
+                    // undefined-vs-undefined comparison made a single delete match every chip.
+                    // Backfill a stable id on load so each chip is individually addressable.
+                    discoveryChips: (settings.homepage.discoveryChips || prev.discoveryChips || [])
+                        .map((chip, idx) => ({ ...chip, id: chip.id || `chip-${idx}-${chip.slug || 'unnamed'}` })),
                     socialLinks: hasSocialLinks ? socialLinksFromAPI : (prev.socialLinks || [
                         { platform: 'Instagram', url: '', icon: 'Instagram' },
                         { platform: 'Facebook', url: '', icon: 'Facebook' },
@@ -118,7 +122,6 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                         { platform: 'Youtube', url: '', icon: 'Youtube' }
                     ])
                 };
-                console.log("📋 LocalSettings after update:", updated.socialLinks);
                 return updated;
             });
         }
@@ -174,10 +177,12 @@ export default function HomepageSettingsManager({ settings, onSave }) {
 
         const chips = [...(localSettings.discoveryChips || [])];
         if (editingChip) {
-            const index = chips.findIndex(c => c._id === editingChip._id || (c.slug === editingChip.slug && !c._id));
-            chips[index] = { ...chipForm, _id: editingChip._id || Date.now().toString() };
+            const index = chips.findIndex(c => c.id === editingChip.id);
+            if (index !== -1) {
+                chips[index] = { ...chipForm, id: editingChip.id };
+            }
         } else {
-            chips.push({ ...chipForm, _id: Date.now().toString() });
+            chips.push({ ...chipForm, id: Date.now().toString() });
         }
 
         setLocalSettings(prev => ({ ...prev, discoveryChips: chips }));
@@ -185,9 +190,10 @@ export default function HomepageSettingsManager({ settings, onSave }) {
     };
 
     const removeChip = (id) => {
+        if (!id) return;
         setLocalSettings(prev => ({
             ...prev,
-            discoveryChips: prev.discoveryChips.filter(c => c._id !== id)
+            discoveryChips: (prev.discoveryChips || []).filter(c => c.id !== id)
         }));
     };
 
@@ -603,8 +609,8 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                                 {(localSettings.discoveryChips || []).map(chip => {
                                     const IconComp = ICON_MAP[chip.icon] || ShoppingCart;
                                     return (
-                                        <div 
-                                            key={chip._id} 
+                                        <div
+                                            key={chip.id}
                                             className="group flex items-center justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-2xl hover:bg-white hover:shadow-lg hover:border-slate-200 transition-all"
                                         >
                                             <div className="flex items-center gap-3">
@@ -624,7 +630,7 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                                                     <Edit2 className="w-3.5 h-3.5" />
                                                 </button>
                                                 <button 
-                                                    onClick={() => removeChip(chip._id)}
+                                                    onClick={() => removeChip(chip.id)}
                                                     className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />

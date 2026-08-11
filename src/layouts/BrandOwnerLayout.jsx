@@ -32,7 +32,8 @@ export default function BrandOwnerLayout() {
                     const subRes = await fetch(`${API_BASE_URL}/subscriptions/business/${businessId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    const sub = await subRes.json();
+                    const subData = await subRes.json();
+                    const sub = subData?.subscription;
                     if (subRes.ok && sub) {
                         const daysLeft = Math.ceil((new Date(sub.endDate) - new Date()) / (1000 * 60 * 60 * 24));
                         if (daysLeft > 0 && daysLeft <= 7) {

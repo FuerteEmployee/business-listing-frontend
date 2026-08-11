@@ -79,7 +79,6 @@ export const findNearestCity = (latitude, longitude, cities) => {
         return R * c;
     };
 
-    // City coordinates (approximate)
     const cityCoordinates = {
         'Mumbai': { lat: 19.0760, lon: 72.8777 },
         'Delhi': { lat: 28.7041, lon: 77.1025 },
@@ -91,14 +90,29 @@ export const findNearestCity = (latitude, longitude, cities) => {
         'Ahmedabad': { lat: 23.0225, lon: 72.5714 },
         'Goa': { lat: 15.2993, lon: 73.8243 },
         'Jaipur': { lat: 26.9124, lon: 75.7873 },
+        'Rajkot': { lat: 22.3039, lon: 70.8022 },
+        'Surat': { lat: 21.1702, lon: 72.8311 },
+        'Vadodara': { lat: 22.3072, lon: 73.1812 }
     };
 
     let nearestCity = null;
     let minDistance = Infinity;
 
     cities.forEach((city) => {
-        const coords = cityCoordinates[city.name];
-        if (coords) {
+        let coords = null;
+        
+        // Prefer DB coordinates if available
+        if (city.latitude && city.longitude) {
+            coords = { lat: parseFloat(city.latitude), lon: parseFloat(city.longitude) };
+        } else if (city.location?.coordinates) {
+            // GeoJSON format [longitude, latitude]
+            coords = { lat: city.location.coordinates[1], lon: city.location.coordinates[0] };
+        } else {
+            // Fallback to hardcoded dictionary
+            coords = cityCoordinates[city.name];
+        }
+
+        if (coords && !isNaN(coords.lat) && !isNaN(coords.lon)) {
             const distance = calculateDistance(latitude, longitude, coords.lat, coords.lon);
             if (distance < minDistance) {
                 minDistance = distance;

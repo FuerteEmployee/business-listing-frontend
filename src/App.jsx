@@ -57,6 +57,7 @@ import FraudDashboard from "./pages/admin/FraudDashboard";
 import AuditLogs from "./pages/admin/AuditLogs";
 import BroadcastManager from "./pages/admin/BroadcastManager";
 import OSMDiscovery from "./pages/admin/OSMDiscovery";
+import PhotoModeration from "./pages/admin/PhotoModeration";
 
 import SubscriptionsAdmin from "./pages/admin/SubscriptionsAdmin";
 import CreateListing from "./pages/admin/CreateListing";
@@ -197,6 +198,7 @@ export default function App() {
               <Route path="listings" element={<Listings />} />
               <Route path="listings/create" element={<CreateListing />} />
               <Route path="reviews" element={<ReviewModeration />} />
+              <Route path="photos" element={<PhotoModeration />} />
               <Route path="roles" element={<RoleManager />} />
               <Route path="fraud" element={<FraudDashboard />} />
               <Route path="audit-logs" element={<AuditLogs />} />

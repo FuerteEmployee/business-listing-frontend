@@ -41,11 +41,16 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
 
     const handleSearch = (overrideQuery) => {
         const queryToUse = typeof overrideQuery === 'string' ? overrideQuery : searchQuery;
+        const params = new URLSearchParams();
         if (queryToUse.trim()) {
-            navigate(`/search?q=${encodeURIComponent(queryToUse)}&city=${activeCityId}`);
-            setSearchQuery('');
-            setShowSuggestions(false);
+            params.set('q', queryToUse.trim());
         }
+        if (activeCityId) {
+            params.set('city', activeCityId);
+        }
+        navigate(`/search?${params.toString()}`);
+        setSearchQuery('');
+        setShowSuggestions(false);
     };
 
     const handleQuickSearch = (category) => {
@@ -120,7 +125,7 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
                 setSuggestions([]);
                 setShowSuggestions(false);
             }
-        }, 300);
+        }, 500); // 500ms pause
         return () => clearTimeout(timer);
     }, [searchQuery]);
 

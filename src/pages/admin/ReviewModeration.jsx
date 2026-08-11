@@ -150,8 +150,17 @@ export default function ReviewModeration() {
                         {row.userId?.image ? <img src={row.userId.image} alt="" className="w-full h-full object-cover rounded-xl" /> : <User className="w-5 h-5" />}
                     </div>
                     <div>
-                        <div className="font-bold text-slate-900 leading-tight">{row.userId?.name || "Unknown User"}</div>
-                        <div className="text-[11px] text-slate-500 font-medium">{row.userId?.email || "N/A"}</div>
+                        {row.userId ? (
+                            <>
+                                <div className="font-bold text-slate-900 leading-tight">{row.userId.name}</div>
+                                <div className="text-[11px] text-slate-500 font-medium">{row.userId.email || "N/A"}</div>
+                            </>
+                        ) : (
+                            <div>
+                                <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md text-xs font-bold">Deleted User</span>
+                                <div className="text-[11px] text-slate-400 font-medium mt-0.5">ID: {row.userId?._id || 'N/A'}</div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )
@@ -160,7 +169,11 @@ export default function ReviewModeration() {
             label: "Business",
             key: "business",
             render: (value, row) => (
-                <div className="font-semibold text-slate-700">{row.businessId?.name || "Deleted Business"}</div>
+                row.businessId ? (
+                    <div className="font-semibold text-slate-700">{row.businessId.name}</div>
+                ) : (
+                    <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold">Deleted Business</span>
+                )
             )
         },
         {

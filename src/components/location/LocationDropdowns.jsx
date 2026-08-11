@@ -53,7 +53,6 @@ export function StateDropdown({ countryId, value, onChange, label = "State", req
             try {
                 setLoading(true);
                 const url = getApiUrl(`locations/states?country_id=${countryId}`);
-                console.log('Fetching states from:', url);
                 const res = await fetch(url);
                 const data = await res.json();
                 
@@ -104,7 +103,6 @@ export function CityDropdown({ stateId, value, onChange, label = "City", require
             try {
                 setLoading(true);
                 const url = getApiUrl(`locations/cities?state_id=${stateId}`);
-                console.log('Fetching cities from:', url);
                 const res = await fetch(url);
                 const data = await res.json();
                 
@@ -155,7 +153,6 @@ export function AreaDropdown({ cityId, value, onChange, label = "Area", required
             try {
                 setLoading(true);
                 const url = getApiUrl(`locations/areas?city_id=${cityId}`);
-                console.log('Fetching areas from:', url);
                 const res = await fetch(url);
                 const data = await res.json();
                 

@@ -72,7 +72,6 @@ export const ThemeProvider = ({ children }) => {
             const res = await fetch(`${API_BASE_URL}/settings`);
             if (res.ok) {
                 const data = await res.json();
-                console.log("📡 Fetched settings from API:", data);
                 if (data.success && data.data) {
                     const normalized = {
                         ...data.data,
@@ -90,7 +89,6 @@ export const ThemeProvider = ({ children }) => {
                             ...data.data?.homepage
                         }
                     };
-                    console.log("✅ Normalized settings:", normalized);
                     setSettings(normalized);
                     applyThemeColors(data.data.primaryColor, data.data.secondaryColor);
                 }
