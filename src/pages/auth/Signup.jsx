@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_BASE_URL } from '../../config/api';
+import Captcha from '../../components/auth/Captcha';
 
 export default function Signup() {
     const [formData, setFormData] = useState({ name: '', email: '', mobileNumber: '', password: '', confirmPassword: '' });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const captchaRef = useRef(null);
 
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -55,6 +57,11 @@ export default function Signup() {
             return setError('Passwords do not match');
         }
 
+        const { captchaId, answer } = captchaRef.current?.getValue() || {};
+        if (!answer) {
+            return setError('Please enter the captcha text');
+        }
+
         setIsLoading(true);
 
         try {
@@ -65,7 +72,9 @@ export default function Signup() {
                     name: formData.name,
                     email: formData.email,
                     mobileNumber: formData.mobileNumber,
-                    password: formData.password
+                    password: formData.password,
+                    captchaId,
+                    captchaAnswer: answer
                     // Role defaults to 'User' on the backend
                 })
             });
@@ -73,20 +82,17 @@ export default function Signup() {
             const data = await res.json();
 
             if (res.ok && data.success) {
-                // Trigger OTP send
-                await fetch(`${API_BASE_URL}/otp/send`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mobileNumber: formData.mobileNumber })
-                });
-                
                 login(data.user, data.token);
-                navigate('/verify-otp', { state: { mobileNumber: formData.mobileNumber } });
+                navigate('/');
             } else {
                 setError(data.msg || 'Registration failed. Please try again.');
+                // The captcha is single-use - the server already invalidated it on this
+                // attempt (right or wrong), so a fresh one is required regardless.
+                captchaRef.current?.refresh();
             }
-        } catch (err) {
+        } catch {
             setError('Cannot connect to server. Please try again later.');
+            captchaRef.current?.refresh();
         } finally {
             setIsLoading(false);
         }
@@ -185,6 +191,8 @@ export default function Signup() {
                                 />
                             </div>
                         </div>
+
+                        <Captcha ref={captchaRef} />
 
                         <div>
                             <button
