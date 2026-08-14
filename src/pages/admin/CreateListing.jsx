@@ -28,7 +28,7 @@ export default function CreateListing() {
     const [allUsers, setAllUsers] = useState([]);
     
     const defaultFormState = {
-        name: "", category: "", description: "",
+        name: "", category: "", category_id: "", description: "",
         country_id: "", state_id: "", city_id: "", area_id: "",
         address: "", latitude: null, longitude: null,
         phone: "", email: "", website: "", logo: "",
@@ -93,7 +93,7 @@ export default function CreateListing() {
     const validateForm = () => {
         const newErrors = {};
         if (!formData.name.trim()) newErrors.name = "Business name is required";
-        if (!formData.category) newErrors.category = "Category is required";
+        if (!formData.category_id) newErrors.category = "Category is required";
         if (!formData.email.trim()) newErrors.email = "Contact email is required";
         if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
         if (!formData.address.trim()) newErrors.address = "Street address is required";
@@ -120,12 +120,20 @@ export default function CreateListing() {
             if (imageFile) {
                 const uploadData = new FormData();
                 uploadData.append('image', imageFile);
-                
+
+                // Simulate progress
+                const progressInterval = setInterval(() => {
+                    setUploadProgress(prev => prev < 90 ? prev + 5 : prev);
+                }, 200);
+
                 const uploadRes = await fetchWithAuth(`${API_BASE_URL}/upload`, {
                     method: 'POST',
                     body: uploadData
                 });
-                
+
+                clearInterval(progressInterval);
+                setUploadProgress(100);
+
                 const uploadResult = await uploadRes.json();
                 if (!uploadRes.ok) {
                     setError(uploadResult.msg || "Image upload failed.");
@@ -166,6 +174,7 @@ export default function CreateListing() {
             setError("Network error. Please try again.");
         } finally {
             setIsSaving(false);
+            setUploadProgress(0);
         }
     };
 
@@ -231,10 +240,17 @@ export default function CreateListing() {
                             />
                             <FormSelect
                                 label="Primary Category"
-                                name="category"
-                                value={formData.category}
-                                onChange={handleInputChange}
-                                options={categories.map(cat => ({ value: cat.name, label: cat.name }))}
+                                name="category_id"
+                                value={formData.category_id}
+                                onChange={(e) => {
+                                    const selected = categories.find(cat => cat._id === e.target.value);
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        category_id: e.target.value,
+                                        category: selected?.name || ""
+                                    }));
+                                }}
+                                options={categories.map(cat => ({ value: cat._id, label: cat.name }))}
                                 error={errors.category}
                             />
                         </div>
