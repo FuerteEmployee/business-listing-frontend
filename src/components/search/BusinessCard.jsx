@@ -1,10 +1,15 @@
-import { Star, MapPin, Phone, MessageSquare, ChevronLeft, ChevronRight, ShieldCheck, Wifi, Search, Bookmark, Tag } from 'lucide-react';
+import { Star, MapPin, Phone, MessageSquare, ChevronLeft, ChevronRight, ShieldCheck, Wifi, Search, Bookmark, Tag, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../ui/badge';
 
 export default function BusinessCard({ business, onEnquiryClick }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [showPhoneModal, setShowPhoneModal] = useState(false);
+    const phoneNumbers = (business.phone || '09972219375')
+        .split(/[\/,]/)
+        .map(num => num.trim())
+        .filter(Boolean);
     const fallbackImage = business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
     const images = (business.images && business.images.length > 0)
         ? business.images.map(img => typeof img === 'object' ? img.url : img)
@@ -131,13 +136,23 @@ export default function BusinessCard({ business, onEnquiryClick }) {
 
                 {/* Primary Action Buttons - 3 Columns on larger desktop, stacking nicely on mobile */}
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <a 
-                        href={`tel:${business.phone || '09972219375'}`}
-                        className="flex items-center justify-center gap-2 bg-green-600 text-white px-3 py-2.5 rounded-lg text-sm font-bold hover:bg-green-700 transition-colors whitespace-nowrap"
-                    >
-                        <Phone className="w-4 h-4" />
-                        {business.phone || '09972219375'}
-                    </a>
+                    {phoneNumbers.length > 1 ? (
+                        <button 
+                            onClick={() => setShowPhoneModal(true)}
+                            className="flex items-center justify-center gap-2 bg-green-600 text-white px-3 py-2.5 rounded-lg text-sm font-bold hover:bg-green-700 transition-colors whitespace-nowrap cursor-pointer"
+                        >
+                            <Phone className="w-4 h-4" />
+                            Call
+                        </button>
+                    ) : (
+                        <a 
+                            href={`tel:${phoneNumbers[0] || '09972219375'}`}
+                            className="flex items-center justify-center gap-2 bg-green-600 text-white px-3 py-2.5 rounded-lg text-sm font-bold hover:bg-green-700 transition-colors whitespace-nowrap"
+                        >
+                            <Phone className="w-4 h-4" />
+                            Call
+                        </a>
+                    )}
                     <a 
                         href={`https://wa.me/${(business.whatsapp || business.phone || '9876512340').replace(/[^0-9]/g, '')}`}
                         target="_blank"
@@ -155,6 +170,42 @@ export default function BusinessCard({ business, onEnquiryClick }) {
                     </button>
                 </div>
             </div>
+
+            {/* Phone Selection Modal */}
+            {showPhoneModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-black text-slate-900">Select Phone Number</h3>
+                            <button 
+                                onClick={() => setShowPhoneModal(false)}
+                                className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <p className="text-sm text-slate-500 mb-6 font-medium">Choose a phone number to call {business.name}:</p>
+                        <div className="space-y-3">
+                            {phoneNumbers.map((num, idx) => (
+                                <a
+                                    key={idx}
+                                    href={`tel:${num}`}
+                                    onClick={() => setShowPhoneModal(false)}
+                                    className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-green-600 hover:bg-green-50/50 transition-all font-bold text-slate-700 hover:text-green-700 group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
+                                            <Phone className="w-4 h-4" />
+                                        </div>
+                                        <span>{num}</span>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-green-600 transition-transform group-hover:translate-x-1" />
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

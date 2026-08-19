@@ -55,6 +55,7 @@ export default function BusinessDetail() {
     const [listingReportForm, setListingReportForm] = useState({ reason: 'Spam or Fake profile', description: '' });
     const [isReportingListing, setIsReportingListing] = useState(false);
     const [showFullHours, setShowFullHours] = useState(false);
+    const [showPhoneModal, setShowPhoneModal] = useState(false);
 
     const [questions, setQuestions] = useState([]);
     const [questionsLoading, setQuestionsLoading] = useState(false);
@@ -639,10 +640,19 @@ export default function BusinessDetail() {
         }
     };
 
+    const phoneNumbers = (business?.phone || '')
+        .split(/[\/,]/)
+        .map(num => num.trim())
+        .filter(Boolean);
+
     const handleCall = () => {
         if (business?.phone) {
             logAnalyticsEvent('call', business._id);
-            window.location.href = `tel:${business.phone}`;
+            if (phoneNumbers.length > 1) {
+                setShowPhoneModal(true);
+            } else {
+                window.location.href = `tel:${phoneNumbers[0] || business.phone}`;
+            }
         }
     };
 
@@ -2089,6 +2099,42 @@ export default function BusinessDetail() {
                 onClose={() => setIsEnquiryModalOpen(false)}
                 business={business}
             />
+
+            {/* Phone Selection Modal */}
+            {showPhoneModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-black text-slate-900">Select Phone Number</h3>
+                            <button 
+                                onClick={() => setShowPhoneModal(false)}
+                                className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <p className="text-sm text-slate-500 mb-6 font-medium">Choose a phone number to call {business?.name}:</p>
+                        <div className="space-y-3">
+                            {phoneNumbers.map((num, idx) => (
+                                <a
+                                    key={idx}
+                                    href={`tel:${num}`}
+                                    onClick={() => setShowPhoneModal(false)}
+                                    className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-green-600 hover:bg-green-50/50 transition-all font-bold text-slate-700 hover:text-green-700 group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
+                                            <Phone className="w-4 h-4" />
+                                        </div>
+                                        <span>{num}</span>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-green-600 transition-transform group-hover:translate-x-1" />
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl, fetchWithAuth } from '../../config/api';
-import Header from '../../components/homepage/Header';
-import Footer from '../../components/homepage/Footer';
 import { MessageSquare, Clock, Phone, CheckCircle, CheckCircle2, AlertCircle, ChevronRight, Loader2, Send, MoreVertical, Trash2, XCircle, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -134,18 +132,16 @@ export default function MyEnquiries() {
     const canResolve = (status) => !['Resolved', 'Closed'].includes(status);
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
-            <Header />
-            <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-12">
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">My Enquiries</h1>
-                        <p className="text-slate-500 font-medium">Track your requests and merchant responses</p>
-                    </div>
-                    <Link to="/search" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
-                        Send New Enquiry
-                    </Link>
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center justify-between mb-12">
+                <div>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">My Enquiries</h1>
+                    <p className="text-slate-500 text-sm font-medium mt-1">Track your requests and merchant responses</p>
                 </div>
+                <Link to="/search" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
+                    Send New Enquiry
+                </Link>
+            </div>
 
                 {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800 text-sm flex items-start gap-3 mb-6">
@@ -333,8 +329,6 @@ export default function MyEnquiries() {
                         </Link>
                     </div>
                 )}
-            </main>
-            <Footer />
         </div>
     );
 }
