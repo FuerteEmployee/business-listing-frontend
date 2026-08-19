@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import {
     LayoutDashboard, FolderTree, Building2, LogOut, MapPin,
     Package, Wrench, Megaphone, BarChart3, CreditCard, LifeBuoy, Star,
-    AlertTriangle, X, Bell, UserCircle
+    AlertTriangle, X, Bell, UserCircle, Settings, History
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
@@ -68,7 +68,8 @@ export default function BrandOwnerLayout() {
         { label: "Plans & Billing", path: "/brand/billing", icon: CreditCard },
         { label: "Notification Center", path: "/brand/notifications/settings", icon: Bell },
         { label: "Help & Support", path: "/brand/support", icon: LifeBuoy },
-        { label: "My Profile", path: "/profile", icon: UserCircle },
+        { label: "Audit Logs", path: "/brand/audit-logs", icon: History },
+        { label: "Settings", path: "/brand/settings", icon: Settings },
     ].filter(item => {
         // Check if feature is hidden by Master Control
         const featureKey = item.label.toLowerCase().replace(/\s+/g, '').replace(/&/g, '');
@@ -129,7 +130,7 @@ export default function BrandOwnerLayout() {
                     <div className="flex items-center gap-4 ml-auto">
                         <NotificationBell />
                         <div className="h-8 w-[1px] bg-slate-200 mx-2 hidden md:block"></div>
-                        <NavLink to="/profile" className="flex items-center gap-3 group">
+                        <NavLink to="/brand/settings" className="flex items-center gap-3 group">
                             <div className="flex flex-col items-end hidden md:flex">
                                 <span className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{user?.name || 'Brand Owner'}</span>
                                 <span className="text-xs text-slate-500">{user?.email}</span>

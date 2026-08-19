@@ -5,33 +5,6 @@ import Logo from '../ui/Logo';
 
 export default function Footer() {
     const { settings } = useTheme();
-    const currentYear = new Date().getFullYear();
-    
-    console.log("🔗 Footer received settings:", settings);
-    console.log("🔗 Social links from API:", settings?.homepage?.socialLinks);
-    
-    // Fallback to localStorage if API doesn't have social links
-    let socialLinks = settings?.homepage?.socialLinks;
-    if (!socialLinks || socialLinks.length === 0) {
-        const backup = localStorage.getItem('homepage_settings_backup');
-        if (backup) {
-            try {
-                const parsed = JSON.parse(backup);
-                socialLinks = parsed.socialLinks;
-                console.log("🔗 Using social links from localStorage:", socialLinks);
-            } catch(e) {
-                console.error("Error parsing localStorage backup:", e);
-            }
-        }
-    }
-
-    const showFooter = settings?.homepage?.showFooter ?? settings?.showFooter ?? true;
-    if (!showFooter) {
-        return null;
-    }
-
-    const footerSections = settings?.homepage?.footerSections || [];
-    const brandDescription = settings?.homepage?.brandDescription || 'Your trusted business directory platform for discovering and listing services.';
 
     return (
         <footer className="bg-slate-900 text-slate-300">
@@ -49,52 +22,63 @@ export default function Footer() {
                                     fallbackClassName="font-bold text-lg text-white"
                                 />
                             </Link>
-                            <p className="text-sm">
-                                {brandDescription}
+                            <p className="text-sm leading-relaxed">
+                                Your trusted business directory platform for discovering and listing services.
                             </p>
                         </div>
 
-                        {/* Dynamic Footer Sections */}
-                        {footerSections.map(section => (
-                            <div key={section.id}>
-                                <h4 className="font-semibold text-white mb-4">{section.title}</h4>
-                                <ul className="space-y-2 text-sm">
-                                    {section.links && section.links.map((link, idx) => (
-                                        <li key={idx}>
-                                            {link.type === 'internal' ? (
-                                                <Link to={link.url} className="hover:text-orange-400 transition-colors">
-                                                    {link.label}
-                                                </Link>
-                                            ) : (
-                                                <a href={link.url} className="hover:text-orange-400 transition-colors">
-                                                    {link.label}
-                                                </a>
-                                            )}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
+                        {/* Quick Links */}
+                        <div>
+                            <h4 className="font-semibold text-white mb-4">Quick Links</h4>
+                            <ul className="space-y-2 text-sm text-slate-400">
+                                <li>Home</li>
+                                <li>List Buisness</li>
+                                <li>Search Businesses</li>
+                                <li>Advertise With Us</li>
+                            </ul>
+                        </div>
 
-                        {/* Contact Section (Always Show) */}
+                        {/* Popular */}
+                        <div>
+                            <h4 className="font-semibold text-white mb-4">Popular</h4>
+                            <ul className="space-y-2 text-sm text-slate-400">
+                                <li>Industrial Products</li>
+                                <li>Machine Tools</li>
+                                <li>Automation & Robotics</li>
+                                <li>Construction Machinery</li>
+                            </ul>
+                        </div>
+
+                        {/* Company */}
+                        <div>
+                            <h4 className="font-semibold text-white mb-4">Company</h4>
+                            <ul className="space-y-2 text-sm text-slate-400">
+                                <li>About Us</li>
+                                <li>Contact Us</li>
+                                <li>Terms of Service</li>
+                                <li>Privacy Policy</li>
+                            </ul>
+                        </div>
+
+                        {/* Contact */}
                         <div>
                             <h4 className="font-semibold text-white mb-4">Contact</h4>
                             <ul className="space-y-3 text-sm">
                                 <li className="flex items-start gap-2">
                                     <Mail className="w-4 h-4 mt-1 flex-shrink-0" />
-                                    <a href={`mailto:${settings?.contactEmail || 'support@fuerte.com'}`} className="hover:text-orange-400 transition-colors">
-                                        {settings?.contactEmail || 'support@fuerte.com'}
+                                    <a href="mailto:info@engitechexpo.com" className="hover:text-orange-400 transition-colors">
+                                        info@engitechexpo.com
                                     </a>
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <Phone className="w-4 h-4 mt-1 flex-shrink-0" />
-                                    <a href={`tel:${settings?.contactPhone || '+91-1234567890'}`} className="hover:text-orange-400 transition-colors">
-                                        {settings?.contactPhone || '+91-1234567890'}
+                                    <a href="tel:+919601945255" className="hover:text-orange-400 transition-colors">
+                                        +91 96019 45255
                                     </a>
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
-                                    <span>{settings?.addressLocation || 'Delhi, India'}</span>
+                                    <span>Delhi, India</span>
                                 </li>
                             </ul>
                         </div>
@@ -108,30 +92,47 @@ export default function Footer() {
                     <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                         {/* Copyright */}
                         <p className="text-sm text-slate-400">
-                            {settings?.homepage?.footerText
-                                ? settings.homepage.footerText.replace(/\d{4}/, currentYear)
-                                : settings?.footerText
-                                ? settings.footerText.replace(/\d{4}/, currentYear)
-                                : `© ${currentYear} ${settings?.siteName || 'Fuerte Developers'}. All rights reserved. | Built with ❤️ for businesses and customers`}
+                            Copyright © 2026 All rights reserved by Engitech | Designed & Developed by Fuerte Developers |
                         </p>
 
                         {/* Social Icons */}
                         <div className="flex items-center gap-4">
-                            {(socialLinks || []).map((social, index) => (
-                                <a
-                                    key={index}
-                                    href={social.url || "#"}
-                                    target={social.url ? "_blank" : "_self"}
-                                    rel={social.url ? "noopener noreferrer" : ""}
-                                    className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors"
-                                    title={social.platform}
-                                >
-                                    {social.icon === 'Facebook' && <Facebook className="w-4 h-4" />}
-                                    {social.icon === 'Instagram' && <Instagram className="w-4 h-4" />}
-                                    {social.icon === 'Linkedin' && <Linkedin className="w-4 h-4" />}
-                                    {social.icon === 'Youtube' && <Youtube className="w-4 h-4" />}
-                                </a>
-                            ))}
+                            <a
+                                href="https://instagram.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors"
+                                title="Instagram"
+                            >
+                                <Instagram className="w-4 h-4" />
+                            </a>
+                            <a
+                                href="https://facebook.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors"
+                                title="Facebook"
+                            >
+                                <Facebook className="w-4 h-4" />
+                            </a>
+                            <a
+                                href="https://linkedin.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors"
+                                title="Linkedin"
+                            >
+                                <Linkedin className="w-4 h-4" />
+                            </a>
+                            <a
+                                href="https://youtube.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors"
+                                title="Youtube"
+                            >
+                                <Youtube className="w-4 h-4" />
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -139,3 +140,4 @@ export default function Footer() {
         </footer>
     );
 }
+

@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import Logo from '../ui/Logo';
 import SearchInputGroup from '../ui/SearchInputGroup';
+import { getApiUrl, fetchWithAuth } from '../../config/api';
 
 export default function Header({ selectedCity, cities = [], onCityChange }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -20,6 +21,12 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileRef = useRef(null);
 
+    // Favorites Dropdown state
+    const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
+    const [favoriteItems, setFavoriteItems] = useState([]);
+    const favoritesRef = useRef(null);
+    const favoritesGuestRef = useRef(null);
+
     // Language Dropdown state
     const [isLangOpen, setIsLangOpen] = useState(false);
     const [selectedLang, setSelectedLang] = useState('EN');
@@ -34,6 +41,64 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
     const navigate = useNavigate();
     const { settings } = useTheme();
     const { isAuthenticated, user, logout } = useAuth();
+
+    const loadFavorites = async () => {
+        if (isAuthenticated) {
+            try {
+                const res = await fetchWithAuth(getApiUrl('me/saved'));
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = data.data || [];
+                    setFavoriteItems(list.map(item => ({
+                        _id: item._id,
+                        name: item.name,
+                        slug: item.slug,
+                        image: item.image || item.photos?.[0],
+                        category: typeof item.category === 'object' ? item.category.name : item.category,
+                        city: item.city_id?.name || item.city?.name || 'Location'
+                    })));
+                }
+            } catch (err) {
+                console.error('Error loading API favorites in header:', err);
+            }
+        } else {
+            const stored = localStorage.getItem('bookmarks_data');
+            if (stored) {
+                try {
+                    setFavoriteItems(JSON.parse(stored) || []);
+                } catch (e) {
+                    setFavoriteItems([]);
+                }
+            } else {
+                setFavoriteItems([]);
+            }
+        }
+    };
+
+    useEffect(() => {
+        loadFavorites();
+
+        const handleBookmarksUpdated = () => {
+            loadFavorites();
+        };
+
+        window.addEventListener('bookmarksUpdated', handleBookmarksUpdated);
+
+        const handleClickOutside = (event) => {
+            if (
+                (favoritesRef.current && !favoritesRef.current.contains(event.target)) &&
+                (favoritesGuestRef.current && !favoritesGuestRef.current.contains(event.target))
+            ) {
+                setIsFavoritesOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            window.removeEventListener('bookmarksUpdated', handleBookmarksUpdated);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isAuthenticated]);
 
     const [languageReady, setLanguageReady] = useState(false);
     const pendingLanguageRef = useRef(null);
@@ -190,7 +255,7 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
 
                     {scrolled && (
                         <div className="hidden lg:block flex-1 max-w-3xl mx-6 translate-y-0 opacity-100 transition-all duration-300">
-                            <SearchInputGroup selectedCity={selectedCity} cities={cities} variant="header" />
+                            <SearchInputGroup selectedCity={selectedCity} cities={cities} variant="header" onCityChange={onCityChange} />
                         </div>
                     )}
 
@@ -279,6 +344,78 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                     )}
                                 </div>
 
+                                {/* Favorites Dropdown (Authenticated) */}
+                                <div className="relative animate-fade-in" ref={favoritesRef}>
+                                    <button
+                                        onClick={() => setIsFavoritesOpen(prev => !prev)}
+                                        className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors relative ${isFavoritesOpen ? 'bg-slate-100 text-rose-600' : 'text-slate-600 hover:bg-slate-50 hover:text-rose-500'}`}
+                                        title="My Favorites"
+                                    >
+                                        <Heart className={`w-5 h-5 ${favoriteItems.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
+                                        {favoriteItems.length > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                                                {favoriteItems.length}
+                                            </span>
+                                        )}
+                                    </button>
+
+                                    {isFavoritesOpen && (
+                                        <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                                                <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
+                                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Favorites
+                                                </h3>
+                                                <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase">
+                                                    {favoriteItems.length} Liked
+                                                </span>
+                                            </div>
+                                            <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
+                                                {favoriteItems.length > 0 ? (
+                                                    favoriteItems.map((item) => (
+                                                        <Link 
+                                                            key={item._id}
+                                                            to={`/business/${item.slug}`}
+                                                            onClick={() => setIsFavoritesOpen(false)}
+                                                            className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
+                                                        >
+                                                            <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                                                                {item.image ? (
+                                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
+                                                                        {item.name?.charAt(0)}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className="font-bold text-xs text-slate-900 group-hover:text-rose-600 transition-colors truncate">
+                                                                    {item.name}
+                                                                </h4>
+                                                                <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                                                    {item.category || 'Business'} • {item.city || 'Location'}
+                                                                </p>
+                                                            </div>
+                                                        </Link>
+                                                    ))
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                                                        <Heart className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
+                                                        <p className="text-xs text-slate-500 font-bold">No liked companies yet</p>
+                                                        <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Like companies to see them here for quick access.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <Link 
+                                                to="/profile/saved" 
+                                                onClick={() => setIsFavoritesOpen(false)} 
+                                                className="block mt-3 pt-3 text-center text-xs font-black text-rose-600 border-t border-slate-100 hover:text-rose-700 uppercase tracking-wider"
+                                            >
+                                                View All Saved Items
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* User Profile */}
                                 <div className="relative flex items-center gap-2" ref={profileRef}>
                                     <button
@@ -314,8 +451,73 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                     </div>
                                 </div>
                             </div>
-                        ) : (
+                         ) : (
                             <div className="flex items-center gap-3">
+                                {/* Favorites Dropdown (Guest) */}
+                                <div className="relative animate-fade-in" ref={favoritesGuestRef}>
+                                    <button
+                                        onClick={() => setIsFavoritesOpen(prev => !prev)}
+                                        className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors relative ${isFavoritesOpen ? 'bg-slate-100 text-rose-600' : 'text-slate-600 hover:bg-slate-50 hover:text-rose-500'}`}
+                                        title="My Favorites"
+                                    >
+                                        <Heart className={`w-5 h-5 ${favoriteItems.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
+                                        {favoriteItems.length > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                                                {favoriteItems.length}
+                                            </span>
+                                        )}
+                                    </button>
+
+                                    {isFavoritesOpen && (
+                                        <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                                                <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
+                                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Favorites
+                                                </h3>
+                                                <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase">
+                                                    {favoriteItems.length} Liked
+                                                </span>
+                                            </div>
+                                            <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
+                                                {favoriteItems.length > 0 ? (
+                                                    favoriteItems.map((item) => (
+                                                        <Link 
+                                                            key={item._id}
+                                                            to={`/business/${item.slug}`}
+                                                            onClick={() => setIsFavoritesOpen(false)}
+                                                            className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
+                                                        >
+                                                            <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                                                                {item.image ? (
+                                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
+                                                                        {item.name?.charAt(0)}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className="font-bold text-xs text-slate-900 group-hover:text-rose-600 transition-colors truncate">
+                                                                    {item.name}
+                                                                </h4>
+                                                                <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                                                    {item.category || 'Business'} • {item.city || 'Location'}
+                                                                </p>
+                                                            </div>
+                                                        </Link>
+                                                    ))
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                                                        <Heart className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
+                                                        <p className="text-xs text-slate-500 font-bold">No liked companies yet</p>
+                                                        <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Like companies to see them here for quick access.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <Link to="/login" className="text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors">
                                     Login
                                 </Link>

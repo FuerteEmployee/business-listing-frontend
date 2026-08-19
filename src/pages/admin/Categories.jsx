@@ -97,7 +97,11 @@ export default function Categories() {
                         // storing the raw response crashed brands.map() below with
                         // "brands.map is not a function".
                         const body = await res.json();
-                        setBrands(Array.isArray(body) ? body : body.data || []);
+                        const list = Array.isArray(body) ? body : body.data || [];
+                        setBrands(list);
+                        if (list.length > 0) {
+                            setFormData(prev => ({ ...prev, brandId: prev.brandId || list[0]._id }));
+                        }
                     }
                 };
                 fetchBrands();
@@ -156,7 +160,11 @@ export default function Categories() {
     const openAddModal = () => {
         setIsEditMode(false);
         setEditingId(null);
-        setFormData({ ...defaultFormState, parent: currentParent?._id || "" });
+        setFormData({ 
+            ...defaultFormState, 
+            parent: currentParent?._id || "",
+            brandId: brands[0]?._id || "" 
+        });
         setFormError('');
         setErrors({});
         setImageFile(null);
@@ -533,20 +541,7 @@ export default function Categories() {
                             options={["Active", "Inactive"]}
                         />
 
-                        {isBrandOwner && (
-                            <FormSelect
-                                label="Link to Brand"
-                                name="brandId"
-                                value={formData.brandId}
-                                onChange={handleInputChange}
-                                options={[
-                                    { label: "-- Select Brand --", value: "" },
-                                    ...brands.map(b => ({ label: b.name, value: b._id }))
-                                ]}
-                                required
-                                error={errors.brandId}
-                            />
-                        )}
+
 
                         <FormSelect
                             label="Parent Category"

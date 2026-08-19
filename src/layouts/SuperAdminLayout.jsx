@@ -4,7 +4,7 @@ import {
     LayoutDashboard, FolderTree, Users as UsersIcon, Settings, LogOut, MapPin,
     Package, Wrench, Star, Megaphone,
     Shield, History, AlertOctagon, List,
-    MessageSquare, UserCheck, FileCheck, Image as ImageIcon
+    MessageSquare, UserCheck, FileCheck, Image as ImageIcon, HelpCircle
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
@@ -59,6 +59,7 @@ export default function SuperAdminLayout() {
         { label: "Products",      path: "/admin/products",     icon: Package,            show: can('listingManagement') },
         { label: "Services",      path: "/admin/services",     icon: Wrench,             show: can('listingManagement') },
         { label: "Reviews",       path: "/admin/reviews",      icon: Star,               show: can('reviewModeration') },
+        { label: "Q&A",           path: "/admin/qa",           icon: HelpCircle,         show: can('reviewModeration') },
         { label: "Photos",        path: "/admin/photos",       icon: ImageIcon,          show: can('listingManagement') },
         { label: "Claims",        path: "/admin/claims",       icon: FileCheck,          show: can('listingManagement') },
         { label: "Leads",         path: "/admin/leads",        icon: Megaphone,          show: can('userManagement') },

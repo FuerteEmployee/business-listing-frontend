@@ -57,6 +57,16 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        const currentToken = localStorage.getItem('token');
+        if (currentToken) {
+            // Log logout event in backend in background
+            fetch(`${API_BASE_URL}/auth/logout`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${currentToken}`
+                }
+            }).catch(err => console.error("Logout log fail", err));
+        }
         setToken(null);
         setUser(null);
         setIsAuthenticated(false);

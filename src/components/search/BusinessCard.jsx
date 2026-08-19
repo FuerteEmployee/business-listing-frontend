@@ -3,9 +3,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../ui/badge';
 
-export default function BusinessCard({ business }) {
+export default function BusinessCard({ business, onEnquiryClick }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const images = business.images || [business.image];
+    const fallbackImage = business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
+    const images = (business.images && business.images.length > 0)
+        ? business.images.map(img => typeof img === 'object' ? img.url : img)
+        : [business.image || fallbackImage];
 
     return (
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow group flex flex-col md:flex-row min-h-fit md:min-h-[260px]">
@@ -83,10 +86,21 @@ export default function BusinessCard({ business }) {
                             onClick={(e) => {
                                 e.preventDefault();
                                 const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+                                const bookmarksData = JSON.parse(localStorage.getItem('bookmarks_data') || '[]');
                                 if (bookmarks.includes(business._id)) {
                                     localStorage.setItem('bookmarks', JSON.stringify(bookmarks.filter(id => id !== business._id)));
+                                    localStorage.setItem('bookmarks_data', JSON.stringify(bookmarksData.filter(item => item._id !== business._id)));
                                 } else {
                                     localStorage.setItem('bookmarks', JSON.stringify([...bookmarks, business._id]));
+                                    localStorage.setItem('bookmarks_data', JSON.stringify([...bookmarksData, {
+                                        _id: business._id,
+                                        name: business.name,
+                                        slug: business.slug,
+                                        image: business.image || business.images?.[0],
+                                        category: typeof business.category === 'object' ? business.category.name : business.category,
+                                        rating: business.rating,
+                                        city: business.city_id?.name || business.city?.name || 'Location'
+                                    }]));
                                 }
                                 window.dispatchEvent(new Event('bookmarksUpdated'));
                             }}
@@ -117,15 +131,26 @@ export default function BusinessCard({ business }) {
 
                 {/* Primary Action Buttons - 3 Columns on larger desktop, stacking nicely on mobile */}
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <button className="flex items-center justify-center gap-2 bg-green-600 text-white px-3 py-2.5 rounded-lg text-sm font-bold hover:bg-green-700 transition-colors whitespace-nowrap">
+                    <a 
+                        href={`tel:${business.phone || '09972219375'}`}
+                        className="flex items-center justify-center gap-2 bg-green-600 text-white px-3 py-2.5 rounded-lg text-sm font-bold hover:bg-green-700 transition-colors whitespace-nowrap"
+                    >
                         <Phone className="w-4 h-4" />
                         {business.phone || '09972219375'}
-                    </button>
-                    <button className="flex items-center justify-center gap-2 border border-slate-200 text-slate-700 px-3 py-2.5 rounded-lg text-sm font-semibold hover:border-slate-300 transition-colors whitespace-nowrap">
+                    </a>
+                    <a 
+                        href={`https://wa.me/${(business.whatsapp || business.phone || '9876512340').replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 border border-slate-200 text-slate-700 px-3 py-2.5 rounded-lg text-sm font-semibold hover:border-slate-300 transition-colors whitespace-nowrap"
+                    >
                         <MessageSquare className="w-4 h-4 text-green-600" />
                         WhatsApp
-                    </button>
-                    <button className="sm:col-span-2 lg:col-span-1 flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors whitespace-nowrap">
+                    </a>
+                    <button 
+                        onClick={onEnquiryClick}
+                        className="sm:col-span-2 lg:col-span-1 flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors whitespace-nowrap"
+                    >
                         Get Best Deal
                     </button>
                 </div>

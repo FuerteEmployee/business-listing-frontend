@@ -11,7 +11,8 @@ export default function FormInput({
     placeholder = "",
     className = "",
     error = "",
-    autoComplete
+    autoComplete,
+    ...props
 }) {
     return (
         <div className={`w-full ${className}`}>
@@ -31,6 +32,7 @@ export default function FormInput({
                     required={required}
                     placeholder={placeholder}
                     autoComplete={autoComplete}
+                    {...props}
                     className={`
                         w-full px-4 py-2.5 bg-white border rounded-xl text-sm 
                         transition-all duration-200 outline-none
@@ -45,3 +47,4 @@ export default function FormInput({
         </div>
     );
 }
+

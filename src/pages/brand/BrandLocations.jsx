@@ -35,11 +35,7 @@ export default function BrandLocations() {
                 fetchWithAuth(`${getApiUrl('companies')}?owned=true`)
             ]);
             setLocations(await locRes.json());
-            // GET /companies returns { data, pagination }, not a bare array - storing the
-            // raw response crashed brands.map() in the "Add Store" modal with
-            // "brands.map is not a function" (same class of bug as Categories.jsx).
-            const brandsBody = await brandRes.json();
-            setBrands(Array.isArray(brandsBody) ? brandsBody : brandsBody.data || []);
+            setBrands(await brandRes.json());
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {

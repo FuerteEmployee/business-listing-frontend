@@ -5,7 +5,7 @@ import { getApiUrl } from '../../config/api';
 import { getDeviceLocation, findNearestCity, getReverseGeocodeAddress } from '../../utils/geolocation';
 import { useTheme } from '../../context/ThemeContext';
 
-export default function SearchInputGroup({ selectedCity, cities = [], variant = 'hero' }) {
+export default function SearchInputGroup({ selectedCity, cities = [], variant = 'hero', onCityChange }) {
     const { settings } = useTheme();
     const hp = settings?.homepage || {};
     const [searchQuery, setSearchQuery] = useState('');
@@ -81,6 +81,9 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
                 const nearest = findNearestCity(location.latitude, location.longitude, cities);
                 if (nearest) {
                     setActiveCityId(nearest._id);
+                    if (onCityChange) {
+                        onCityChange(nearest._id);
+                    }
                 }
 
                 window.dispatchEvent(new CustomEvent('locationdetected', {
@@ -98,6 +101,9 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
         setActiveCityId(city._id);
         setDisplayLocationString(city.name);
         setIsLocationDropdownOpen(false);
+        if (onCityChange) {
+            onCityChange(city._id);
+        }
     };
 
     const handleKeyPress = (e) => {
@@ -293,7 +299,13 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
                                     onClick={() => {
                                         const text = typeof suggestion === 'string' ? suggestion : suggestion.text;
                                         setSearchQuery(text);
-                                        handleQuickSearch(text);
+                                        if (suggestion.type === 'Business' && suggestion.slug) {
+                                            navigate(`/business/${suggestion.slug}`);
+                                        } else if (suggestion.type === 'Category' && suggestion.slug) {
+                                            navigate(`/search?category=${suggestion.slug}&city=${activeCityId}`);
+                                        } else {
+                                            handleQuickSearch(text);
+                                        }
                                     }}
                                     className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center justify-between group transition-colors border-b border-slate-100 last:border-0"
                                 >

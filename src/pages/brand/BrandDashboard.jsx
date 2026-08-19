@@ -1,252 +1,503 @@
-import { useState, useEffect } from 'react';
-import { 
-    LayoutDashboard, Building2, Package, Wrench, MapPin, 
-    TrendingUp, Star, Calendar, ArrowUpRight, ArrowDownRight,
-    Activity, Shield, Sparkles, Filter, ChevronRight, BarChart3,
-    Layers, Users, ShoppingBag
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+    Activity,
+    ArrowDownRight,
+    ArrowUpRight,
+    Building2,
+    ChevronRight,
+    Download,
+    Layers,
+    MapPin,
+    Users,
+    Zap,
+    TrendingUp,
+    ShoppingBag,
+    Wrench,
+    Clock,
+    CheckCircle2
 } from "lucide-react";
-import { fetchWithAuth, getApiUrl } from '../../config/api';
+import { API_BASE_URL, fetchWithAuth } from "../../config/api";
+import AdminHeader from "../../components/admin/AdminHeader";
+import Loading, { FullPageLoader } from "../../components/ui/Loading";
+import Alert from "../../components/ui/Alert";
+import {
+    Area,
+    AreaChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+    Legend
+} from "recharts";
 
-const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
+const KPI_CONFIG = [
+    {
+        key: "totalCompanies",
+        label: "Managed Brands",
+        sub: "Active Listings",
+        icon: Building2,
+        glowClass: "bg-indigo-50",
+        iconClass: "bg-indigo-50 text-indigo-600",
+        path: "/brand/listings"
+    },
+    {
+        key: "totalProducts",
+        label: "Product Inventory",
+        sub: "Live Catalogue",
+        icon: ShoppingBag,
+        glowClass: "bg-emerald-50",
+        iconClass: "bg-emerald-50 text-emerald-600",
+        path: "/brand/products"
+    },
+    {
+        key: "totalServices",
+        label: "Service Assets",
+        sub: "Registered Services",
+        icon: Wrench,
+        glowClass: "bg-amber-50",
+        iconClass: "bg-amber-50 text-amber-600",
+        path: "/brand/catalogue"
+    },
+    {
+        key: "totalBrandLocations",
+        label: "Global Locations",
+        sub: "Active Hubs",
+        icon: MapPin,
+        glowClass: "bg-rose-50",
+        iconClass: "bg-rose-50 text-rose-600",
+        path: "/brand/locations"
+    }
+];
+
+const formatTrend = (value) => {
+    if (value == null) {
+        return {
+            icon: Activity,
+            label: "N/A",
+            className: "bg-slate-100 text-slate-500"
+        };
+    }
+
+    if (value > 0) {
+        return {
+            icon: ArrowUpRight,
+            label: `+${value}%`,
+            className: "bg-emerald-50 text-emerald-600"
+        };
+    }
+
+    if (value < 0) {
+        return {
+            icon: ArrowDownRight,
+            label: `${value}%`,
+            className: "bg-rose-50 text-rose-600"
+        };
+    }
+
+    return {
+        icon: Activity,
+        label: "0.0%",
+        className: "bg-slate-100 text-slate-500"
+    };
+};
+
+const formatTime = (timeStr) => {
+    if (!timeStr) return "";
+    const date = new Date(timeStr);
+    const now = new Date();
+    const diffMs = now - date;
+    if (diffMs < 0) return "Just now";
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return "Yesterday";
+    return date.toLocaleDateString();
+};
+
+const getActivityConfig = (type) => {
+    switch (type) {
+        case "lead":
+            return { icon: TrendingUp, className: "bg-emerald-50 text-emerald-600" };
+        case "company":
+            return { icon: Building2, className: "bg-indigo-50 text-indigo-600" };
+        case "product":
+            return { icon: ShoppingBag, className: "bg-amber-50 text-amber-600" };
+        case "service":
+            return { icon: Wrench, className: "bg-rose-50 text-rose-600" };
+        default:
+            return { icon: Activity, className: "bg-slate-50 text-slate-500" };
+    }
+};
 
 export default function BrandDashboard() {
+    const navigate = useNavigate();
     const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [chartRange, setChartRange] = useState("7D");
 
+    const fetchStatsRef = useRef(null);
     useEffect(() => {
-        const fetchStats = async () => {
+        fetchStatsRef.current = async () => {
             try {
-                const response = await fetchWithAuth(getApiUrl('dashboard/stats'));
-                const data = await response.json();
+                setIsLoading(true);
+                setError("");
+
+                const res = await fetchWithAuth(`${API_BASE_URL}/dashboard/stats?range=${chartRange}`);
+                const data = await res.json().catch(() => null);
+
+                if (!res.ok) {
+                    setError(data?.msg || "Failed to load dashboard statistics.");
+                    return;
+                }
+
                 setStats(data);
-            } catch (error) {
-                console.error('Error fetching brand stats:', error);
+            } catch (err) {
+                console.error("Error fetching dashboard stats:", err);
+                setError("Error loading dashboard statistics.");
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
-        fetchStats();
-    }, []);
+    });
 
-    const cards = [
-        { 
-            label: "Managed Brands", 
-            value: stats?.totalCompanies || 0, 
-            icon: Building2, 
-            color: "indigo", 
-            trend: "+2 this month",
-            trendType: "up"
-        },
-        { 
-            label: "Product Inventory", 
-            value: stats?.totalProducts || 0, 
-            icon: ShoppingBag, 
-            color: "emerald", 
-            trend: "+12.5%",
-            trendType: "up"
-        },
-        { 
-            label: "Service Assets", 
-            value: stats?.totalServices || 0, 
-            icon: Wrench, 
-            color: "amber", 
-            trend: "+4.2%",
-            trendType: "up"
-        },
-        { 
-            label: "Global Locations", 
-            value: stats?.totalBrandLocations || 0, 
-            icon: MapPin, 
-            color: "rose", 
-            trend: "All active",
-            trendType: "up"
+    const fetchStats = async () => {
+        if (fetchStatsRef.current) {
+            await fetchStatsRef.current();
         }
-    ];
+    };
 
-    if (loading) {
+    useEffect(() => {
+        fetchStats();
+    }, [chartRange]);
+
+    const handleExportSnapshot = () => {
+        if (!stats) return;
+
+        const payload = {
+            exportedAt: new Date().toISOString(),
+            source: "brand-dashboard",
+            data: stats
+        };
+
+        const blob = new Blob([JSON.stringify(payload, null, 2)], {
+            type: "application/json"
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `brand-dashboard-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    };
+
+    if (isLoading && !stats) {
+        return <FullPageLoader label="Assembling Brand Intelligence..." />;
+    }
+
+    if (error && !stats) {
         return (
-            <div className="flex flex-col items-center justify-center py-32 animate-in fade-in duration-700">
-                <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
-                <p className="mt-8 text-slate-400 font-black tracking-[0.2em] uppercase text-[10px]">Assembling Intelligence...</p>
+            <div className="max-w-2xl mx-auto mt-20">
+                <Alert 
+                    type="error" 
+                    title="Dashboard Unavailable"
+                    className="shadow-xl"
+                >
+                    <p className="mb-4">{error}</p>
+                    <button 
+                        onClick={fetchStats}
+                        className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-lg"
+                    >
+                        Retry Sync
+                    </button>
+                </Alert>
             </div>
         );
     }
 
+    const totalLeads = stats?.pipelineSummary?.totalTrackedLeads
+        ?? stats?.leadPipeline?.reduce((sum, stage) => sum + stage.count, 0)
+        ?? 0;
+    const maxPipelineCount = Math.max(
+        ...(stats?.leadPipeline?.map((stage) => stage.count) || [1])
+    );
+    const generatedAt = stats?.generatedAt ? new Date(stats.generatedAt) : null;
+
+    const mainKpis = KPI_CONFIG.map((item) => {
+        let value = stats?.[item.key] ?? 0;
+        let trendValue = stats?.kpiTrends?.[item.key];
+        
+        // Custom trend defaults if timeline trend is not set for products/services
+        if (item.key === "totalProducts" || item.key === "totalServices" || item.key === "totalBrandLocations") {
+            trendValue = null;
+        }
+
+        return {
+            ...item,
+            value,
+            trend: formatTrend(trendValue)
+        };
+    });
+
     return (
-        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            {/* Executive Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-slate-100 pb-10">
-                <div className="flex items-center gap-5">
-                    <div className="w-16 h-16 bg-slate-900 rounded-[28px] flex items-center justify-center text-white shadow-2xl shadow-slate-200">
-                        <LayoutDashboard className="w-8 h-8" />
+        <div className="space-y-8 animate-in fade-in duration-700">
+            {error && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-2xl px-4 py-3 text-sm font-medium">
+                    {error}
+                </div>
+            )}
+
+            <AdminHeader 
+                title="Brand Overview"
+                subtitle={generatedAt
+                    ? `Last synced ${generatedAt.toLocaleDateString()} at ${generatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                    : "Live operational snapshot"}
+                badge={
+                    <div className="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-lg text-xs font-black uppercase tracking-widest w-fit">
+                        Live Data
                     </div>
-                    <div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight uppercase italic underline decoration-indigo-500 decoration-8 underline-offset-8">Brand <span className="text-indigo-600">Overview</span></h1>
-                        <div className="flex items-center gap-2 text-slate-500 text-[10px] font-black uppercase tracking-widest mt-2">
-                             <Activity className="w-3 h-3 text-indigo-400" /> Executive Pulse Audit • Live
+                }
+                actions={
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <button
+                            onClick={handleExportSnapshot}
+                            disabled={!stats}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            <Download className="w-4 h-4" />
+                            Intelligence Export
+                        </button>
+                    </div>
+                }
+            />
+
+            {/* KPI Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                {mainKpis.map((kpi) => (
+                    <div
+                        key={kpi.key}
+                        onClick={() => kpi.path && navigate(kpi.path)}
+                        className="group relative bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 overflow-hidden cursor-pointer hover:border-indigo-200"
+                    >
+                        <div className={`absolute -right-6 -top-6 w-24 h-24 ${kpi.glowClass} rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+                        <div className="flex justify-between items-start mb-6">
+                            <div className={`p-3 rounded-2xl group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 ${kpi.iconClass}`}>
+                                <kpi.icon className="w-6 h-6" />
+                            </div>
+                            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${kpi.trend.className}`}>
+                                <kpi.trend.icon className="w-3 h-3" />
+                                {kpi.trend.label}
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="flex -space-x-3">
-                        {[1,2,3,4].map(i => (
-                            <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 shadow-sm overflow-hidden">
-                                <img src={`https://i.pravatar.cc/40?img=${i+10}`} alt="team" />
-                            </div>
-                        ))}
-                    </div>
-                    <button className="bg-white border border-slate-200 px-6 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm">
-                         Invite Team
-                    </button>
-                    <button className="bg-indigo-600 text-white px-8 py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2">
-                        <Sparkles className="w-4 h-4" /> Global Actions
-                    </button>
-                </div>
-            </div>
+                        <div>
+                            <span className="block text-4xl font-black text-slate-900 tracking-tighter mb-1">{kpi.value}</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{kpi.label}</span>
+                        </div>
 
-            {/* Matrix Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {cards.map((card, idx) => (
-                    <div key={idx} className="group bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-indigo-50/50 transition-all duration-500 relative overflow-hidden">
-                        <div className={`absolute -right-4 -top-4 w-24 h-24 bg-${card.color}-50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 -z-0 scale-50 group-hover:scale-100`} />
-                        
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-8">
-                                <div className={`w-14 h-14 bg-${card.color}-50 rounded-2xl flex items-center justify-center text-${card.color}-600 shadow-inner`}>
-                                    <card.icon className="w-7 h-7" />
-                                </div>
-                                <div className={`flex items-center gap-1.5 px-3 py-1 bg-opacity-10 rounded-full text-[10px] font-black uppercase tracking-tighter ${card.trendType === 'up' ? `bg-emerald-500 text-emerald-600` : `bg-rose-500 text-rose-600`}`}>
-                                     {card.trendType === 'up' ? <TrendingUp className="w-3 h-3" /> : <Activity className="w-3 h-3" />}
-                                     {card.trend}
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <span className="block text-4xl font-black text-slate-900 tracking-tighter mb-1">{card.value}</span>
-                                <span className="text-[10px] font-black text-slate-400 p-1 bg-slate-50 rounded-md uppercase tracking-[0.2em]">{card.label}</span>
-                            </div>
-
-                            <div className="mt-8 pt-8 border-t border-slate-50 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Explore Details</span>
-                                <ChevronRight className="w-4 h-4 text-slate-300" />
-                            </div>
+                        <div className="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
+                            <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">Explore Details</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-indigo-600" />
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Intelligence Section */}
+            {/* Performance charts and pipeline */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Modern Performance Feed */}
-                <div className="lg:col-span-2 bg-white p-10 rounded-[48px] border border-slate-100 shadow-sm relative overflow-hidden">
-                    <div className="flex justify-between items-center mb-10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-1.5 h-6 bg-indigo-600 rounded-full" />
-                            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight italic">Global Performance Stream</h3>
-                        </div>
-                        <button className="text-[10px] font-black uppercase text-indigo-500 tracking-widest hover:underline">View All Intelligence</button>
-                    </div>
-
-                    <div className="space-y-6">
-                        {[
-                            { title: 'New Product Deployment', detail: 'Modern Office Chair added to "FURNITURE PRO" catalogue', time: '2 hours ago', icon: Package, color: 'indigo' },
-                            { title: 'Market Share Expansion', detail: 'Services increased in "HYDRAULIC TOOLS" by 12%', time: '5 hours ago', icon: TrendingUp, color: 'emerald' },
-                            { title: 'Inventory Synergy', detail: 'Low stock sync completed across 4 locations', time: 'Yesterday', icon: Layers, color: 'amber' },
-                            { title: 'New Store Launch', detail: 'Brand "ECO SMART" launched in Pune West hub', time: '2 days ago', icon: MapPin, color: 'rose' }
-                        ].map((activity, i) => (
-                            <div key={i} className="group flex items-center justify-between p-6 hover:bg-slate-50 rounded-[32px] transition-all cursor-pointer border border-transparent hover:border-slate-100">
-                                <div className="flex items-center gap-6">
-                                    <div className={`w-14 h-14 bg-${activity.color}-50 rounded-[20px] flex items-center justify-center text-${activity.color}-600 group-hover:scale-110 transition-transform shadow-sm`}>
-                                        <activity.icon className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-black text-slate-900 uppercase tracking-snug italic leading-none">{activity.title}</p>
-                                        <p className="text-xs text-slate-500 font-medium mt-1.5">{activity.detail}</p>
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{activity.time}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-300 opacity-0 group-hover:opacity-100 transition-all">
-                                    <ChevronRight className="w-4 h-4" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                
-                {/* Visual Mix Chart (Simplified for Dashboard) */}
-                <div className="bg-slate-900 p-10 rounded-[48px] text-white relative shadow-2xl flex flex-col justify-between overflow-hidden group">
-                    <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-indigo-600/10 rounded-full blur-[100px] group-hover:scale-150 transition-transform duration-1000" />
-                    <div className="absolute top-10 right-10 flex gap-1">
-                        {[1,2,3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-white/20" />)}
-                    </div>
-
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-12">
-                            <div className="w-1.5 h-6 bg-indigo-400 rounded-full" />
-                            <h3 className="text-xl font-black uppercase tracking-tight italic tracking-widest">Equity Mix</h3>
+                {/* Platform Momentum style line chart */}
+                <div className="lg:col-span-2 bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-950">Brand Momentum</h3>
+                            <p className="text-slate-400 text-xs mt-0.5">Brand growth and customer enquiry statistics.</p>
                         </div>
 
-                        <div className="space-y-8">
-                            {[
-                                { name: 'Pneumatic Systems', share: '45%', color: 'bg-indigo-500' },
-                                { name: 'Hydraulic Tools', share: '30%', color: 'bg-emerald-500' },
-                                { name: 'Repair Services', share: '25%', color: 'bg-amber-500' }
-                            ].map((cat, i) => (
-                                <div key={i} className="space-y-4">
-                                    <div className="flex justify-between items-end">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-2 h-2 rounded-full ${cat.color}`} />
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{cat.name}</span>
-                                        </div>
-                                        <span className="text-sm font-black italic">{cat.share}</span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden p-[2px]">
-                                        <div className={`h-full rounded-full transition-all duration-1000 ${cat.color} shadow-lg shadow-current/20`} style={{ width: cat.share }}></div>
-                                    </div>
-                                </div>
+                        <div className="flex items-center gap-2 border border-slate-150 rounded-xl p-1 bg-slate-50">
+                            {["7D", "30D", "90D"].map((range) => (
+                                <button
+                                    key={range}
+                                    onClick={() => setChartRange(range)}
+                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                        chartRange === range
+                                            ? "bg-white text-indigo-600 shadow-sm"
+                                            : "text-slate-500 hover:text-slate-800"
+                                    }`}
+                                >
+                                    {range}
+                                </button>
                             ))}
                         </div>
                     </div>
 
-                    <div className="mt-12 p-6 bg-white/5 border border-white/10 rounded-[32px] relative z-10 flex items-center justify-between group-hover:bg-white/10 transition-all cursor-pointer">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center">
-                                <BarChart3 className="w-6 h-6" />
-                            </div>
+                    <div className="h-80 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart 
+                                data={stats?.timeline || []} 
+                                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                            >
+                                <defs>
+                                    <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                    </linearGradient>
+                                    <linearGradient id="colorBrands" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
+                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                <XAxis 
+                                    dataKey="label" 
+                                    stroke="#94a3b8" 
+                                    fontSize={10} 
+                                    fontWeight={700}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis 
+                                    stroke="#94a3b8" 
+                                    fontSize={10} 
+                                    fontWeight={700}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ 
+                                        borderRadius: '16px', 
+                                        border: '1px solid #e2e8f0', 
+                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)',
+                                        fontSize: '11px',
+                                        fontWeight: '700'
+                                    }}
+                                />
+                                <Legend 
+                                    verticalAlign="top" 
+                                    height={36} 
+                                    iconType="circle" 
+                                    iconSize={6}
+                                    wrapperStyle={{ fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                                />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="leads" 
+                                    name="Leads / Enquiries"
+                                    stroke="#10b981" 
+                                    strokeWidth={3}
+                                    fillOpacity={1} 
+                                    fill="url(#colorLeads)" 
+                                />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="listings" 
+                                    name="Owned Listings"
+                                    stroke="#6366f1" 
+                                    strokeWidth={3}
+                                    fillOpacity={1} 
+                                    fill="url(#colorBrands)" 
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Lead Pipeline style tracker card */}
+                <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div className="flex justify-between items-start mb-6">
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-200">Full Visual</p>
-                                <p className="text-sm font-black">Analytics Suite</p>
+                                <h3 className="text-lg font-bold text-slate-950">Lead Pipeline</h3>
+                                <p className="text-slate-400 text-xs mt-0.5">Enquiry resolution efficiency.</p>
                             </div>
+                            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase rounded-lg border border-emerald-100 tracking-wider">
+                                Live
+                            </span>
                         </div>
-                        <ArrowUpRight className="w-5 h-5 text-indigo-400" />
+
+                        <div className="space-y-4 my-6">
+                            {stats?.leadPipeline && stats.leadPipeline.length > 0 ? (
+                                stats.leadPipeline.map((stage) => {
+                                    const percentage = totalLeads > 0 ? (stage.count / maxPipelineCount) * 100 : 0;
+                                    return (
+                                        <div key={stage._id} className="space-y-1.5">
+                                            <div className="flex justify-between text-xs font-semibold text-slate-600">
+                                                <span className="capitalize">{stage._id}</span>
+                                                <span className="font-bold text-slate-900">{stage.count} Leads</span>
+                                            </div>
+                                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden p-[2px]">
+                                                <div 
+                                                    className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
+                                                    style={{ width: `${percentage}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="py-8 text-center text-slate-400 font-medium text-xs">
+                                    No pipeline stages populated.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pipeline Resolution</div>
+                        <div className="text-3xl font-black text-slate-950 mt-1">
+                            {stats?.pipelineSummary?.resolutionRate || 0}%
+                        </div>
+                        <div className="text-[10px] font-semibold text-slate-500 mt-1">
+                            {stats?.pipelineSummary?.resolvedLeads || 0} of {stats?.pipelineSummary?.totalTrackedLeads || 0} leads closed or converted.
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Market Trust Matrix */}
-            <div className="bg-slate-50 border border-slate-100 p-12 rounded-[56px] flex flex-col md:flex-row items-center justify-between gap-10">
-                <div className="flex items-center gap-8">
-                    <div className="relative">
-                        <Star className="w-20 h-20 text-amber-100 fill-amber-50" />
-                        <Star className="w-10 h-10 text-amber-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                    </div>
-                    <div>
-                        <h4 className="text-2xl font-black text-slate-900 uppercase italic leading-tight">Elite Performance <br/><span className="text-amber-500">Tier Recognition</span></h4>
-                        <p className="text-xs font-semibold text-slate-500 mt-2 max-w-sm leading-relaxed">Your brands are consistently performing in the top 5% of their respective categories based on current metrics.</p>
-                    </div>
+            {/* Operational Log section */}
+            <div className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="w-1.5 h-5 bg-indigo-600 rounded-full" />
+                    <h3 className="text-lg font-bold text-slate-950">Operational Log</h3>
                 </div>
-                
-                <div className="flex flex-wrap justify-center gap-4">
-                    {['Performance', 'Support', 'Quality', 'Reach'].map(badge => (
-                        <div key={badge} className="px-6 py-3 bg-white border border-slate-200 rounded-full flex items-center gap-2 shadow-sm">
-                             <Shield className="w-4 h-4 text-emerald-500" />
-                             <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{badge} Checked</span>
+
+                <div className="space-y-4">
+                    {stats?.recentActivity && stats.recentActivity.length > 0 ? (
+                        stats.recentActivity.slice(0, 5).map((activity, idx) => {
+                            const config = getActivityConfig(activity.type);
+                            return (
+                                <div 
+                                    key={idx}
+                                    className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-2xl transition-colors border border-transparent hover:border-slate-100"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${config.className}`}>
+                                            <config.icon className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-bold text-slate-900">{activity.title}</div>
+                                            <div className="text-[10px] text-slate-500 font-medium mt-0.5">{activity.detail}</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                        <Clock className="w-3.5 h-3.5" />
+                                        {formatTime(activity.time)}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="py-12 text-center text-slate-400 font-medium text-xs">
+                            No logs registered yet.
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@ import { X, ArrowRight, Loader2, Building2 } from 'lucide-react';
 import { getApiUrl } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 import Alert from './Alert';
+import { logAnalyticsEvent } from '../../utils/tracker';
 
 export default function EnquiryModal({ isOpen, onClose, business, businessIds = [], businessNameMap = {}, title = "Get Best Quotes" }) {
     const { user } = useAuth();
@@ -57,6 +58,9 @@ export default function EnquiryModal({ isOpen, onClose, business, businessIds = 
             if (res.ok) {
                 setSubmitted(true);
                 setEnquiryForm(prev => ({ ...prev, message: '' }));
+                ids.forEach(id => {
+                    logAnalyticsEvent('enquiry', id);
+                });
             } else {
                 setError(data.msg || 'Failed to send enquiry');
             }

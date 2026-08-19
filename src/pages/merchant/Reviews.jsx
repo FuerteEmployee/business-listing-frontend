@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Star, MessageSquare, CheckCircle, Search, Filter, Loader2, User, Send, X, Clock, AlertTriangle } from "lucide-react";
+import { Star, MessageSquare, CheckCircle, Search, Filter, Loader2, User, Send, X, Clock, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { API_BASE_URL, fetchWithAuth } from "../../config/api";
 import { useAuth } from "../../context/AuthContext";
 
@@ -29,6 +29,9 @@ export default function MerchantReviews() {
     const [flagReason, setFlagReason] = useState("Fake");
     const [flagDescription, setFlagDescription] = useState("");
     const [isSubmittingFlag, setIsSubmittingFlag] = useState(false);
+    const [activeImage, setActiveImage] = useState(null);
+    const [lightboxData, setLightboxData] = useState(null);
+    const [toast, setToast] = useState(null);
 
     const fetchData = async () => {
         try {
@@ -77,10 +80,10 @@ export default function MerchantReviews() {
                 const statsRes = await fetchWithAuth(`${API_BASE_URL}/reviews/merchant/stats`);
                 if (statsRes.ok) setStats(await statsRes.json());
             } else {
-                alert("Failed to submit reply");
+                setToast({ message: "Failed to submit reply.", type: "error" });
             }
         } catch (err) {
-            alert("Error submitting reply");
+            setToast({ message: "Error submitting reply.", type: "error" });
         } finally {
             setIsSubmittingReply(false);
         }
@@ -99,12 +102,12 @@ export default function MerchantReviews() {
             if (res.ok) {
                 setIsFlagModalOpen(false);
                 setFlagDescription("");
-                alert("Review has been flagged for admin investigation.");
+                setToast({ message: "Review has been successfully flagged for admin investigation.", type: "success" });
             } else {
-                alert("Failed to flag review");
+                setToast({ message: "Failed to flag review.", type: "error" });
             }
         } catch (err) {
-            alert("Error flagging review");
+            setToast({ message: "Error flagging review.", type: "error" });
         } finally {
             setIsSubmittingFlag(false);
         }
@@ -119,6 +122,28 @@ export default function MerchantReviews() {
     const openFlagModal = (review) => {
         setSelectedReview(review);
         setIsFlagModalOpen(true);
+    };
+
+    const handleStatusUpdate = async (reviewId, newStatus) => {
+        try {
+            const res = await fetchWithAuth(`${API_BASE_URL}/reviews/${reviewId}/status`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (res.ok) {
+                setReviews(prev => prev.map(r => r._id === reviewId ? { ...r, status: newStatus } : r));
+                
+                // Refresh statistics
+                const statsRes = await fetchWithAuth(`${API_BASE_URL}/reviews/merchant/stats`);
+                if (statsRes.ok) setStats(await statsRes.json());
+            } else {
+                setToast({ message: "Failed to update review status.", type: "error" });
+            }
+        } catch (err) {
+            setToast({ message: "Error updating review status.", type: "error" });
+        }
     };
 
     const filteredReviews = reviews.filter(r => {
@@ -263,11 +288,11 @@ export default function MerchantReviews() {
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-5">
                                                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500 border border-slate-100 font-black text-2xl shadow-inner uppercase">
-                                                    {r.userId?.name.charAt(0)}
+                                                    {r.userId?.name?.charAt(0) || "U"}
                                                 </div>
                                                 <div>
                                                     <div className="flex items-center gap-3">
-                                                        <span className="text-lg font-black text-slate-900">{r.userId?.name}</span>
+                                                        <span className="text-lg font-black text-slate-900">{r.userId?.name || "Anonymous"}</span>
                                                         {!r.ownerReply?.text && (
                                                             <span className="px-2 py-0.5 bg-rose-50 text-rose-600 text-[8px] font-black uppercase rounded-full border border-rose-100 animate-pulse">Pending Reply</span>
                                                         )}
@@ -286,10 +311,22 @@ export default function MerchantReviews() {
                                         </div>
 
                                         <div className="relative">
-                                            <MessageSquare className="w-24 h-24 text-indigo-50 absolute -top-10 -left-10 rotate-12 opacity-50" />
                                             <p className="relative z-10 text-slate-700 text-base font-semibold leading-relaxed pl-4 border-l-4 border-indigo-100">
                                                 "{r.comment}"
                                             </p>
+                                            {r.images && r.images.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 pt-4 pl-4 relative z-10">
+                                                    {r.images.map((img, idx) => (
+                                                        <div 
+                                                            key={idx} 
+                                                            onClick={() => setLightboxData({ images: r.images, index: idx })}
+                                                            className="w-20 h-20 rounded-xl overflow-hidden cursor-pointer border border-slate-100 hover:border-indigo-300 transition-colors shadow-sm"
+                                                        >
+                                                            <img src={img} className="w-full h-full object-cover" />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Reply Section */}
@@ -318,9 +355,25 @@ export default function MerchantReviews() {
                                             </div>
                                         ) : (
                                             <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-50">
+                                                {r.status === 'Pending' && (
+                                                    <>
+                                                        <button 
+                                                            onClick={() => handleStatusUpdate(r._id, 'Approved')}
+                                                            className="flex-1 py-4 bg-white hover:bg-emerald-50 border border-slate-200 text-slate-500 hover:text-emerald-600 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all hover:shadow-xl hover:shadow-emerald-50 active:scale-95"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleStatusUpdate(r._id, 'Rejected')}
+                                                            className="flex-1 py-4 bg-white hover:bg-rose-50 border border-slate-200 text-slate-500 hover:text-rose-600 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all hover:shadow-xl hover:shadow-rose-50 active:scale-95"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </>
+                                                )}
                                                 <button 
                                                     onClick={() => openReplyModal(r)}
-                                                    className="flex-1 flex items-center justify-center gap-3 py-4 bg-slate-900 hover:bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all hover:shadow-xl hover:shadow-indigo-100 active:scale-95"
+                                                    className="flex-1 flex items-center justify-center gap-3 py-4 bg-white hover:bg-indigo-50 border border-slate-200 text-slate-500 hover:text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all hover:shadow-xl hover:shadow-indigo-50 active:scale-95"
                                                 >
                                                     <Send className="w-4 h-4" /> Respond to Customer
                                                 </button>
@@ -389,7 +442,20 @@ export default function MerchantReviews() {
                         </div>
                         <form onSubmit={handleReplySubmit} className="p-10 space-y-8">
                             <div className="p-8 bg-indigo-50 rounded-[2rem] border border-indigo-100 italic text-slate-600 text-[15px] font-medium leading-relaxed">
-                                "{selectedReview?.comment}"
+                                <div>"{selectedReview?.comment}"</div>
+                                {selectedReview?.images && selectedReview.images.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 pt-4 not-italic">
+                                        {selectedReview.images.map((img, idx) => (
+                                            <div 
+                                                key={idx} 
+                                                onClick={() => setLightboxData({ images: selectedReview.images, index: idx })}
+                                                className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 cursor-pointer hover:border-indigo-400 transition-colors"
+                                            >
+                                                <img src={img} className="w-full h-full object-cover" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex justify-between px-2">
@@ -471,6 +537,83 @@ export default function MerchantReviews() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* Image Lightbox Modal */}
+            {lightboxData && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setLightboxData(null)}></div>
+                    <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col items-center animate-in fade-in zoom-in duration-200">
+                        <button 
+                            onClick={() => setLightboxData(null)} 
+                            className="absolute top-4 right-4 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors z-[210]"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                        
+                        <div className="relative flex items-center justify-center w-full max-h-[70vh]">
+                            {lightboxData.images.length > 1 && (
+                                <>
+                                    <button 
+                                        onClick={() => setLightboxData(prev => ({ ...prev, index: (prev.index - 1 + prev.images.length) % prev.images.length }))}
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/60 hover:bg-black/85 text-white rounded-full transition-all hover:scale-105 z-10 animate-in fade-in duration-200"
+                                    >
+                                        <ChevronLeft className="w-6 h-6" />
+                                    </button>
+                                    <button 
+                                        onClick={() => setLightboxData(prev => ({ ...prev, index: (prev.index + 1) % prev.images.length }))}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/60 hover:bg-black/85 text-white rounded-full transition-all hover:scale-105 z-10 animate-in fade-in duration-200"
+                                    >
+                                        <ChevronRight className="w-6 h-6" />
+                                    </button>
+                                </>
+                            )}
+                            <img src={lightboxData.images[lightboxData.index]} alt="Large preview" className="w-full h-auto max-h-[70vh] rounded-3xl object-contain shadow-2xl border border-white/10" />
+                        </div>
+
+                        {lightboxData.images.length > 1 && (
+                            <div className="flex justify-center gap-2 mt-6 overflow-x-auto max-w-full py-2 px-4 z-10">
+                                {lightboxData.images.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setLightboxData(prev => ({ ...prev, index: idx }))}
+                                        className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${lightboxData.index === idx ? 'border-indigo-500 scale-105 shadow-md shadow-indigo-500/20' : 'border-white/20 hover:border-white/50'}`}
+                                    >
+                                        <img src={img} className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+            {/* Custom Alert Modal (Popup in middle of screen) */}
+            {toast && (
+                <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setToast(null)}></div>
+                    <div className="relative w-full max-w-sm bg-white rounded-[2.5rem] p-8 text-center shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200 z-10">
+                        <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 border-4 border-white shadow-inner ${
+                            toast.type === 'success' 
+                            ? 'bg-emerald-50 text-emerald-500' 
+                            : 'bg-rose-50 text-rose-500'
+                        }`}>
+                            {toast.type === 'success' 
+                            ? <CheckCircle className="w-10 h-10" /> 
+                            : <AlertTriangle className="w-10 h-10" />}
+                        </div>
+                        <h4 className="text-xl font-black text-slate-900 mb-2">
+                            {toast.type === 'success' ? 'Success' : 'Notice'}
+                        </h4>
+                        <p className="text-sm font-semibold text-slate-500 mb-8 leading-relaxed px-2">
+                            {toast.message}
+                        </p>
+                        <button 
+                            onClick={() => setToast(null)}
+                            className="w-full py-4 bg-slate-900 hover:bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-lg hover:shadow-indigo-100 transition-all active:scale-95"
+                        >
+                            Okay
+                        </button>
                     </div>
                 </div>
             )}

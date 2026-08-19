@@ -21,14 +21,13 @@ export default function EditCompany() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState(null);
-    const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState(null);
     
     const [categories, setCategories] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
     
     const defaultFormState = {
-        name: "", category: "", category_id: "", description: "",
+        name: "", category: "", description: "",
         country_id: "", state_id: "", city_id: "", area_id: "",
         address: "", latitude: null, longitude: null,
         status: "Pending", claimed: false, verified: false, 
@@ -70,7 +69,6 @@ export default function EditCompany() {
                     setFormData({
                         name: company.name || "",
                         category: company.category || "",
-                        category_id: company.category_id?._id || company.category_id || "",
                         description: company.description || "",
                         country_id: company.country_id?._id || company.country_id || "",
                         state_id: company.state_id?._id || company.state_id || "",
@@ -123,24 +121,8 @@ export default function EditCompany() {
         }
     };
 
-    const validateForm = () => {
-        const newErrors = {};
-        if (!formData.name.trim()) newErrors.name = "Business name is required";
-        if (!formData.category_id) newErrors.category = "Category is required";
-        if (!formData.address.trim()) newErrors.address = "Street address is required";
-        if (!formData.city_id) newErrors.city_id = "City selection is required";
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) {
-            setError("Please fix the validation errors below.");
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-        }
         setError(null);
         setSuccess(null);
         setIsSaving(true);
@@ -249,29 +231,20 @@ export default function EditCompany() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormInput
+                            <FormInput 
                                 label="Business Name"
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
                                 placeholder="e.g. Acme Corp"
                                 required
-                                error={errors.name}
                             />
                             <FormSelect
                                 label="Primary Category"
-                                name="category_id"
-                                value={formData.category_id}
-                                onChange={(e) => {
-                                    const selected = categories.find(cat => cat._id === e.target.value);
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        category_id: e.target.value,
-                                        category: selected?.name || ""
-                                    }));
-                                }}
-                                options={categories.map(cat => ({ value: cat._id, label: cat.name }))}
-                                error={errors.category}
+                                name="category"
+                                value={formData.category}
+                                onChange={handleInputChange}
+                                options={categories.map(cat => ({ value: cat.name, label: cat.name }))}
                             />
                         </div>
 
@@ -302,16 +275,14 @@ export default function EditCompany() {
                             }}
                             onChange={(loc) => setFormData(prev => ({ ...prev, ...loc }))}
                             showLabel={true}
-                            error={errors.city_id}
                         />
 
-                        <FormInput
+                        <FormInput 
                             label="Street Address / Building"
                             name="address"
                             value={formData.address}
                             onChange={handleInputChange}
                             placeholder="House No, Suite, Area..."
-                            error={errors.address}
                         />
                     </div>
                 </div>

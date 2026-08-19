@@ -166,7 +166,10 @@ export default function BusinessListing({
                                             </button>
                                         )}
                                         <div className={isSelectMode ? 'transition-all' : ''}>
-                                            <BusinessCard business={biz} />
+                                            <BusinessCard 
+                                                business={biz} 
+                                                onEnquiryClick={() => openEnquiryModal([biz._id])}
+                                            />
                                         </div>
                                     </div>
                                 ))}

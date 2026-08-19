@@ -28,6 +28,9 @@ import OnboardingWizard from "./pages/OnboardingWizard";
 import Leads from "./pages/admin/Leads";
 import MerchantLeads from "./pages/merchant/Leads";
 import MerchantReviews from "./pages/merchant/Reviews";
+import MerchantFAQs from "./pages/merchant/FAQs";
+import MerchantQuestions from "./pages/merchant/Questions";
+import BrandSettings from "./pages/merchant/BrandSettings";
 import OnboardingLanding from "./pages/merchant/OnboardingLanding";
 import LeadDetail from "./pages/merchant/LeadDetail";
 import ProfileEditor from "./pages/merchant/ProfileEditor";
@@ -52,6 +55,7 @@ import Sessions from './pages/user/Sessions';
 // Essential Admin Modules
 import Listings from "./pages/admin/Listings";
 import ReviewModeration from "./pages/admin/ReviewModeration";
+import QuestionModeration from "./pages/admin/QuestionModeration";
 import RoleManager from "./pages/admin/RoleManager";
 import FraudDashboard from "./pages/admin/FraudDashboard";
 import AuditLogs from "./pages/admin/AuditLogs";
@@ -198,6 +202,7 @@ export default function App() {
               <Route path="listings" element={<Listings />} />
               <Route path="listings/create" element={<CreateListing />} />
               <Route path="reviews" element={<ReviewModeration />} />
+              <Route path="qa" element={<QuestionModeration />} />
               <Route path="photos" element={<PhotoModeration />} />
               <Route path="roles" element={<RoleManager />} />
               <Route path="fraud" element={<FraudDashboard />} />
@@ -249,6 +254,7 @@ export default function App() {
             >
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<BrandDashboard />} />
+              <Route path="settings" element={<BrandSettings />} />
               <Route path="listings" element={<Companies />} />
               <Route path="profile/:id" element={<ProfileEditor />} />
               <Route path="categories" element={<Categories />} />
@@ -260,6 +266,8 @@ export default function App() {
               <Route path="leads" element={<MerchantLeads />} />
               <Route path="lead/:leadId" element={<LeadDetail />} />
               <Route path="reviews" element={<MerchantReviews />} />
+              <Route path="qa" element={<MerchantQuestions />} />
+              <Route path="faqs" element={<MerchantFAQs />} />
               <Route path="pricing" element={<Pricing />} />
               <Route path="billing" element={<Billing />} />
               <Route path="promotions" element={<Promotions />} />
@@ -267,6 +275,7 @@ export default function App() {
               <Route path="analytics" element={<Analytics />} />
               <Route path="notifications/settings" element={<MerchantNotificationSettings />} />
               <Route path="support" element={<SupportTickets />} />
+              <Route path="audit-logs" element={<AuditLogs />} />
             </Route>
 
             {/* User Profile Routes */}

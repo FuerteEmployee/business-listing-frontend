@@ -226,7 +226,13 @@ export default function MerchantLeads() {
                             ) : filteredLeads.map((lead) => (
                                 <tr 
                                     key={lead._id} 
-                                    onClick={() => window.location.href = `/brand/lead/${lead._id}`}
+                                    onClick={() => {
+                                        const selection = window.getSelection();
+                                        if (selection && selection.toString().length > 0) {
+                                            return;
+                                        }
+                                        window.location.href = `/brand/lead/${lead._id}`;
+                                    }}
                                     className="transition-all group cursor-pointer hover:bg-indigo-50 border-b border-slate-50 relative focus-within:z-[60] hover:z-[60]"
                                 >
                                     <td className="px-8 py-6">

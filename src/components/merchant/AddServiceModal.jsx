@@ -68,6 +68,13 @@ export default function AddServiceModal({ isOpen, onClose, service, listingId, o
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        if (['price', 'minPrice', 'maxPrice'].includes(name) && value !== '') {
+            const num = parseFloat(value);
+            if (num < 0) {
+                setFormData(prev => ({ ...prev, [name]: '0' }));
+                return;
+            }
+        }
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
@@ -198,6 +205,7 @@ export default function AddServiceModal({ isOpen, onClose, service, listingId, o
                             onChange={handleInputChange}
                             icon={DollarSign}
                             required
+                            min="0"
                         />
                     ) : (
                         <>
@@ -208,6 +216,7 @@ export default function AddServiceModal({ isOpen, onClose, service, listingId, o
                                 value={formData.minPrice}
                                 onChange={handleInputChange}
                                 required
+                                min="0"
                             />
                             <FormInput 
                                 label="Max Price (₹)"
@@ -216,6 +225,7 @@ export default function AddServiceModal({ isOpen, onClose, service, listingId, o
                                 value={formData.maxPrice}
                                 onChange={handleInputChange}
                                 required
+                                min="0"
                             />
                         </>
                     )}

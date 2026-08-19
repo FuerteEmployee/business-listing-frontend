@@ -84,9 +84,7 @@ export default function AdManager() {
             }
             if (cRes.ok) {
                 const cData = await cRes.json();
-                // GET /companies returns { data, pagination } - this checked cData.companies,
-                // a key that endpoint never returns, so the dropdown was always silently empty.
-                setCompanies(Array.isArray(cData) ? cData : cData.data || []);
+                setCompanies(Array.isArray(cData) ? cData : cData.companies || []);
             }
         } catch (e) {
             console.error(e);

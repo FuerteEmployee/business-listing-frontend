@@ -87,18 +87,21 @@ export default function LatestBusinesses() {
                             >
                                 {/* Image */}
                                 <div className="relative aspect-[16/9] bg-gradient-to-br from-slate-100 to-slate-50 overflow-hidden">
-                                    {business.image ? (
-                                        <img
-                                            src={business.image}
-                                            alt={business.name}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                            onError={e => {
-                                                e.target.style.display = 'none';
-                                                e.target.parentElement.querySelector('.fallback-initial')?.classList.remove('hidden');
-                                            }}
-                                        />
-                                    ) : null}
-                                    <div className={`fallback-initial ${business.image ? 'hidden' : ''} w-full h-full flex items-center justify-center`}>
+                                    {(() => {
+                                        const displayImg = business.image || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
+                                        return displayImg ? (
+                                            <img
+                                                src={displayImg}
+                                                alt={business.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                                onError={e => {
+                                                    e.target.style.display = 'none';
+                                                    e.target.parentElement.querySelector('.fallback-initial')?.classList.remove('hidden');
+                                                }}
+                                            />
+                                        ) : null;
+                                    })()}
+                                    <div className={`fallback-initial ${(business.image || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null)) ? 'hidden' : ''} w-full h-full flex items-center justify-center`}>
                                         <span className="text-3xl font-bold text-slate-300">
                                             {business.name.charAt(0)}
                                         </span>

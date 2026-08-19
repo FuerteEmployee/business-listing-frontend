@@ -23,6 +23,8 @@ export default function BusinessDetail() {
     const [reviewsLoading, setReviewsLoading] = useState(true);
     const [reviewSort, setReviewSort] = useState('recent');
     const [reviewFilter, setReviewFilter] = useState('all');
+    const [reviewCounts, setReviewCounts] = useState({ all: 0, photos: 0, quality: 0, service: 0, value: 0 });
+    const [reviewsTrigger, setReviewsTrigger] = useState(0);
     const [userReview, setUserReview] = useState(null);
     const [isEditingReview, setIsEditingReview] = useState(false);
     
@@ -60,6 +62,8 @@ export default function BusinessDetail() {
     const [isSubmittingQuestion, setIsSubmittingQuestion] = useState(false);
     const [similarBusinesses, setSimilarBusinesses] = useState([]);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [isBookmarked, setIsBookmarked] = useState(false);
+    const [isShareOpen, setIsShareOpen] = useState(false);
 
     // Lightbox Keydown Listener
     useEffect(() => {
@@ -134,7 +138,6 @@ export default function BusinessDetail() {
                 const data = await res.json();
                 setQuestions(prev => [{ ...data, userId: { _id: user._id, name: user.name } }, ...prev]);
                 setNewQuestionText('');
-                alert('Question posted successfully!');
             }
         } catch (err) {
             console.error('Question post error:', err);
@@ -163,6 +166,84 @@ export default function BusinessDetail() {
     };
 
     useEffect(() => {
+        const checkBookmarkStatus = async () => {
+            if (isAuthenticated && business?._id) {
+                try {
+                    const res = await fetchWithAuth(getApiUrl('me/saved'));
+                    if (res.ok) {
+                        const data = await res.json();
+                        const savedListings = data.data || [];
+                        setIsBookmarked(savedListings.some(item => item._id === business._id));
+                    }
+                } catch (err) {
+                    console.error('Error checking bookmark status:', err);
+                }
+            } else if (business?._id) {
+                try {
+                    const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+                    setIsBookmarked(localBookmarks.includes(business._id));
+                } catch (err) {
+                    console.error('Error checking local bookmarks:', err);
+                }
+            }
+        };
+        checkBookmarkStatus();
+    }, [business?._id, isAuthenticated]);
+
+    const handleBookmarkToggle = async () => {
+        if (!business?._id) return;
+
+        if (isAuthenticated) {
+            try {
+                const res = await fetchWithAuth(getApiUrl('me/saved/toggle'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ businessId: business._id })
+                });
+                if (res.ok) {
+                    setIsBookmarked(prev => !prev);
+                    toast.success(!isBookmarked ? 'Added to favorites!' : 'Removed from favorites!');
+                } else {
+                    toast.error('Failed to update favorites');
+                }
+            } catch (err) {
+                console.error('Error toggling bookmark:', err);
+                toast.error('An error occurred');
+            }
+        } else {
+            try {
+                const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+                const bookmarksData = JSON.parse(localStorage.getItem('bookmarks_data') || '[]');
+                let updated;
+                let updatedData;
+                if (localBookmarks.includes(business._id)) {
+                    updated = localBookmarks.filter(id => id !== business._id);
+                    updatedData = bookmarksData.filter(item => item._id !== business._id);
+                    toast.success('Removed from favorites!');
+                } else {
+                    updated = [...localBookmarks, business._id];
+                    updatedData = [...bookmarksData, {
+                        _id: business._id,
+                        name: business.name,
+                        slug: business.slug,
+                        image: business.image || business.photos?.[0],
+                        category: typeof business.category === 'object' ? business.category.name : business.category,
+                        rating: business.rating,
+                        city: business.city_id?.name || business.city?.name || 'Location'
+                    }];
+                    toast.success('Added to favorites!');
+                }
+                localStorage.setItem('bookmarks', JSON.stringify(updated));
+                localStorage.setItem('bookmarks_data', JSON.stringify(updatedData));
+                setIsBookmarked(!localBookmarks.includes(business._id));
+                window.dispatchEvent(new Event('bookmarksUpdated'));
+            } catch (err) {
+                console.error('Error toggling local bookmark:', err);
+            }
+        }
+    };
+
+    useEffect(() => {
         const fetchReviews = async () => {
             if (!business?._id) return;
             try {
@@ -174,7 +255,12 @@ export default function BusinessDetail() {
                 const res = await fetch(`${getApiUrl('reviews')}/${business._id}?${params}`);
                 if (res.ok) {
                     const data = await res.json();
-                    setReviews(data);
+                    if (data && data.reviews) {
+                        setReviews(data.reviews);
+                        setReviewCounts(data.counts || { all: 0, photos: 0, quality: 0, service: 0, value: 0 });
+                    } else {
+                        setReviews(data || []);
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching reviews:', err);
@@ -197,7 +283,7 @@ export default function BusinessDetail() {
             }
         };
         fetchUserReview();
-    }, [business?._id, reviewSort, reviewFilter, isAuthenticated]);
+    }, [business?._id, reviewSort, reviewFilter, isAuthenticated, reviewsTrigger]);
 
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
@@ -259,6 +345,8 @@ export default function BusinessDetail() {
                     });
                 }
                 
+                setReviewsTrigger(prev => prev + 1);
+
                 if (isEditingReview) {
                     toast.success('Review updated successfully! It may need re-moderation.');
                 } else {
@@ -612,38 +700,67 @@ export default function BusinessDetail() {
                         <div className="flex flex-col lg:flex-row gap-10">
                             {/* Business Image/Gallery */}
                             <div className="w-full lg:w-[36%] aspect-[16/9] bg-slate-100 rounded-2xl overflow-hidden relative shadow-inner group">
-                                {business.image ? (
-                                    <img src={business.image} alt={business.name} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-orange-50">
-                                        <ImageIcon className="w-20 h-20 text-orange-200" />
-                                    </div>
-                                )}
-                                <div className="absolute top-4 right-4 flex gap-2">
-                                    <button className="p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm text-slate-600 hover:text-rose-500 transition-colors">
-                                        <Heart className="w-5 h-5" />
+                                {(() => {
+                                    const displayImg = business.image || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
+                                    return displayImg ? (
+                                        <img src={displayImg} alt={business.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-orange-50">
+                                            <ImageIcon className="w-20 h-20 text-orange-200" />
+                                        </div>
+                                    );
+                                })()}
+                                <div className="absolute top-4 right-4 flex gap-2 z-10">
+                                    <button 
+                                        onClick={handleBookmarkToggle}
+                                        className={`p-2.5 rounded-full shadow-sm transition-colors ${
+                                            isBookmarked 
+                                            ? 'bg-rose-500 text-white hover:bg-rose-600' 
+                                            : 'bg-white/90 backdrop-blur-sm text-slate-600 hover:text-rose-500'
+                                        }`}
+                                    >
+                                        <Heart className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
                                     </button>
-                                    <div className="relative group/share">
+                                    <div className="relative">
                                         <button 
-                                            onClick={() => handleShare('native')}
-                                            className="p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm text-slate-600 hover:text-indigo-600 transition-colors"
+                                            onClick={() => setIsShareOpen(prev => !prev)}
+                                            className={`p-2.5 rounded-full shadow-sm transition-all ${
+                                                isShareOpen 
+                                                ? 'bg-indigo-600 text-white' 
+                                                : 'bg-white/90 backdrop-blur-sm text-slate-600 hover:text-indigo-600'
+                                            }`}
                                         >
                                             <Share2 className="w-5 h-5" />
                                         </button>
-                                        <div className="absolute top-full right-0 mt-2 p-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 opacity-0 group-hover/share:opacity-100 transition-all pointer-events-none group-hover/share:pointer-events-auto flex flex-col gap-1 min-w-[140px]">
-                                            <button 
-                                                onClick={() => handleShare('whatsapp')}
-                                                className="flex items-center gap-2 px-3 py-2 hover:bg-emerald-50 text-[10px] font-bold text-slate-600 hover:text-emerald-700 rounded-lg transition-colors"
-                                            >
-                                                <MessageSquare className="w-3.5 h-3.5 text-emerald-500" /> WhatsApp
-                                            </button>
-                                            <button 
-                                                onClick={() => handleShare('copy')}
-                                                className="flex items-center gap-2 px-3 py-2 hover:bg-blue-50 text-[10px] font-bold text-slate-600 hover:text-blue-700 rounded-lg transition-colors"
-                                            >
-                                                <Share2 className="w-3.5 h-3.5 text-blue-500" /> Copy Link
-                                            </button>
-                                        </div>
+                                        {isShareOpen && (
+                                            <>
+                                                {/* Overlay to catch clicks outside dropdown and close it */}
+                                                <div 
+                                                    className="fixed inset-0 z-40 bg-transparent" 
+                                                    onClick={() => setIsShareOpen(false)}
+                                                />
+                                                <div className="absolute top-full right-0 mt-2 p-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 flex flex-col gap-1 min-w-[140px] animate-in fade-in slide-in-from-top-2 duration-200">
+                                                    <button 
+                                                        onClick={() => { handleShare('whatsapp'); setIsShareOpen(false); }}
+                                                        className="flex items-center gap-2 px-3 py-2 hover:bg-emerald-50 text-[10px] font-bold text-slate-600 hover:text-emerald-700 rounded-lg transition-colors text-left w-full"
+                                                    >
+                                                        <MessageSquare className="w-3.5 h-3.5 text-emerald-500" /> WhatsApp
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => { handleShare('copy'); setIsShareOpen(false); }}
+                                                        className="flex items-center gap-2 px-3 py-2 hover:bg-blue-50 text-[10px] font-bold text-slate-600 hover:text-blue-700 rounded-lg transition-colors text-left w-full"
+                                                    >
+                                                        <Share2 className="w-3.5 h-3.5 text-blue-500" /> Copy Link
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => { handleShare('native'); setIsShareOpen(false); }}
+                                                        className="flex items-center gap-2 px-3 py-2 hover:bg-indigo-50 text-[10px] font-bold text-slate-600 hover:text-indigo-700 rounded-lg transition-colors text-left w-full"
+                                                    >
+                                                        <Share2 className="w-3.5 h-3.5 text-indigo-500" /> System Share
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="absolute bottom-4 left-4">
@@ -758,6 +875,7 @@ export default function BusinessDetail() {
                                         </button>
                                         <button 
                                             onClick={() => {
+                                                logAnalyticsEvent('whatsapp', business._id);
                                                 const msg = encodeURIComponent(`Hi ${business.name}, I found your listing on Fuerte Developers and would like to inquire about your services.`);
                                                 window.open(`https://wa.me/${business.phone || '919972219375'}?text=${msg}`, '_blank');
                                             }}
@@ -1246,16 +1364,17 @@ export default function BusinessDetail() {
                                                 </div>
                                                 <div className="flex flex-wrap gap-2">
                                                     {[
-                                                        { id: 'all', label: 'All Reviews' },
-                                                        { id: 'photos', label: 'With Photos' },
-                                                        { id: 'recent', label: 'Most Recent', isSort: true },
-                                                        { id: 'helpful', label: 'Most Helpful', isSort: true }
+                                                        { id: 'all', label: `All Reviews (${reviewCounts.all || 0})` },
+                                                        { id: 'photos', label: `With Photos (${reviewCounts.photos || 0})` },
+                                                        { id: 'quality', label: `Quality (${reviewCounts.quality || 0})` },
+                                                        { id: 'service', label: `Service (${reviewCounts.service || 0})` },
+                                                        { id: 'value', label: `Value (${reviewCounts.value || 0})` }
                                                     ].map(f => (
                                                         <button
                                                             key={f.id}
-                                                            onClick={() => f.isSort ? setReviewSort(f.id) : setReviewFilter(f.id)}
+                                                            onClick={() => setReviewFilter(f.id)}
                                                             className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border ${
-                                                                (f.isSort ? reviewSort === f.id : reviewFilter === f.id)
+                                                                reviewFilter === f.id
                                                                 ? 'bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-200' 
                                                                 : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
                                                             }`}

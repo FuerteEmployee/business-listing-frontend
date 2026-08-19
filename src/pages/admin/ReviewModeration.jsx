@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { 
     AlertCircle, CheckCircle, X, Star, Flag, MessageSquare, Trash2, 
     MoreVertical, Eye, Download, History, ShieldCheck, User, Search, 
-    Calendar, Filter, ChevronRight
+    Calendar, Filter, ChevronRight, ChevronLeft
 } from "lucide-react";
 import { API_BASE_URL, fetchWithAuth } from "../../config/api";
 import AdminHeader from "../../components/admin/AdminHeader";
@@ -46,6 +46,8 @@ export default function ReviewModeration() {
         needsReason: false,
         reason: ""
     });
+    const [activeImage, setActiveImage] = useState(null);
+    const [lightboxData, setLightboxData] = useState(null);
 
     const [actionLoading, setActionLoading] = useState(false);
 
@@ -189,9 +191,24 @@ export default function ReviewModeration() {
         {
             label: "Comment",
             key: "comment",
-            render: (value) => (
-                <div className="text-sm text-slate-600 font-medium max-w-md truncate">
-                    {value}
+            render: (value, row) => (
+                <div className="space-y-2">
+                    <div className="text-sm text-slate-600 font-medium max-w-md truncate">
+                        {value}
+                    </div>
+                    {row.images && row.images.length > 0 && (
+                        <div className="flex gap-1.5 flex-wrap">
+                            {row.images.map((img, idx) => (
+                                <img 
+                                    key={idx} 
+                                    src={img} 
+                                    alt="" 
+                                    className="w-8 h-8 rounded-lg object-cover border border-slate-100 shadow-sm cursor-pointer hover:scale-105 transition-transform" 
+                                    onClick={(e) => { e.stopPropagation(); setLightboxData({ images: row.images, index: idx }); }}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )
         },
@@ -425,7 +442,20 @@ export default function ReviewModeration() {
 
                     <div className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 italic text-slate-700 leading-relaxed relative">
                         <MessageSquare className="absolute -top-3 -left-3 w-8 h-8 text-indigo-100 fill-indigo-50" />
-                        "{detailModal.review?.comment}"
+                        <div>"{detailModal.review?.comment}"</div>
+                        {detailModal.review?.images && detailModal.review.images.length > 0 && (
+                            <div className="flex flex-wrap gap-2 pt-4 not-italic">
+                                {detailModal.review.images.map((img, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        onClick={() => setLightboxData({ images: detailModal.review.images, index: idx })}
+                                        className="w-20 h-20 rounded-xl overflow-hidden border border-slate-200 cursor-pointer hover:border-indigo-400 transition-colors"
+                                    >
+                                        <img src={img} className="w-full h-full object-cover" />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {detailModal.review?.moderationNotes && (
@@ -505,6 +535,57 @@ export default function ReviewModeration() {
                     )}
                 </div>
             </Modal>
+            {/* Image Lightbox Modal */}
+            {lightboxData && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setLightboxData(null)}></div>
+                    <div className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col items-center animate-in fade-in zoom-in duration-200">
+                        <button 
+                            type="button"
+                            onClick={() => setLightboxData(null)} 
+                            className="absolute top-4 right-4 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors z-[210]"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                        
+                        <div className="relative flex items-center justify-center w-full max-h-[70vh]">
+                            {lightboxData.images.length > 1 && (
+                                <>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setLightboxData(prev => ({ ...prev, index: (prev.index - 1 + prev.images.length) % prev.images.length }))}
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/60 hover:bg-black/85 text-white rounded-full transition-all hover:scale-105 z-10 animate-in fade-in duration-200"
+                                    >
+                                        <ChevronLeft className="w-6 h-6" />
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setLightboxData(prev => ({ ...prev, index: (prev.index + 1) % prev.images.length }))}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/60 hover:bg-black/85 text-white rounded-full transition-all hover:scale-105 z-10 animate-in fade-in duration-200"
+                                    >
+                                        <ChevronRight className="w-6 h-6" />
+                                    </button>
+                                </>
+                            )}
+                            <img src={lightboxData.images[lightboxData.index]} alt="Large preview" className="w-full h-auto max-h-[70vh] rounded-3xl object-contain shadow-2xl border border-white/10" />
+                        </div>
+
+                        {lightboxData.images.length > 1 && (
+                            <div className="flex justify-center gap-2 mt-6 overflow-x-auto max-w-full py-2 px-4 z-10">
+                                {lightboxData.images.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setLightboxData(prev => ({ ...prev, index: idx }))}
+                                        className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${lightboxData.index === idx ? 'border-indigo-500 scale-105 shadow-md shadow-indigo-500/20' : 'border-white/20 hover:border-white/50'}`}
+                                    >
+                                        <img src={img} className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,10 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 
-const Tabs = ({ children, value, onValueChange, className = '' }) => {
+const TabsContext = createContext(null);
+
+const Tabs = ({ children, defaultValue, value, onValueChange, className = '' }) => {
+    const [localValue, setLocalValue] = useState(defaultValue);
+    const currentValue = value !== undefined ? value : localValue;
+
+    const handleValueChange = (newValue) => {
+        if (onValueChange) {
+            onValueChange(newValue);
+        }
+        if (value === undefined) {
+            setLocalValue(newValue);
+        }
+    };
+
     return (
-        <div className={`space-y-4 ${className}`}>
-            {children}
-        </div>
+        <TabsContext.Provider value={{ value: currentValue, onValueChange: handleValueChange }}>
+            <div className={`space-y-4 ${className}`}>
+                {children}
+            </div>
+        </TabsContext.Provider>
     );
 };
 
@@ -17,10 +33,17 @@ const TabsList = ({ children, className = '' }) => {
 };
 
 const TabsTrigger = ({ children, value, className = '', ...props }) => {
+    const context = useContext(TabsContext);
+    if (!context) return null;
+
+    const isActive = context.value === value;
+
     return (
         <button
+            type="button"
+            onClick={() => context.onValueChange(value)}
             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                props.active ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                isActive ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
             } ${className}`}
             {...props}
         >
@@ -30,6 +53,13 @@ const TabsTrigger = ({ children, value, className = '', ...props }) => {
 };
 
 const TabsContent = ({ children, value, className = '', ...props }) => {
+    const context = useContext(TabsContext);
+    if (!context) return null;
+
+    const isActive = context.value === value;
+
+    if (!isActive) return null;
+
     return (
         <div className={className} {...props}>
             {children}

@@ -169,7 +169,7 @@ export default function LeadDetail() {
     if (error || !lead) {
         return (
             <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-                <button onClick={() => navigate('/merchant/leads')} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold mb-8">
+                <button onClick={() => navigate('/brand/leads')} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold mb-8">
                     <ArrowLeft className="w-5 h-5" />
                     Back to Leads
                 </button>
@@ -185,7 +185,7 @@ export default function LeadDetail() {
         <div className="min-h-screen bg-slate-50 p-4 md:p-8">
             {/* Header */}
             <div className="mb-8">
-                <button onClick={() => navigate('/merchant/leads')} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold mb-6 transition-colors">
+                <button onClick={() => navigate('/brand/leads')} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold mb-6 transition-colors">
                     <ArrowLeft className="w-5 h-5" />
                     Back to Leads
                 </button>

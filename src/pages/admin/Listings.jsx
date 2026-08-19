@@ -102,7 +102,7 @@ export default function Listings() {
                     return;
                 }
 
-                const res = await fetchWithAuth(`${API_BASE_URL}/admin/import`, {
+                const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/import`, {
                     method: "POST",
                     body: JSON.stringify(payload)
                 });
@@ -130,49 +130,35 @@ export default function Listings() {
                 setImportLoading(false);
             }
         };
-        reader.onerror = () => {
-            setImportLoading(false);
-            setError("Could not read the selected file. It may be corrupted or unreadable.");
-        };
 
         reader.readAsArrayBuffer(file);
     };
 
-    const getApprovalStage = (listing) => {
-        if (listing?.approvalStatus?.stage) return listing.approvalStatus.stage;
-        if (listing?.status === 'Active') return 'Approved';
-        return listing?.status || "Pending";
-    };
+    const getApprovalStage = (listing) => listing?.approvalStatus?.stage || listing?.status || "Pending";
 
-    // Shared by fetchListings and handleExportCSV so the two never drift —
-    // only include filters that are actually set, instead of sending every
-    // filter key (including empty ones) verbatim. Takes the filter state as a
-    // parameter (rather than closing over `filters`) so callers that just
-    // updated filters via setFilters can pass the new values immediately,
-    // without waiting on React's next render to see them.
-    const buildFilterParams = (filterState, extra = {}) => new URLSearchParams({
-        ...(filterState.search && { search: filterState.search }),
-        ...(filterState.status && { status: filterState.status }),
-        ...(filterState.category && { category: filterState.category }),
-        ...(filterState.city && { city: filterState.city }),
-        ...(filterState.plan && { plan: filterState.plan }),
-        ...(filterState.dateStart && { dateStart: filterState.dateStart }),
-        ...(filterState.dateEnd && { dateEnd: filterState.dateEnd }),
-        ...extra
-    });
-
-    const fetchListings = useCallback(async (page = 1, filterState = filters) => {
+    const fetchListings = useCallback(async (page = 1) => {
         try {
             setIsLoading(true);
             setError(null);
 
-            const params = buildFilterParams(filterState, { limit: pagination.limit, page });
+            const params = new URLSearchParams({
+                limit: pagination.limit,
+                page,
+                ...(filters.search && { search: filters.search }),
+                ...(filters.status && { status: filters.status }),
+                ...(filters.category && { category: filters.category }),
+                ...(filters.city && { city: filters.city }),
+                ...(filters.plan && { plan: filters.plan }),
+                ...(filters.dateStart && { dateStart: filters.dateStart }),
+                ...(filters.dateEnd && { dateEnd: filters.dateEnd })
+            });
 
             const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings?${params}`);
             if (res.ok) {
                 const data = await res.json();
                 setListings(data.listings || []);
                 setPagination(prev => ({ ...prev, page, total: data.pagination?.total || 0 }));
+                setSelectedListings([]);
             } else {
                 const errData = await res.json();
                 setError(errData.msg || "Failed to fetch listings");
@@ -265,9 +251,6 @@ export default function Listings() {
                         await fetchListings(1);
                         setConfirmModal({ isOpen: false });
                         setSelectedListings([]);
-                    } else {
-                        const data = await res.json();
-                        setError(data.msg || "Bulk action failed");
                     }
                 } catch (err) {
                     setError("Bulk action failed");
@@ -280,7 +263,7 @@ export default function Listings() {
 
     const handleExportCSV = async () => {
         try {
-            const params = buildFilterParams(filters);
+            const params = new URLSearchParams(filters);
             const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/export/csv?${params}`);
             if (res.ok) {
                 const blob = await res.blob();
@@ -291,9 +274,6 @@ export default function Listings() {
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
-            } else {
-                const data = await res.json();
-                setError(data.msg || "Export failed");
             }
         } catch (err) {
             setError("Export failed");
@@ -399,7 +379,6 @@ export default function Listings() {
             icon: Eye,
             onClick: (listing) => {
                 setDetailModal({ isOpen: true, listing, activeTab: 'summary' });
-                setAuditTrail([]);
                 fetchAuditTrail(listing._id);
             }
         },
@@ -448,22 +427,9 @@ export default function Listings() {
                 type: "info",
                 actionLabel: "Verify",
                 onConfirm: async () => {
-                    try {
-                        setActionLoading(true);
-                        const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/${row._id}/verify-badge`, { method: 'PUT' });
-                        if (res.ok) {
-                            await fetchListings(pagination.page);
-                            setConfirmModal({ isOpen: false });
-                        } else {
-                            const data = await res.json();
-                            setError(data.msg || "Badge verification failed");
-                        }
-                    } catch (err) {
-                        console.error("Badge verification error:", err);
-                        setError("Badge verification failed");
-                    } finally {
-                        setActionLoading(false);
-                    }
+                    await fetchWithAuth(`${API_BASE_URL}/admin/listings/${row._id}/verify-badge`, { method: 'PUT' });
+                    fetchListings(pagination.page);
+                    setConfirmModal({ isOpen: false });
                 }
             })
         },
@@ -492,9 +458,6 @@ export default function Listings() {
                 type: "info",
                 actionLabel: "Update Rank",
                 needsReason: true,
-                reasonType: "number",
-                reasonLabel: "Manual Rank",
-                reasonPlaceholder: "e.g. 10",
                 reason: String(row.manualRank || 0),
                 onConfirm: (rank) => handleUpdateRank(row._id, rank)
             })
@@ -510,22 +473,9 @@ export default function Listings() {
                 type: "danger",
                 actionLabel: "Delete Permanent",
                 onConfirm: async () => {
-                    try {
-                        setActionLoading(true);
-                        const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/${row._id}`, { method: 'DELETE' });
-                        if (res.ok) {
-                            await fetchListings(pagination.page);
-                            setConfirmModal({ isOpen: false });
-                        } else {
-                            const data = await res.json();
-                            setError(data.msg || "Delete failed");
-                        }
-                    } catch (err) {
-                        console.error("Delete listing error:", err);
-                        setError("Delete failed");
-                    } finally {
-                        setActionLoading(false);
-                    }
+                    await fetchWithAuth(`${API_BASE_URL}/admin/listings/${row._id}`, { method: 'DELETE' });
+                    fetchListings(pagination.page);
+                    setConfirmModal({ isOpen: false });
                 }
             })
         }
@@ -554,6 +504,7 @@ export default function Listings() {
                         >
                             Import CSV
                         </Button>
+                        <Button variant="outline" leftIcon={FileSpreadsheet} onClick={downloadImportTemplate}>Download Template</Button>
                         <Button variant="ghost" leftIcon={Info} onClick={() => setFormatModalOpen(true)}>Format</Button>
                         <Button variant="outline" leftIcon={Download} onClick={handleExportCSV}>Export CSV</Button>
                         {selectedListings.length > 0 && (
@@ -624,16 +575,8 @@ export default function Listings() {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => {
-                            const emptyFilters = { search: "", status: "", category: "", city: "", plan: "", dateStart: "", dateEnd: "" };
-                            setFilters(emptyFilters);
-                            setSelectedListings([]);
-                            fetchListings(1, emptyFilters);
-                        }}>Reset</Button>
-                        <Button variant="primary" size="sm" onClick={() => {
-                            setSelectedListings([]);
-                            fetchListings(1);
-                        }}>Apply Filters</Button>
+                        <Button variant="outline" size="sm" onClick={() => setFilters({ search: "", status: "", category: "", city: "", plan: "", dateStart: "", dateEnd: "" })}>Reset</Button>
+                        <Button variant="primary" size="sm" onClick={() => fetchListings(1)}>Apply Filters</Button>
                     </div>
                 </div>
             </div>
@@ -772,13 +715,9 @@ export default function Listings() {
                                                                     images: prev.listing.images.map(i => i._id === img._id ? { ...i, status: 'Approved' } : i)
                                                                 }
                                                             }));
-                                                        } else {
-                                                            const data = await res.json();
-                                                            setError(data.msg || "Photo approval failed");
                                                         }
                                                     } catch (err) {
-                                                        console.error("Photo approval error:", err);
-                                                        setError("Photo approval failed");
+                                                        console.error('Photo approval error', err);
                                                     }
                                                 }}
                                                 className="flex-1 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg text-[10px] font-black uppercase transition-colors"
@@ -801,13 +740,9 @@ export default function Listings() {
                                                                     images: prev.listing.images.map(i => i._id === img._id ? { ...i, status: 'Rejected' } : i)
                                                                 }
                                                             }));
-                                                        } else {
-                                                            const data = await res.json();
-                                                            setError(data.msg || "Photo rejection failed");
                                                         }
                                                     } catch (err) {
-                                                        console.error("Photo rejection error:", err);
-                                                        setError("Photo rejection failed");
+                                                        console.error('Photo rejection error', err);
                                                     }
                                                 }}
                                                 className="flex-1 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg text-[10px] font-black uppercase transition-colors"
@@ -855,7 +790,7 @@ export default function Listings() {
                 
                 <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-slate-100">
                     <Button variant="outline" onClick={() => setDetailModal({ isOpen: false, listing: null, activeTab: 'summary' })}>Close</Button>
-                    <Button variant="primary" icon={Edit3} onClick={() => navigate(`/admin/listings/${detailModal.listing?.slug || detailModal.listing?._id}/edit`)}>Full Editor</Button>
+                    <Button variant="primary" icon={Edit3} onClick={() => window.location.href = `/admin/companies/${detailModal.listing?._id}/edit`}>Full Editor</Button>
                 </div>
             </Modal>
 
@@ -867,24 +802,9 @@ export default function Listings() {
                 footer={
                     <div className="flex justify-end gap-3 w-full">
                         <Button variant="outline" onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>Cancel</Button>
-                        <Button
-                            variant={confirmModal.type === 'danger' ? 'danger' : 'primary'}
-                            onClick={() => {
-                                // Modal isn't a real <form>, so the reason field's native
-                                // `required` never fires — enforce it explicitly here.
-                                if (confirmModal.needsReason) {
-                                    if (confirmModal.reasonType === 'number') {
-                                        if (confirmModal.reason === '' || Number.isNaN(Number(confirmModal.reason))) {
-                                            setError(`${confirmModal.reasonLabel || 'This field'} must be a valid number`);
-                                            return;
-                                        }
-                                    } else if (!confirmModal.reason || !confirmModal.reason.trim()) {
-                                        setError(`${confirmModal.reasonLabel || 'Reason'} is required`);
-                                        return;
-                                    }
-                                }
-                                confirmModal.onConfirm(confirmModal.reason);
-                            }}
+                        <Button 
+                            variant={confirmModal.type === 'danger' ? 'danger' : 'primary'} 
+                            onClick={() => confirmModal.onConfirm(confirmModal.reason)}
                             isLoading={actionLoading}
                         >
                             {confirmModal.actionLabel}
@@ -895,24 +815,13 @@ export default function Listings() {
                 <div className="space-y-4">
                     <p className="text-slate-600 font-medium">{confirmModal.message}</p>
                     {confirmModal.needsReason && (
-                        confirmModal.reasonType === 'number' ? (
-                            <FormInput
-                                type="number"
-                                label={confirmModal.reasonLabel || "Reason / Comments"}
-                                placeholder={confirmModal.reasonPlaceholder || ""}
-                                value={confirmModal.reason}
-                                onChange={(e) => setConfirmModal(prev => ({ ...prev, reason: e.target.value }))}
-                                required
-                            />
-                        ) : (
-                            <FormTextarea
-                                label={confirmModal.reasonLabel || "Reason / Comments"}
-                                placeholder={confirmModal.reasonPlaceholder || "Add internal notes or rejection reason..."}
-                                value={confirmModal.reason}
-                                onChange={(e) => setConfirmModal(prev => ({ ...prev, reason: e.target.value }))}
-                                required
-                            />
-                        )
+                        <FormTextarea
+                            label="Reason / Comments"
+                            placeholder="Add internal notes or rejection reason..."
+                            value={confirmModal.reason}
+                            onChange={(e) => setConfirmModal(prev => ({ ...prev, reason: e.target.value }))}
+                            required
+                        />
                     )}
                 </div>
             </Modal>
