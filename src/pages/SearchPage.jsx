@@ -36,7 +36,7 @@ export default function SearchPage() {
         sort: searchParams.get('sort') || 'rank',
         rating: searchParams.get('rating') || '',
         priceRange: searchParams.get('priceRange') || '',
-        openNow: searchParams.get('openNow') || 'false'
+        openNow: searchParams.get('openNow') || ''
     };
 
     const handleFilterChange = (key, value) => {
@@ -195,15 +195,6 @@ export default function SearchPage() {
                                     onLoadMore={() => fetchData(true)}
                                     isLoadingMore={loadingMore}
                                 />
-                                
-                                {/* Floating Map Toggle */}
-                                <button 
-                                    onClick={() => setShowMap(true)}
-                                    className="fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl hover:bg-slate-800 transition-all z-40 font-bold tracking-tight scale-100 hover:scale-105 active:scale-95"
-                                >
-                                    <MapIcon className="w-4 h-4 text-orange-400" />
-                                    Show Map View
-                                </button>
                             </div>
                         )}
                     </>

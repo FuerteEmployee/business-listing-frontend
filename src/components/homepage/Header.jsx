@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, ChevronDown, LogOut, Bell, User, Heart, Settings, MessageSquare, ShieldCheck, Globe, Volume2, TrendingUp } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut, Bell, User, Heart, Settings, MessageSquare, ShieldCheck, Globe, Volume2, TrendingUp, Bookmark } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -21,11 +21,17 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileRef = useRef(null);
 
-    // Favorites Dropdown state
+    // Favorites (Businesses) Dropdown state
     const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
     const [favoriteItems, setFavoriteItems] = useState([]);
     const favoritesRef = useRef(null);
     const favoritesGuestRef = useRef(null);
+
+    // Saved Products Dropdown state
+    const [isProductsOpen, setIsProductsOpen] = useState(false);
+    const [savedProducts, setSavedProducts] = useState([]);
+    const productsRef = useRef(null);
+    const productsGuestRef = useRef(null);
 
     // Language Dropdown state
     const [isLangOpen, setIsLangOpen] = useState(false);
@@ -45,7 +51,10 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
     const loadFavorites = async () => {
         if (isAuthenticated) {
             try {
-                const res = await fetchWithAuth(getApiUrl('me/saved'));
+                const [res, prodRes] = await Promise.all([
+                    fetchWithAuth(getApiUrl('me/saved')),
+                    fetchWithAuth(getApiUrl('me/saved-products'))
+                ]);
                 if (res.ok) {
                     const data = await res.json();
                     const list = data.data || [];
@@ -57,6 +66,10 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                         category: typeof item.category === 'object' ? item.category.name : item.category,
                         city: item.city_id?.name || item.city?.name || 'Location'
                     })));
+                }
+                if (prodRes.ok) {
+                    const data = await prodRes.json();
+                    setSavedProducts(data.data || []);
                 }
             } catch (err) {
                 console.error('Error loading API favorites in header:', err);
@@ -71,6 +84,16 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                 }
             } else {
                 setFavoriteItems([]);
+            }
+            const storedProds = localStorage.getItem('product_bookmarks_data');
+            if (storedProds) {
+                try {
+                    setSavedProducts(JSON.parse(storedProds) || []);
+                } catch (e) {
+                    setSavedProducts([]);
+                }
+            } else {
+                setSavedProducts([]);
             }
         }
     };
@@ -90,6 +113,12 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                 (favoritesGuestRef.current && !favoritesGuestRef.current.contains(event.target))
             ) {
                 setIsFavoritesOpen(false);
+            }
+            if (
+                (productsRef.current && !productsRef.current.contains(event.target)) &&
+                (productsGuestRef.current && !productsGuestRef.current.contains(event.target))
+            ) {
+                setIsProductsOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -344,6 +373,78 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                     )}
                                 </div>
 
+                                {/* Saved Products Dropdown (Authenticated) */}
+                                <div className="relative animate-fade-in" ref={productsRef}>
+                                    <button
+                                        onClick={() => setIsProductsOpen(prev => !prev)}
+                                        className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors relative ${isProductsOpen ? 'bg-slate-100 text-orange-600' : 'text-slate-600 hover:bg-slate-50 hover:text-orange-500'}`}
+                                        title="Saved Products"
+                                    >
+                                        <Bookmark className={`w-5 h-5 ${savedProducts.length > 0 ? 'fill-orange-500 text-orange-500' : ''}`} />
+                                        {savedProducts.length > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-scale-in">
+                                                {savedProducts.length}
+                                            </span>
+                                        )}
+                                    </button>
+
+                                    {isProductsOpen && (
+                                        <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                                                <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
+                                                    <Bookmark className="w-4 h-4 text-orange-500 fill-orange-500" /> Saved Products
+                                                </h3>
+                                                <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full uppercase">
+                                                    {savedProducts.length} Saved
+                                                </span>
+                                            </div>
+                                            <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
+                                                {savedProducts.length > 0 ? (
+                                                    savedProducts.map((item) => (
+                                                        <Link 
+                                                            key={item._id}
+                                                            to={`/product/${item.slug}`}
+                                                            onClick={() => setIsProductsOpen(false)}
+                                                            className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
+                                                        >
+                                                            <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
+                                                                {item.images?.[0] || item.image ? (
+                                                                    <img src={item.images?.[0] || item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
+                                                                        {item.name?.charAt(0)}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className="font-bold text-xs text-slate-900 group-hover:text-orange-600 transition-colors truncate">
+                                                                    {item.name}
+                                                                </h4>
+                                                                <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                                                    {item.brandId?.name || item.brand || 'Generic'} • ₹{item.price?.toLocaleString()}
+                                                                </p>
+                                                            </div>
+                                                        </Link>
+                                                    ))
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                                                        <Bookmark className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
+                                                        <p className="text-xs text-slate-500 font-bold">No saved products yet</p>
+                                                        <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Like products to see them here for quick access.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <Link 
+                                                to="/profile/saved" 
+                                                onClick={() => setIsProductsOpen(false)} 
+                                                className="block mt-3 pt-3 text-center text-xs font-black text-orange-600 border-t border-slate-100 hover:text-orange-700 uppercase tracking-wider"
+                                            >
+                                                View All Saved Items
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Favorites Dropdown (Authenticated) */}
                                 <div className="relative animate-fade-in" ref={favoritesRef}>
                                     <button
@@ -453,6 +554,71 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                             </div>
                          ) : (
                             <div className="flex items-center gap-3">
+                                {/* Saved Products Dropdown (Guest) */}
+                                <div className="relative animate-fade-in" ref={productsGuestRef}>
+                                    <button
+                                        onClick={() => setIsProductsOpen(prev => !prev)}
+                                        className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors relative ${isProductsOpen ? 'bg-slate-100 text-orange-600' : 'text-slate-600 hover:bg-slate-50 hover:text-orange-500'}`}
+                                        title="Saved Products"
+                                    >
+                                        <Bookmark className={`w-5 h-5 ${savedProducts.length > 0 ? 'fill-orange-500 text-orange-500' : ''}`} />
+                                        {savedProducts.length > 0 && (
+                                            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                                                {savedProducts.length}
+                                            </span>
+                                        )}
+                                    </button>
+
+                                    {isProductsOpen && (
+                                        <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                                                <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
+                                                    <Bookmark className="w-4 h-4 text-orange-500 fill-orange-500" /> Saved Products
+                                                </h3>
+                                                <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full uppercase">
+                                                    {savedProducts.length} Saved
+                                                </span>
+                                            </div>
+                                            <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
+                                                {savedProducts.length > 0 ? (
+                                                    savedProducts.map((item) => (
+                                                        <Link 
+                                                            key={item._id}
+                                                            to={`/product/${item.slug}`}
+                                                            onClick={() => setIsProductsOpen(false)}
+                                                            className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
+                                                        >
+                                                            <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
+                                                                {item.images?.[0] || item.image ? (
+                                                                    <img src={item.images?.[0] || item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
+                                                                        {item.name?.charAt(0)}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                 <h4 className="font-bold text-xs text-slate-900 group-hover:text-orange-600 transition-colors truncate">
+                                                                     {item.name}
+                                                                 </h4>
+                                                                 <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                                                     {item.brandId?.name || item.brand || 'Generic'} • ₹{item.price?.toLocaleString()}
+                                                                 </p>
+                                                            </div>
+                                                        </Link>
+                                                    ))
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                                                        <Bookmark className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
+                                                        <p className="text-xs text-slate-500 font-bold">No saved products yet</p>
+                                                        <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Like products to see them here for quick access.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Favorites Dropdown (Guest) */}
                                 <div className="relative animate-fade-in" ref={favoritesGuestRef}>
                                     <button

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CheckCircle2, XCircle, ArrowLeft, Upload, X } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowLeft, Upload, X, Trash2 } from 'lucide-react';
 import { getApiUrl, fetchWithAuth } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 import FormInput from '../../components/ui/FormInput';
@@ -23,6 +23,7 @@ export default function AddProduct() {
         name: '',
         shortDescription: '',
         description: '',
+        warranty: 'No Warranty',
         listingId: currentUser?.companyId || currentUser?.company || '',
         categoryId: '',
         subCategoryId: '',
@@ -34,6 +35,10 @@ export default function AddProduct() {
         metaTitle: '',
         metaDescription: ''
     });
+
+    const [highlights, setHighlights] = useState([{ key: '', value: '' }]);
+    const [customWarrantyNumber, setCustomWarrantyNumber] = useState('');
+    const [customWarrantyUnit, setCustomWarrantyUnit] = useState('Months');
 
     // Image State
     const [existingImageUrls, setExistingImageUrls] = useState([]);
@@ -75,6 +80,7 @@ export default function AddProduct() {
                     slug: data.slug || '',
                     shortDescription: data.shortDescription || '',
                     description: data.description || '',
+                    warranty: data.warranty || 'No Warranty',
                     listingId: data.listingId?._id || data.listingId || '',
                     categoryId: data.categoryId?._id || data.categoryId || '',
                     subCategoryId: data.subCategoryId?._id || data.subCategoryId || '',
@@ -86,6 +92,38 @@ export default function AddProduct() {
                     metaTitle: data.metaTitle || '',
                     metaDescription: data.metaDescription || ''
                 });
+                let initialHighlights = [{ key: '', value: '' }];
+                if (data.highlights) {
+                    try {
+                        const parsed = JSON.parse(data.highlights);
+                        if (Array.isArray(parsed)) {
+                            initialHighlights = parsed;
+                        } else {
+                            initialHighlights = [{ key: 'Highlight', value: data.highlights }];
+                        }
+                    } catch (e) {
+                        initialHighlights = [{ key: 'Highlight', value: data.highlights }];
+                    }
+                }
+                setHighlights(initialHighlights);
+                
+                // Parse Custom Warranty Number & Unit
+                if (data.warranty && !['No Warranty', '6 Months', '8 Months', '1 Year', '2 Years'].includes(data.warranty)) {
+                    const match = data.warranty.match(/^(\d+)\s*(Day|Days|Month|Months|Year|Years)$/i);
+                    if (match) {
+                        setCustomWarrantyNumber(match[1]);
+                        const unit = match[2].toLowerCase();
+                        if (unit.startsWith('year')) setCustomWarrantyUnit('Years');
+                        else if (unit.startsWith('day')) setCustomWarrantyUnit('Days');
+                        else setCustomWarrantyUnit('Months');
+                    } else {
+                        setCustomWarrantyNumber(data.warranty);
+                        setCustomWarrantyUnit('Months');
+                    }
+                } else {
+                    setCustomWarrantyNumber('');
+                    setCustomWarrantyUnit('Months');
+                }
                 if (data.categoryId) {
                     const catId = data.categoryId?._id || data.categoryId;
                     const subRes = await fetchWithAuth(getApiUrl(`categories?parentId=${catId}`));
@@ -197,8 +235,11 @@ export default function AddProduct() {
                 }
             }
 
+            // Filter out empty key/value pairs
+            const activeHighlights = highlights.filter(hl => hl.key.trim() || hl.value.trim());
             const payload = {
                 ...formData,
+                highlights: JSON.stringify(activeHighlights),
                 status: submitStatus,
                 images: uploadedImageUrls,
                 price: Number(formData.price),
@@ -297,12 +338,134 @@ export default function AddProduct() {
                             />
 
                             <FormTextarea 
-                                label="Full Description"
+                                label="Product Description"
                                 value={formData.description}
                                 onChange={e => setFormData({...formData, description: e.target.value})}
                                 rows={5}
                                 placeholder="Detailed product descriptions..."
                             />
+
+                            {/* Product Highlights Key-Value Editor */}
+                            <div className="space-y-3">
+                                <label className="block text-sm font-semibold text-slate-700">Product Highlights</label>
+                                <div className="space-y-2">
+                                    {highlights.map((hl, idx) => (
+                                        <div key={idx} className="flex items-center gap-3">
+                                            <input 
+                                                type="text"
+                                                value={hl.key}
+                                                onChange={e => {
+                                                    const updated = [...highlights];
+                                                    updated[idx].key = e.target.value;
+                                                    setHighlights(updated);
+                                                }}
+                                                placeholder="Label (e.g. Brand, Material)"
+                                                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                            />
+                                            <input 
+                                                type="text"
+                                                value={hl.value}
+                                                onChange={e => {
+                                                    const updated = [...highlights];
+                                                    updated[idx].value = e.target.value;
+                                                    setHighlights(updated);
+                                                }}
+                                                placeholder="Value (e.g. Samsung, Steel)"
+                                                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                            />
+                                            {highlights.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const updated = highlights.filter((_, i) => i !== idx);
+                                                        setHighlights(updated);
+                                                    }}
+                                                    className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all flex-shrink-0"
+                                                >
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setHighlights([...highlights, { key: '', value: '' }])}
+                                    className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 text-xs font-bold transition-colors mt-2"
+                                >
+                                    + Add New Highlight
+                                </button>
+                            </div>
+
+                            {/* Warranty Period Selector with Custom Option */}
+                            <div className="space-y-3">
+                                <label className="block text-sm font-semibold text-slate-700">Warranty Period</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {['No Warranty', '6 Months', '8 Months', '1 Year', '2 Years', 'Custom'].map((opt) => {
+                                        const isSelected = opt === 'Custom' 
+                                            ? !['No Warranty', '6 Months', '8 Months', '1 Year', '2 Years'].includes(formData.warranty)
+                                            : formData.warranty === opt;
+
+                                        return (
+                                            <button
+                                                key={opt}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (opt === 'Custom') {
+                                                        setFormData({...formData, warranty: ''}); // clear to allow custom entry
+                                                        setCustomWarrantyNumber('');
+                                                        setCustomWarrantyUnit('Months');
+                                                    } else {
+                                                        setFormData({...formData, warranty: opt});
+                                                    }
+                                                }}
+                                                className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                                                    isSelected
+                                                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100'
+                                                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                                }`}
+                                            >
+                                                {opt}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                
+                                {/* Custom Warranty Selector: Number Input + Unit Dropdown */}
+                                {!['No Warranty', '6 Months', '8 Months', '1 Year', '2 Years'].includes(formData.warranty) && (
+                                    <div className="mt-3 flex items-center gap-3 animate-in fade-in duration-200">
+                                        <div className="w-32">
+                                            <input 
+                                                type="number"
+                                                min="1"
+                                                value={customWarrantyNumber}
+                                                onChange={e => {
+                                                    const num = e.target.value;
+                                                    setCustomWarrantyNumber(num);
+                                                    setFormData({...formData, warranty: num ? `${num} ${customWarrantyUnit}` : ''});
+                                                }}
+                                                placeholder="e.g. 18"
+                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                            />
+                                        </div>
+                                        <div className="w-40">
+                                            <select
+                                                value={customWarrantyUnit}
+                                                onChange={e => {
+                                                    const unit = e.target.value;
+                                                    setCustomWarrantyUnit(unit);
+                                                    setFormData({...formData, warranty: customWarrantyNumber ? `${customWarrantyNumber} ${unit}` : ''});
+                                                }}
+                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                            >
+                                                <option value="Days">Days</option>
+                                                <option value="Months">Months</option>
+                                                <option value="Years">Years</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 

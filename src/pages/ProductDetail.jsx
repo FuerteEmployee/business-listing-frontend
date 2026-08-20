@@ -25,8 +25,10 @@ import {
 } from 'lucide-react';
 import Header from '../components/homepage/Header';
 import Footer from '../components/homepage/Footer';
-import { getApiUrl } from '../config/api';
+import { getApiUrl, fetchWithAuth } from '../config/api';
 import { logAnalyticsEvent } from '../utils/tracker';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 export default function ProductDetail() {
     const { slug } = useParams();
@@ -38,6 +40,8 @@ export default function ProductDetail() {
     const [activeImage, setActiveImage] = useState(0);
     const [showFullDescription, setShowFullDescription] = useState(false);
     const [showPhoneModal, setShowPhoneModal] = useState(false);
+    const { isAuthenticated } = useAuth();
+    const [isBookmarked, setIsBookmarked] = useState(false);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -64,6 +68,84 @@ export default function ProductDetail() {
         fetchProduct();
         window.scrollTo(0, 0);
     }, [slug]);
+
+    useEffect(() => {
+        const checkBookmarkStatus = async () => {
+            if (isAuthenticated && product?._id) {
+                try {
+                    const res = await fetchWithAuth(getApiUrl('me/saved-products'));
+                    if (res.ok) {
+                        const data = await res.json();
+                        const savedProducts = data.data || [];
+                        setIsBookmarked(savedProducts.some(item => item._id === product._id));
+                    }
+                } catch (err) {
+                    console.error('Error checking bookmark status:', err);
+                }
+            } else if (product?._id) {
+                try {
+                    const localProductBookmarks = JSON.parse(localStorage.getItem('product_bookmarks') || '[]');
+                    setIsBookmarked(localProductBookmarks.includes(product._id));
+                } catch (err) {
+                    console.error('Error checking local bookmarks:', err);
+                }
+            }
+        };
+        checkBookmarkStatus();
+    }, [product?._id, isAuthenticated]);
+
+    const handleBookmarkToggle = async () => {
+        if (!product?._id) return;
+
+        if (isAuthenticated) {
+            try {
+                const res = await fetchWithAuth(getApiUrl('me/saved-products/toggle'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: product._id })
+                });
+                if (res.ok) {
+                    setIsBookmarked(prev => !prev);
+                    toast.success(!isBookmarked ? 'Product added to favorites!' : 'Product removed from favorites!');
+                } else {
+                    toast.error('Failed to update favorites');
+                }
+            } catch (err) {
+                console.error('Error toggling bookmark:', err);
+                toast.error('An error occurred');
+            }
+        } else {
+            try {
+                const localProductBookmarks = JSON.parse(localStorage.getItem('product_bookmarks') || '[]');
+                const localProductBookmarksData = JSON.parse(localStorage.getItem('product_bookmarks_data') || '[]');
+                let updated;
+                let updatedData;
+                if (localProductBookmarks.includes(product._id)) {
+                    updated = localProductBookmarks.filter(id => id !== product._id);
+                    updatedData = localProductBookmarksData.filter(item => item._id !== product._id);
+                    toast.success('Removed from favorites!');
+                } else {
+                    updated = [...localProductBookmarks, product._id];
+                    updatedData = [...localProductBookmarksData, {
+                        _id: product._id,
+                        name: product.name,
+                        slug: product.slug,
+                        image: product.images?.[0] || null,
+                        price: product.price,
+                        brand: product.brandId?.name || 'Generic',
+                        listing: product.listingId?.name || 'Seller'
+                    }];
+                    toast.success('Added to favorites!');
+                }
+                localStorage.setItem('product_bookmarks', JSON.stringify(updated));
+                localStorage.setItem('product_bookmarks_data', JSON.stringify(updatedData));
+                setIsBookmarked(!localProductBookmarks.includes(product._id));
+                window.dispatchEvent(new Event('bookmarksUpdated'));
+            } catch (err) {
+                console.error('Error toggling local bookmark:', err);
+            }
+        }
+    };
 
     useEffect(() => {
         if (product?.listingId?._id) {
@@ -130,6 +212,20 @@ export default function ProductDetail() {
 
     const images = product.images?.length > 0 ? product.images : [null];
 
+    let highlightsList = null;
+    if (product.highlights) {
+        try {
+            const parsed = JSON.parse(product.highlights);
+            if (Array.isArray(parsed)) {
+                highlightsList = parsed;
+            } else {
+                highlightsList = [{ key: 'Highlight', value: product.highlights }];
+            }
+        } catch (e) {
+            highlightsList = [{ key: 'Highlight', value: product.highlights }];
+        }
+    }
+
     return (
         <div className="min-h-screen bg-white flex flex-col">
             <Header />
@@ -137,32 +233,45 @@ export default function ProductDetail() {
             <main className="flex-1 py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Product Title and Basic Info */}
-                    <div className="mb-8">
-                        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">
-                            {product.brandId?.name && `${product.brandId.name} `}{product.name}
-                        </h1>
-                        
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="flex items-center">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star 
-                                        key={star} 
-                                        className={`w-4 h-4 ${star <= Math.floor(product.listingId?.rating || 4) ? 'fill-orange-400 text-orange-400' : 'text-slate-200'}`} 
-                                    />
-                                ))}
-                                <span className="ml-2 text-sm text-slate-500">{product.listingId?.reviewCount || 2} Ratings</span>
+                    <div className="mb-8 flex justify-between items-start gap-4">
+                        <div className="flex-1">
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">
+                                {product.brandId?.name && `${product.brandId.name} `}{product.name}
+                            </h1>
+                            
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="flex items-center">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star 
+                                            key={star} 
+                                            className={`w-4 h-4 ${star <= Math.floor(product.listingId?.rating || 4) ? 'fill-orange-400 text-orange-400' : 'text-slate-200'}`} 
+                                        />
+                                    ))}
+                                    <span className="ml-2 text-sm text-slate-500">{product.listingId?.reviewCount || 2} Ratings</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="flex items-center gap-2 mb-6">
-                            <span className="text-2xl font-bold text-slate-900">₹ {product.price?.toLocaleString()}</span>
-                            <div className="group relative">
-                                <Info className="w-4 h-4 text-slate-300 cursor-help" />
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                                    Price might vary based on order quantity and location.
+                            <div className="flex items-center gap-2 mb-6">
+                                <span className="text-2xl font-bold text-slate-900">₹ {product.price?.toLocaleString()}</span>
+                                <div className="group relative">
+                                    <Info className="w-4 h-4 text-slate-300 cursor-help" />
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                                        Price might vary based on order quantity and location.
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <button 
+                            onClick={handleBookmarkToggle}
+                            className={`p-3 rounded-2xl shadow-sm transition-all border shrink-0 ${
+                                isBookmarked 
+                                ? 'bg-rose-50 border-rose-200 text-rose-500 hover:bg-rose-100' 
+                                : 'bg-white border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-100'
+                            }`}
+                            title="Save Product"
+                        >
+                            <Heart className={`w-6 h-6 ${isBookmarked ? 'fill-rose-500' : ''}`} />
+                        </button>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -200,42 +309,69 @@ export default function ProductDetail() {
                             {/* Highlights */}
                             <section>
                                 <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">Highlights</h3>
-                                <div className="space-y-3">
-                                    <div className="grid grid-cols-3 gap-4 text-sm">
-                                        <span className="text-slate-500">Brand:</span>
-                                        <span className="col-span-2 text-slate-800 font-medium">{product.brandId?.name || 'Generic'}</span>
+                                {highlightsList && highlightsList.length > 0 ? (
+                                    <div className="space-y-3 bg-slate-50 p-5 rounded-xl border border-slate-100">
+                                        {highlightsList.map((hl, idx) => (
+                                            <div key={idx} className="grid grid-cols-3 gap-4 text-sm">
+                                                <span className="text-slate-500 font-medium">{hl.key}:</span>
+                                                <span className="col-span-2 text-slate-800 font-bold">{hl.value}</span>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div className="grid grid-cols-3 gap-4 text-sm">
-                                        <span className="text-slate-500">Material:</span>
-                                        <span className="col-span-2 text-slate-800 font-medium">High Strength Steel</span>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-4 text-sm">
-                                        <span className="text-slate-500">Type:</span>
-                                        <span className="col-span-2 text-slate-800 font-medium">{product.categoryId?.name || 'Industrial'}</span>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-4 text-sm">
-                                        <span className="text-slate-500">Power Source:</span>
-                                        <span className="col-span-2 text-slate-800 font-medium">Hydraulic</span>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-4 text-sm">
-                                        <span className="text-slate-500">Capacity:</span>
-                                        <span className="col-span-2 text-slate-800 font-medium">100 Tons</span>
-                                    </div>
-                                </div>
-                                <button className="mt-4 text-blue-600 text-sm font-bold hover:underline">View Full Specification</button>
+                                ) : (
+                                    <>
+                                        <div className="space-y-3">
+                                            <div className="grid grid-cols-3 gap-4 text-sm">
+                                                <span className="text-slate-500">Brand:</span>
+                                                <span className="col-span-2 text-slate-800 font-medium">{product.brandId?.name || 'Generic'}</span>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-4 text-sm">
+                                                <span className="text-slate-500">Material:</span>
+                                                <span className="col-span-2 text-slate-800 font-medium">High Strength Steel</span>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-4 text-sm">
+                                                <span className="text-slate-500">Type:</span>
+                                                <span className="col-span-2 text-slate-800 font-medium">{product.categoryId?.name || 'Industrial'}</span>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-4 text-sm">
+                                                <span className="text-slate-500">Power Source:</span>
+                                                <span className="col-span-2 text-slate-800 font-medium">Hydraulic</span>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-4 text-sm">
+                                                <span className="text-slate-500">Capacity:</span>
+                                                <span className="col-span-2 text-slate-800 font-medium">100 Tons</span>
+                                            </div>
+                                        </div>
+                                        <button className="mt-4 text-blue-600 text-sm font-bold hover:underline">View Full Specification</button>
+                                    </>
+                                )}
                             </section>
 
                             {/* Warranty */}
-                            <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <div className="p-2 bg-emerald-100 rounded-full text-emerald-600">
-                                    <CheckCircle2 className="w-5 h-5" />
+                            {product.warranty && product.warranty !== 'No Warranty' ? (
+                                <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                    <div className="p-2 bg-emerald-100 rounded-full text-emerald-600">
+                                        <CheckCircle2 className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-bold text-slate-900">{product.warranty} Warranty</h4>
+                                        <p className="text-xs text-slate-500 mt-1">Comes with brand warranty</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 className="text-sm font-bold text-slate-900">6 Months Warranty</h4>
-                                    <p className="text-xs text-slate-500 mt-1">Comes with brand warranty</p>
-                                    <button className="text-[10px] font-bold text-blue-600 uppercase mt-1">Know More</button>
-                                </div>
-                            </div>
+                            ) : (
+                                !product.warranty && (
+                                    <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div className="p-2 bg-emerald-100 rounded-full text-emerald-600">
+                                            <CheckCircle2 className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-bold text-slate-900">6 Months Warranty</h4>
+                                            <p className="text-xs text-slate-500 mt-1">Comes with brand warranty</p>
+                                            <button className="text-[10px] font-bold text-blue-600 uppercase mt-1">Know More</button>
+                                        </div>
+                                    </div>
+                                )
+                            )}
 
                             {/* Product Description */}
                             <section>
