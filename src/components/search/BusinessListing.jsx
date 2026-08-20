@@ -1,5 +1,4 @@
 import BusinessCard from './BusinessCard';
-import LeadFormSidebar from './LeadFormSidebar';
 import ListingFilters from './ListingFilters';
 import { Button } from '../ui/button';
 import { Loader2, Mail, CheckSquare, Square, X, Wrench, Cpu, Wind, Droplet, Hammer } from 'lucide-react';
@@ -217,8 +216,7 @@ export default function BusinessListing({
                     {/* Sidebar Col */}
                     <div className="hidden lg:block w-[400px] flex-shrink-0">
                         <div className="sticky top-40">
-                            <LeadFormSidebar title={title} />
-                            <div className="mt-8 p-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm relative overflow-hidden">
+                            <div className="p-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm relative overflow-hidden">
                                 <button 
                                     onClick={handleSendToAll}
                                     className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-sm text-center shadow-lg shadow-blue-100 transition-colors block"
