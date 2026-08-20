@@ -111,14 +111,14 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                 <div className="relative ml-auto">
                     <button 
                         onClick={() => setIsFiltersDropdownOpen(prev => !prev)}
-                        className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-all ${
+                        className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 border rounded-xl text-sm font-medium transition-all ${
                             isFiltersDropdownOpen 
-                                ? 'bg-slate-900 border-slate-900 text-white' 
-                                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                                ? 'bg-slate-50 border-slate-300 text-slate-800' 
+                                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
                         }`}
                     >
-                        <Filter className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                        Filters
+                        <span>Filters</span>
+                        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isFiltersDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
                     
                     {isFiltersDropdownOpen && (
