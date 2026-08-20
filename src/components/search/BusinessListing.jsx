@@ -2,7 +2,7 @@ import BusinessCard from './BusinessCard';
 import LeadFormSidebar from './LeadFormSidebar';
 import ListingFilters from './ListingFilters';
 import { Button } from '../ui/button';
-import { Loader2, Mail, CheckSquare, Square, X } from 'lucide-react';
+import { Loader2, Mail, CheckSquare, Square, X, Wrench, Cpu, Wind, Droplet, Hammer } from 'lucide-react';
 import EnquiryModal from '../ui/EnquiryModal';
 import { useState, useEffect, useRef } from 'react';
 
@@ -218,17 +218,38 @@ export default function BusinessListing({
                     <div className="hidden lg:block w-[400px] flex-shrink-0">
                         <div className="sticky top-40">
                             <LeadFormSidebar title={title} />
-                            <div className="mt-8 p-6 bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[2rem] text-white relative overflow-hidden shadow-2xl">
-                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 blur-3xl rounded-full" />
-                                <div className="relative z-10">
-                                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Expert Support</span>
-                                    <h4 className="text-lg font-bold mt-2">Need direct assistance?</h4>
-                                    <p className="text-slate-400 text-xs mt-2 leading-relaxed">
-                                        Our business consultants can help you find the perfect match for your requirements within 24 hours.
-                                    </p>
-                                    <Button variant="primary" size="sm" className="mt-6 w-full bg-indigo-500 hover:bg-indigo-600 border-none">
-                                        Speak with an Expert
-                                    </Button>
+                            <div className="mt-8 p-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm relative overflow-hidden">
+                                <button 
+                                    onClick={handleSendToAll}
+                                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-sm text-center shadow-lg shadow-blue-100 transition-colors block"
+                                >
+                                    Get Quotes
+                                </button>
+                                
+                                <div className="mt-8 border-t border-slate-100 pt-6">
+                                    <h4 className="text-slate-900 text-base font-black tracking-tight mb-5">Trending Searches</h4>
+                                    <div className="space-y-4">
+                                        {[
+                                            { name: 'Pneumatic Hand Tools', icon: Wrench },
+                                            { name: 'Industrial Automation', icon: Cpu },
+                                            { name: 'Air Compressors', icon: Wind },
+                                            { name: 'Fluid Power Systems', icon: Droplet },
+                                            { name: 'Impact Wrenches', icon: Hammer }
+                                        ].map((item) => (
+                                            <button
+                                                key={item.name}
+                                                onClick={() => onFilterChange('q', item.name)}
+                                                className="w-full flex items-center gap-3.5 text-left text-slate-700 hover:text-blue-600 group transition-all"
+                                            >
+                                                <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                                    <item.icon className="w-4 h-4" />
+                                                </div>
+                                                <span className="text-sm font-semibold tracking-tight underline decoration-slate-200 group-hover:decoration-blue-600 underline-offset-4">
+                                                    {item.name}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
