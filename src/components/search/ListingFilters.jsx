@@ -4,6 +4,7 @@ import { useState } from 'react';
 export default function ListingFilters({ activeFilters, onFilterChange, onReset }) {
     const [openDropdown, setOpenDropdown] = useState(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
 
     const filterGroups = [
         { 
@@ -187,18 +188,65 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                                 {/* Sort Section */}
                                 <div>
                                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Sort Results</h3>
-                                    <select 
-                                        value={activeFilters.sort || 'rank'}
-                                        onChange={(e) => onFilterChange('sort', e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer"
-                                    >
-                                        <option value="rank">Featured</option>
-                                        <option value="price_asc">Price: Low to High</option>
-                                        <option value="price_desc">Price: High to Low</option>
-                                        <option value="rating">Avg. Customer Review</option>
-                                        <option value="latest">Newest Arrivals</option>
-                                        <option value="reviews">Best Sellers</option>
-                                    </select>
+                                    <div className="relative">
+                                        <button 
+                                            type="button"
+                                            onClick={() => setIsSortDropdownOpen(prev => !prev)}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 outline-none flex items-center justify-between transition-all cursor-pointer hover:bg-slate-100/50"
+                                        >
+                                            <span>
+                                                {
+                                                    {
+                                                        rank: 'Featured',
+                                                        price_asc: 'Price: Low to High',
+                                                        price_desc: 'Price: High to Low',
+                                                        rating: 'Avg. Customer Review',
+                                                        latest: 'Newest Arrivals',
+                                                        reviews: 'Best Sellers'
+                                                    }[activeFilters.sort || 'rank']
+                                                }
+                                            </span>
+                                            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        
+                                        {isSortDropdownOpen && (
+                                            <>
+                                                <div className="fixed inset-0 z-40" onClick={() => setIsSortDropdownOpen(false)} />
+                                                <div className="absolute left-0 right-0 mt-1 bg-[#2c2c2e] border border-slate-700 rounded-2xl shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5">
+                                                    {[
+                                                        { label: 'Featured', value: 'rank' },
+                                                        { label: 'Price: Low to High', value: 'price_asc' },
+                                                        { label: 'Price: High to Low', value: 'price_desc' },
+                                                        { label: 'Avg. Customer Review', value: 'rating' },
+                                                        { label: 'Newest Arrivals', value: 'latest' },
+                                                        { label: 'Best Sellers', value: 'reviews' }
+                                                    ].map((opt) => {
+                                                        const isSelected = activeFilters.sort === opt.value || (!activeFilters.sort && opt.value === 'rank');
+                                                        return (
+                                                            <button
+                                                                key={opt.value}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    onFilterChange('sort', opt.value);
+                                                                    setIsSortDropdownOpen(false);
+                                                                }}
+                                                                className={`w-full text-left px-3 py-2 text-sm rounded-xl transition-all flex items-center gap-2 ${
+                                                                    isSelected
+                                                                        ? 'bg-blue-600 text-white font-semibold'
+                                                                        : 'text-slate-200 hover:bg-white/10 font-medium'
+                                                                }`}
+                                                            >
+                                                                <span className="w-4 h-4 flex items-center justify-center font-bold text-xs">
+                                                                    {isSelected ? '✓' : ''}
+                                                                </span>
+                                                                <span>{opt.label}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Ratings Section */}
