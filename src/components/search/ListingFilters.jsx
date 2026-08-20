@@ -10,11 +10,12 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
             key: 'sort', 
             label: 'Sort by', 
             options: [
-                { label: 'Relevance', value: 'rank' },
-                { label: 'Top Rated', value: 'rating' },
-                { label: 'Most Reviews', value: 'reviews' },
-                { label: 'Latest', value: 'latest' },
-                { label: 'Nearest', value: 'distance' }
+                { label: 'Featured', value: 'rank' },
+                { label: 'Price: Low to High', value: 'price_asc' },
+                { label: 'Price: High to Low', value: 'price_desc' },
+                { label: 'Avg. Customer Review', value: 'rating' },
+                { label: 'Newest Arrivals', value: 'latest' },
+                { label: 'Best Sellers', value: 'reviews' }
             ] 
         },
         { 
@@ -174,11 +175,12 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Sort Results</h3>
                                     <div className="grid grid-cols-2 gap-2">
                                         {[
-                                            { label: 'Relevance', value: 'rank' },
-                                            { label: 'Top Rated', value: 'rating' },
-                                            { label: 'Most Reviews', value: 'reviews' },
-                                            { label: 'Latest', value: 'latest' },
-                                            { label: 'Nearest', value: 'distance' }
+                                            { label: 'Featured', value: 'rank' },
+                                            { label: 'Price: Low to High', value: 'price_asc' },
+                                            { label: 'Price: High to Low', value: 'price_desc' },
+                                            { label: 'Avg. Customer Review', value: 'rating' },
+                                            { label: 'Newest Arrivals', value: 'latest' },
+                                            { label: 'Best Sellers', value: 'reviews' }
                                         ].map((opt) => (
                                             <button
                                                 key={opt.value}
