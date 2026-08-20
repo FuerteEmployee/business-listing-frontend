@@ -71,23 +71,27 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                         {openDropdown === group.key && (
                             <>
                                 <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
-                                <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 animate-in fade-in zoom-in-95 duration-100">
-                                    {group.options.map((opt) => (
-                                        <button
-                                            key={opt.value}
-                                            onClick={() => {
-                                                onFilterChange(group.key, opt.value);
-                                                setOpenDropdown(null);
-                                            }}
-                                            className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                                                activeFilters[group.key] === opt.value
-                                                    ? 'bg-orange-50 text-orange-700'
-                                                    : 'hover:bg-slate-50 text-slate-600'
-                                            }`}
-                                        >
-                                            {opt.label}
-                                        </button>
-                                    ))}
+                                <div className="absolute top-full left-0 mt-2 w-60 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100">
+                                    {group.options.map((opt) => {
+                                        const isSelected = activeFilters[group.key] === opt.value || 
+                                                           (group.key === 'sort' && !activeFilters.sort && opt.value === 'rank');
+                                        return (
+                                            <button
+                                                key={opt.value}
+                                                onClick={() => {
+                                                    onFilterChange(group.key, opt.value);
+                                                    setOpenDropdown(null);
+                                                }}
+                                                className={`w-full text-left px-4 py-2.5 text-sm transition-all border-l-4 ${
+                                                    isSelected
+                                                        ? 'bg-blue-50/70 border-blue-600 text-blue-700 font-bold'
+                                                        : 'border-transparent hover:bg-slate-50 text-slate-700 font-medium'
+                                                }`}
+                                            >
+                                                {opt.label}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </>
                         )}
@@ -173,7 +177,7 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                                 {/* Sort Section */}
                                 <div>
                                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Sort Results</h3>
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm divide-y divide-slate-100">
                                         {[
                                             { label: 'Featured', value: 'rank' },
                                             { label: 'Price: Low to High', value: 'price_asc' },
@@ -181,19 +185,23 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                                             { label: 'Avg. Customer Review', value: 'rating' },
                                             { label: 'Newest Arrivals', value: 'latest' },
                                             { label: 'Best Sellers', value: 'reviews' }
-                                        ].map((opt) => (
-                                            <button
-                                                key={opt.value}
-                                                onClick={() => onFilterChange('sort', opt.value)}
-                                                className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition-all text-center ${
-                                                    activeFilters.sort === opt.value
-                                                        ? 'bg-slate-900 border-slate-900 text-white shadow-md'
-                                                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                                                }`}
-                                            >
-                                                {opt.label}
-                                            </button>
-                                        ))}
+                                        ].map((opt) => {
+                                            const isSelected = activeFilters.sort === opt.value || (!activeFilters.sort && opt.value === 'rank');
+                                            return (
+                                                <button
+                                                    key={opt.value}
+                                                    onClick={() => onFilterChange('sort', opt.value)}
+                                                    className={`w-full text-left px-4 py-3 text-sm transition-all border-l-4 flex items-center justify-between ${
+                                                        isSelected
+                                                            ? 'bg-blue-50/70 border-blue-600 text-blue-700 font-bold'
+                                                            : 'border-transparent hover:bg-slate-50 text-slate-600 font-medium'
+                                                    }`}
+                                                >
+                                                    <span>{opt.label}</span>
+                                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-scale-in" />}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
