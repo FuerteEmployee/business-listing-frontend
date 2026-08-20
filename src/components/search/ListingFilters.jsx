@@ -234,10 +234,10 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Price Level</h3>
                                     <div className="flex gap-2">
                                         {[
-                                            { label: '$', value: '$', title: 'Budget' },
-                                            { label: '$$', value: '$$', title: 'Mid' },
-                                            { label: '$$$', value: '$$$', title: 'Luxury' },
-                                            { label: '$$$$', value: '$$$$', title: 'Ultra' }
+                                            { label: '₹', value: '$', title: 'Budget' },
+                                            { label: '₹₹', value: '$$', title: 'Mid' },
+                                            { label: '₹₹₹', value: '$$$', title: 'Luxury' },
+                                            { label: '₹₹₹₹', value: '$$$$', title: 'Ultra' }
                                         ].map((opt) => {
                                             const isSelected = activeFilters.priceRange === opt.value;
                                             return (
