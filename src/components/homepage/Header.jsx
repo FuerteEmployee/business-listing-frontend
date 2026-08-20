@@ -373,17 +373,17 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                     )}
                                 </div>
 
-                                {/* Saved Products Dropdown (Authenticated) */}
+                                {/* Saved Businesses Dropdown (Authenticated) */}
                                 <div className="relative animate-fade-in" ref={productsRef}>
                                     <button
                                         onClick={() => setIsProductsOpen(prev => !prev)}
                                         className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors relative ${isProductsOpen ? 'bg-slate-100 text-orange-600' : 'text-slate-600 hover:bg-slate-50 hover:text-orange-500'}`}
-                                        title="Saved Products"
+                                        title="Saved Businesses"
                                     >
-                                        <Bookmark className={`w-5 h-5 ${savedProducts.length > 0 ? 'fill-orange-500 text-orange-500' : ''}`} />
-                                        {savedProducts.length > 0 && (
+                                        <Bookmark className={`w-5 h-5 ${favoriteItems.length > 0 ? 'fill-orange-500 text-orange-500' : ''}`} />
+                                        {favoriteItems.length > 0 && (
                                             <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-scale-in">
-                                                {savedProducts.length}
+                                                {favoriteItems.length}
                                             </span>
                                         )}
                                     </button>
@@ -392,45 +392,45 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                         <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
                                                 <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
-                                                    <Bookmark className="w-4 h-4 text-orange-500 fill-orange-500" /> Saved Products
+                                                    <Bookmark className="w-4 h-4 text-orange-500 fill-orange-500" /> Saved Businesses
                                                 </h3>
                                                 <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full uppercase">
-                                                    {savedProducts.length} Saved
+                                                    {favoriteItems.length} Saved
                                                 </span>
                                             </div>
                                             <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
-                                                {savedProducts.length > 0 ? (
-                                                    savedProducts.map((item) => (
-                                                        <Link 
-                                                            key={item._id}
-                                                            to={`/product/${item.slug}`}
-                                                            onClick={() => setIsProductsOpen(false)}
-                                                            className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
-                                                        >
-                                                            <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
-                                                                {item.images?.[0] || item.image ? (
-                                                                    <img src={item.images?.[0] || item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
-                                                                        {item.name?.charAt(0)}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <h4 className="font-bold text-xs text-slate-900 group-hover:text-orange-600 transition-colors truncate">
-                                                                    {item.name}
-                                                                </h4>
-                                                                <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
-                                                                    {item.brandId?.name || item.brand || 'Generic'} • ₹{item.price?.toLocaleString()}
-                                                                </p>
-                                                            </div>
-                                                        </Link>
+                                                {favoriteItems.length > 0 ? (
+                                                    favoriteItems.map((item) => (
+                                                         <Link 
+                                                             key={item._id}
+                                                             to={`/business/${item.slug}`}
+                                                             onClick={() => setIsProductsOpen(false)}
+                                                             className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
+                                                         >
+                                                             <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                                                                 {item.image ? (
+                                                                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                                 ) : (
+                                                                     <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
+                                                                         {item.name?.charAt(0)}
+                                                                     </div>
+                                                                 )}
+                                                             </div>
+                                                             <div className="flex-1 min-w-0">
+                                                                 <h4 className="font-bold text-xs text-slate-900 group-hover:text-orange-600 transition-colors truncate">
+                                                                     {item.name}
+                                                                 </h4>
+                                                                 <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                                                     {item.category || 'Business'} • {item.city || 'Location'}
+                                                                 </p>
+                                                             </div>
+                                                         </Link>
                                                     ))
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center py-8 text-center">
-                                                        <Bookmark className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
-                                                        <p className="text-xs text-slate-500 font-bold">No saved products yet</p>
-                                                        <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Like products to see them here for quick access.</p>
+                                                         <Bookmark className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
+                                                         <p className="text-xs text-slate-500 font-bold">No saved businesses yet</p>
+                                                         <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Save businesses to see them here for quick access.</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -445,17 +445,17 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                     )}
                                 </div>
 
-                                {/* Favorites Dropdown (Authenticated) */}
+                                {/* Saved Products Dropdown (Authenticated) */}
                                 <div className="relative animate-fade-in" ref={favoritesRef}>
                                     <button
                                         onClick={() => setIsFavoritesOpen(prev => !prev)}
                                         className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors relative ${isFavoritesOpen ? 'bg-slate-100 text-rose-600' : 'text-slate-600 hover:bg-slate-50 hover:text-rose-500'}`}
-                                        title="My Favorites"
+                                        title="Saved Products"
                                     >
-                                        <Heart className={`w-5 h-5 ${favoriteItems.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
-                                        {favoriteItems.length > 0 && (
+                                        <Heart className={`w-5 h-5 ${savedProducts.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
+                                        {savedProducts.length > 0 && (
                                             <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                                                {favoriteItems.length}
+                                                {savedProducts.length}
                                             </span>
                                         )}
                                     </button>
@@ -464,45 +464,45 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                         <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
                                                 <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
-                                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Favorites
+                                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Saved Products
                                                 </h3>
                                                 <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase">
-                                                    {favoriteItems.length} Liked
+                                                    {savedProducts.length} Saved
                                                 </span>
                                             </div>
                                             <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
-                                                {favoriteItems.length > 0 ? (
-                                                    favoriteItems.map((item) => (
-                                                        <Link 
-                                                            key={item._id}
-                                                            to={`/business/${item.slug}`}
-                                                            onClick={() => setIsFavoritesOpen(false)}
-                                                            className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
-                                                        >
-                                                            <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                                                                {item.image ? (
-                                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
-                                                                        {item.name?.charAt(0)}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <h4 className="font-bold text-xs text-slate-900 group-hover:text-rose-600 transition-colors truncate">
-                                                                    {item.name}
-                                                                </h4>
-                                                                <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
-                                                                    {item.category || 'Business'} • {item.city || 'Location'}
-                                                                </p>
-                                                            </div>
-                                                        </Link>
+                                                {savedProducts.length > 0 ? (
+                                                    savedProducts.map((item) => (
+                                                         <Link 
+                                                             key={item._id}
+                                                             to={`/product/${item.slug}`}
+                                                             onClick={() => setIsFavoritesOpen(false)}
+                                                             className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
+                                                         >
+                                                             <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
+                                                                 {item.images?.[0] || item.image ? (
+                                                                     <img src={item.images?.[0] || item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
+                                                                 ) : (
+                                                                     <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
+                                                                         {item.name?.charAt(0)}
+                                                                     </div>
+                                                                 )}
+                                                             </div>
+                                                             <div className="flex-1 min-w-0">
+                                                                 <h4 className="font-bold text-xs text-slate-900 group-hover:text-rose-600 transition-colors truncate">
+                                                                     {item.name}
+                                                                 </h4>
+                                                                 <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                                                     {item.brandId?.name || item.brand || 'Generic'} • ₹{item.price?.toLocaleString()}
+                                                                 </p>
+                                                             </div>
+                                                         </Link>
                                                     ))
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center py-8 text-center">
-                                                        <Heart className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
-                                                        <p className="text-xs text-slate-500 font-bold">No liked companies yet</p>
-                                                        <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Like companies to see them here for quick access.</p>
+                                                         <Heart className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
+                                                         <p className="text-xs text-slate-500 font-bold">No saved products yet</p>
+                                                         <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Save products to see them here for quick access.</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -554,17 +554,17 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                             </div>
                          ) : (
                             <div className="flex items-center gap-3">
-                                {/* Saved Products Dropdown (Guest) */}
+                                {/* Saved Businesses Dropdown (Guest) */}
                                 <div className="relative animate-fade-in" ref={productsGuestRef}>
                                     <button
                                         onClick={() => setIsProductsOpen(prev => !prev)}
                                         className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors relative ${isProductsOpen ? 'bg-slate-100 text-orange-600' : 'text-slate-600 hover:bg-slate-50 hover:text-orange-500'}`}
-                                        title="Saved Products"
+                                        title="Saved Businesses"
                                     >
-                                        <Bookmark className={`w-5 h-5 ${savedProducts.length > 0 ? 'fill-orange-500 text-orange-500' : ''}`} />
-                                        {savedProducts.length > 0 && (
+                                        <Bookmark className={`w-5 h-5 ${favoriteItems.length > 0 ? 'fill-orange-500 text-orange-500' : ''}`} />
+                                        {favoriteItems.length > 0 && (
                                             <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                                                {savedProducts.length}
+                                                {favoriteItems.length}
                                             </span>
                                         )}
                                     </button>
@@ -573,45 +573,45 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                         <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
                                                 <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
-                                                    <Bookmark className="w-4 h-4 text-orange-500 fill-orange-500" /> Saved Products
+                                                    <Bookmark className="w-4 h-4 text-orange-500 fill-orange-500" /> Saved Businesses
                                                 </h3>
                                                 <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full uppercase">
-                                                    {savedProducts.length} Saved
+                                                    {favoriteItems.length} Saved
                                                 </span>
                                             </div>
                                             <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
-                                                {savedProducts.length > 0 ? (
-                                                    savedProducts.map((item) => (
-                                                        <Link 
-                                                            key={item._id}
-                                                            to={`/product/${item.slug}`}
-                                                            onClick={() => setIsProductsOpen(false)}
-                                                            className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
-                                                        >
-                                                            <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
-                                                                {item.images?.[0] || item.image ? (
-                                                                    <img src={item.images?.[0] || item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
-                                                                        {item.name?.charAt(0)}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
+                                                {favoriteItems.length > 0 ? (
+                                                    favoriteItems.map((item) => (
+                                                         <Link 
+                                                             key={item._id}
+                                                             to={`/business/${item.slug}`}
+                                                             onClick={() => setIsProductsOpen(false)}
+                                                             className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
+                                                         >
+                                                             <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                                                                 {item.image ? (
+                                                                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                                 ) : (
+                                                                     <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
+                                                                         {item.name?.charAt(0)}
+                                                                     </div>
+                                                                 )}
+                                                             </div>
+                                                             <div className="flex-1 min-w-0">
                                                                  <h4 className="font-bold text-xs text-slate-900 group-hover:text-orange-600 transition-colors truncate">
                                                                      {item.name}
                                                                  </h4>
                                                                  <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
-                                                                     {item.brandId?.name || item.brand || 'Generic'} • ₹{item.price?.toLocaleString()}
+                                                                     {item.category || 'Business'} • {item.city || 'Location'}
                                                                  </p>
-                                                            </div>
-                                                        </Link>
+                                                             </div>
+                                                         </Link>
                                                     ))
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center py-8 text-center">
-                                                        <Bookmark className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
-                                                        <p className="text-xs text-slate-500 font-bold">No saved products yet</p>
-                                                        <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Like products to see them here for quick access.</p>
+                                                         <Bookmark className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
+                                                         <p className="text-xs text-slate-500 font-bold">No saved businesses yet</p>
+                                                         <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Save businesses to see them here for quick access.</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -619,17 +619,17 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                     )}
                                 </div>
 
-                                {/* Favorites Dropdown (Guest) */}
+                                {/* Saved Products Dropdown (Guest) */}
                                 <div className="relative animate-fade-in" ref={favoritesGuestRef}>
                                     <button
                                         onClick={() => setIsFavoritesOpen(prev => !prev)}
                                         className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors relative ${isFavoritesOpen ? 'bg-slate-100 text-rose-600' : 'text-slate-600 hover:bg-slate-50 hover:text-rose-500'}`}
-                                        title="My Favorites"
+                                        title="Saved Products"
                                     >
-                                        <Heart className={`w-5 h-5 ${favoriteItems.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
-                                        {favoriteItems.length > 0 && (
+                                        <Heart className={`w-5 h-5 ${savedProducts.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
+                                        {savedProducts.length > 0 && (
                                             <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                                                {favoriteItems.length}
+                                                {savedProducts.length}
                                             </span>
                                         )}
                                     </button>
@@ -638,45 +638,45 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                         <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
                                                 <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
-                                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Favorites
+                                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Saved Products
                                                 </h3>
                                                 <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase">
-                                                    {favoriteItems.length} Liked
+                                                    {savedProducts.length} Saved
                                                 </span>
                                             </div>
                                             <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
-                                                {favoriteItems.length > 0 ? (
-                                                    favoriteItems.map((item) => (
-                                                        <Link 
-                                                            key={item._id}
-                                                            to={`/business/${item.slug}`}
-                                                            onClick={() => setIsFavoritesOpen(false)}
-                                                            className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
-                                                        >
-                                                            <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                                                                {item.image ? (
-                                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
-                                                                        {item.name?.charAt(0)}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <h4 className="font-bold text-xs text-slate-900 group-hover:text-rose-600 transition-colors truncate">
-                                                                    {item.name}
-                                                                </h4>
-                                                                <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
-                                                                    {item.category || 'Business'} • {item.city || 'Location'}
-                                                                </p>
-                                                            </div>
-                                                        </Link>
+                                                {savedProducts.length > 0 ? (
+                                                    savedProducts.map((item) => (
+                                                         <Link 
+                                                             key={item._id}
+                                                             to={`/product/${item.slug}`}
+                                                             onClick={() => setIsFavoritesOpen(false)}
+                                                             className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors group text-left w-full block"
+                                                         >
+                                                             <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
+                                                                 {item.images?.[0] || item.image ? (
+                                                                     <img src={item.images?.[0] || item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
+                                                                 ) : (
+                                                                     <div className="w-full h-full flex items-center justify-center bg-orange-50 text-orange-600 font-bold text-sm">
+                                                                         {item.name?.charAt(0)}
+                                                                     </div>
+                                                                 )}
+                                                             </div>
+                                                             <div className="flex-1 min-w-0">
+                                                                 <h4 className="font-bold text-xs text-slate-900 group-hover:text-rose-600 transition-colors truncate">
+                                                                     {item.name}
+                                                                 </h4>
+                                                                 <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                                                                     {item.brandId?.name || item.brand || 'Generic'} • ₹{item.price?.toLocaleString()}
+                                                                 </p>
+                                                             </div>
+                                                         </Link>
                                                     ))
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center py-8 text-center">
-                                                        <Heart className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
-                                                        <p className="text-xs text-slate-500 font-bold">No liked companies yet</p>
-                                                        <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Like companies to see them here for quick access.</p>
+                                                         <Heart className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
+                                                         <p className="text-xs text-slate-500 font-bold">No saved products yet</p>
+                                                         <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Save products to see them here for quick access.</p>
                                                     </div>
                                                 )}
                                             </div>

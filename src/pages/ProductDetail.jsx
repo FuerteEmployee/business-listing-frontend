@@ -266,12 +266,12 @@ export default function ProductDetail() {
                             onClick={handleBookmarkToggle}
                             className={`p-3 rounded-2xl shadow-sm transition-all border shrink-0 ${
                                 isBookmarked 
-                                ? 'bg-orange-50 border-orange-200 text-orange-500 hover:bg-orange-100' 
-                                : 'bg-white border-slate-200 text-slate-400 hover:text-orange-500 hover:border-orange-100'
+                                ? 'bg-rose-50 border-rose-200 text-rose-500 hover:bg-rose-100' 
+                                : 'bg-white border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-100'
                             }`}
                             title="Save Product"
                         >
-                            <Bookmark className={`w-6 h-6 ${isBookmarked ? 'fill-orange-500 text-orange-500' : ''}`} />
+                            <Heart className={`w-6 h-6 ${isBookmarked ? 'fill-rose-500 text-rose-500' : ''}`} />
                         </button>
                     </div>
 
