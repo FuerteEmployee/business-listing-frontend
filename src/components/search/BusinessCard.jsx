@@ -171,7 +171,7 @@ export default function BusinessCard({ business, onEnquiryClick }) {
                             className="p-2 rounded-full hover:bg-slate-100 transition-colors"
                             title="Save Business"
                         >
-                            <Heart className={`w-5 h-5 ${isBookmarked ? 'text-rose-500 fill-rose-500' : 'text-slate-400'}`} />
+                            <Bookmark className={`w-5 h-5 ${isBookmarked ? 'text-orange-500 fill-orange-500' : 'text-slate-400'}`} />
                         </button>
                     </div>
 
