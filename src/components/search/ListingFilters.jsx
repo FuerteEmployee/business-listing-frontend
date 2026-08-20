@@ -173,102 +173,94 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                             </div>
 
                             {/* Drawer Body */}
-                            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6">
                                 {/* Sort Section */}
                                 <div>
-                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Sort Results</h3>
-                                    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm divide-y divide-slate-100">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Sort Results</h3>
+                                    <select 
+                                        value={activeFilters.sort || 'rank'}
+                                        onChange={(e) => onFilterChange('sort', e.target.value)}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer"
+                                    >
+                                        <option value="rank">Featured</option>
+                                        <option value="price_asc">Price: Low to High</option>
+                                        <option value="price_desc">Price: High to Low</option>
+                                        <option value="rating">Avg. Customer Review</option>
+                                        <option value="latest">Newest Arrivals</option>
+                                        <option value="reviews">Best Sellers</option>
+                                    </select>
+                                </div>
+
+                                {/* Ratings Section */}
+                                <div>
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Minimum Rating</h3>
+                                    <div className="flex flex-wrap gap-2">
                                         {[
-                                            { label: 'Featured', value: 'rank' },
-                                            { label: 'Price: Low to High', value: 'price_asc' },
-                                            { label: 'Price: High to Low', value: 'price_desc' },
-                                            { label: 'Avg. Customer Review', value: 'rating' },
-                                            { label: 'Newest Arrivals', value: 'latest' },
-                                            { label: 'Best Sellers', value: 'reviews' }
+                                            { label: 'Any', value: '' },
+                                            { label: '3.5+ ★', value: '3.5' },
+                                            { label: '4.0+ ★', value: '4' },
+                                            { label: '4.5+ ★', value: '4.5' }
                                         ].map((opt) => {
-                                            const isSelected = activeFilters.sort === opt.value || (!activeFilters.sort && opt.value === 'rank');
+                                            const isSelected = activeFilters.rating === opt.value;
                                             return (
                                                 <button
                                                     key={opt.value}
-                                                    onClick={() => onFilterChange('sort', opt.value)}
-                                                    className={`w-full text-left px-4 py-3 text-sm transition-all border-l-4 flex items-center justify-between ${
+                                                    onClick={() => onFilterChange('rating', opt.value)}
+                                                    className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold border transition-all text-center ${
                                                         isSelected
-                                                            ? 'bg-blue-50/70 border-blue-600 text-blue-700 font-bold'
-                                                            : 'border-transparent hover:bg-slate-50 text-slate-600 font-medium'
+                                                            ? 'bg-blue-50/70 border-blue-500 text-blue-700 font-bold shadow-sm'
+                                                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
                                                     }`}
                                                 >
-                                                    <span>{opt.label}</span>
-                                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-scale-in" />}
+                                                    {opt.label}
                                                 </button>
                                             );
                                         })}
                                     </div>
                                 </div>
 
-                                {/* Ratings Section */}
-                                <div>
-                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Minimum Rating</h3>
-                                    <div className="space-y-2">
-                                        {[
-                                            { label: '4.5+ Stars', value: '4.5' },
-                                            { label: '4.0+ Stars', value: '4' },
-                                            { label: '3.5+ Stars', value: '3.5' },
-                                            { label: 'Any Rating', value: '' }
-                                        ].map((opt) => (
-                                            <button
-                                                key={opt.value}
-                                                onClick={() => onFilterChange('rating', opt.value)}
-                                                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold border transition-all flex items-center justify-between ${
-                                                    activeFilters.rating === opt.value
-                                                        ? 'bg-orange-50 border-orange-200 text-orange-700 font-bold'
-                                                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                                                }`}
-                                            >
-                                                <span>{opt.label}</span>
-                                                {activeFilters.rating === opt.value && <div className="w-2 h-2 rounded-full bg-orange-500" />}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
                                 {/* Price Range Section */}
                                 <div>
-                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Price Level</h3>
-                                    <div className="grid grid-cols-4 gap-2">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Price Level</h3>
+                                    <div className="flex gap-2">
                                         {[
-                                            { label: 'Budget ($)', value: '$' },
-                                            { label: 'Mid ($$)', value: '$$' },
-                                            { label: 'Lux ($$$)', value: '$$$' },
-                                            { label: 'Ultra ($$$$)', value: '$$$$' }
-                                        ].map((opt) => (
-                                            <button
-                                                key={opt.value}
-                                                onClick={() => onFilterChange('priceRange', activeFilters.priceRange === opt.value ? '' : opt.value)}
-                                                className={`py-3 rounded-xl text-xs font-bold border transition-all text-center ${
-                                                    activeFilters.priceRange === opt.value
-                                                        ? 'bg-orange-50 border-orange-200 text-orange-700 shadow-sm font-bold'
-                                                        : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                                                }`}
-                                            >
-                                                {opt.label}
-                                            </button>
-                                        ))}
+                                            { label: '$', value: '$', title: 'Budget' },
+                                            { label: '$$', value: '$$', title: 'Mid' },
+                                            { label: '$$$', value: '$$$', title: 'Luxury' },
+                                            { label: '$$$$', value: '$$$$', title: 'Ultra' }
+                                        ].map((opt) => {
+                                            const isSelected = activeFilters.priceRange === opt.value;
+                                            return (
+                                                <button
+                                                    key={opt.value}
+                                                    onClick={() => onFilterChange('priceRange', activeFilters.priceRange === opt.value ? '' : opt.value)}
+                                                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all text-center ${
+                                                        isSelected
+                                                            ? 'bg-blue-50/70 border-blue-500 text-blue-700 shadow-sm font-bold'
+                                                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                                    }`}
+                                                    title={opt.title}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
                                 {/* Availability Section */}
                                 <div>
-                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Availability</h3>
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Availability</h3>
                                     <button
                                         onClick={() => onFilterChange('openNow', activeFilters.openNow === 'true' ? '' : 'true')}
                                         className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold border transition-all flex items-center justify-between ${
                                             activeFilters.openNow === 'true'
-                                                ? 'bg-orange-50 border-orange-200 text-orange-700 font-bold'
+                                                ? 'bg-blue-50/70 border-blue-500 text-blue-700 font-bold'
                                                 : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                                         }`}
                                     >
                                         <span>Open Now Only</span>
-                                        <div className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-200 focus:outline-none ${activeFilters.openNow === 'true' ? 'bg-orange-500 flex justify-end' : 'bg-slate-200 flex justify-start'}`}>
+                                        <div className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-200 focus:outline-none ${activeFilters.openNow === 'true' ? 'bg-blue-600 flex justify-end' : 'bg-slate-200 flex justify-start'}`}>
                                             <div className="w-3 h-3 rounded-full bg-white shadow-sm" />
                                         </div>
                                     </button>
