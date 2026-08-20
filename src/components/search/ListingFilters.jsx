@@ -249,62 +249,6 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                                     </div>
                                 </div>
 
-                                {/* Ratings Section */}
-                                <div>
-                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Minimum Rating</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {[
-                                            { label: 'Any', value: '' },
-                                            { label: '3.5+ ★', value: '3.5' },
-                                            { label: '4.0+ ★', value: '4' },
-                                            { label: '4.5+ ★', value: '4.5' }
-                                        ].map((opt) => {
-                                            const isSelected = activeFilters.rating === opt.value;
-                                            return (
-                                                <button
-                                                    key={opt.value}
-                                                    onClick={() => onFilterChange('rating', opt.value)}
-                                                    className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold border transition-all text-center ${
-                                                        isSelected
-                                                            ? 'bg-blue-50/70 border-blue-500 text-blue-700 font-bold shadow-sm'
-                                                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                                                    }`}
-                                                >
-                                                    {opt.label}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* Price Range Section */}
-                                <div>
-                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Price Level</h3>
-                                    <div className="flex gap-2">
-                                        {[
-                                            { label: '₹', value: '$', title: 'Budget' },
-                                            { label: '₹₹', value: '$$', title: 'Mid' },
-                                            { label: '₹₹₹', value: '$$$', title: 'Luxury' },
-                                            { label: '₹₹₹₹', value: '$$$$', title: 'Ultra' }
-                                        ].map((opt) => {
-                                            const isSelected = activeFilters.priceRange === opt.value;
-                                            return (
-                                                <button
-                                                    key={opt.value}
-                                                    onClick={() => onFilterChange('priceRange', activeFilters.priceRange === opt.value ? '' : opt.value)}
-                                                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all text-center ${
-                                                        isSelected
-                                                            ? 'bg-blue-50/70 border-blue-500 text-blue-700 shadow-sm font-bold'
-                                                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                                                    }`}
-                                                    title={opt.title}
-                                                >
-                                                    {opt.label}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
 
                                 {/* Availability Section */}
                                 <div>
