@@ -32,10 +32,10 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
             key: 'priceRange', 
             label: 'Price', 
             options: [
-                { label: 'Budget ($)', value: '$' },
-                { label: 'Mid-range ($$)', value: '$$' },
-                { label: 'Luxury ($$$)', value: '$$$' },
-                { label: 'Ultra ($$$$)', value: '$$$$' }
+                { label: 'Budget (₹)', value: '$' },
+                { label: 'Mid-range (₹₹)', value: '$$' },
+                { label: 'Luxury (₹₹₹)', value: '$$$' },
+                { label: 'Ultra (₹₹₹₹)', value: '$$$$' }
             ] 
         },
         {
@@ -124,9 +124,19 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                         if (!value || key === 'q' || key === 'category' || key === 'categoryId' || key === 'city' || (key === 'sort' && value === 'rank')) return null;
                         
                         let label = '';
-                        if (key === 'sort') label = `Sort: ${value === 'rating' ? 'Top Rated' : value === 'reviews' ? 'Most Reviews' : value === 'latest' ? 'Latest' : 'Nearest'}`;
+                        if (key === 'sort') {
+                            const sortNames = {
+                                rank: 'Featured',
+                                price_asc: 'Price: Low to High',
+                                price_desc: 'Price: High to Low',
+                                rating: 'Avg. Customer Review',
+                                latest: 'Newest Arrivals',
+                                reviews: 'Best Sellers'
+                            };
+                            label = `Sort: ${sortNames[value] || value}`;
+                        }
                         else if (key === 'rating') label = `Rating: ${value}+ Stars`;
-                        else if (key === 'priceRange') label = `Price: ${value}`;
+                        else if (key === 'priceRange') label = `Price: ${value.replace(/\$/g, '₹')}`;
                         else if (key === 'openNow' && value === 'true') label = 'Availability: Open Now';
                         else return null;
 

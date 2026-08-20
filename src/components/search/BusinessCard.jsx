@@ -158,7 +158,7 @@ export default function BusinessCard({ business, onEnquiryClick }) {
                                     {business.reviewCount || 0} Ratings
                                 </span>
                                 <span className="text-xs font-black text-slate-400">
-                                    {business.priceRange || '$$'}
+                                    {business.priceRange ? business.priceRange.replace(/\$/g, '₹') : '₹₹'}
                                 </span>
                                 <span className="flex items-center gap-1 text-[10px] bg-slate-100 px-2 py-0.5 rounded font-bold text-slate-600 uppercase">
                                     <Search className="w-3 h-3 text-orange-500" />
