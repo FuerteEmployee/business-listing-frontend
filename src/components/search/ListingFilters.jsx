@@ -124,7 +124,7 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                     {isFiltersDropdownOpen && (
                         <>
                             <div className="fixed inset-0 z-40" onClick={() => setIsFiltersDropdownOpen(false)} />
-                            <div className="absolute right-0 top-full mt-2 w-64 bg-[#2c2c2e] border border-slate-700 rounded-2xl shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5">
+                            <div className="absolute right-0 top-full mt-2 w-64 bg-white/90 backdrop-blur-md border border-slate-200 rounded-2xl shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5">
                                 {[
                                     { label: 'Featured', value: 'rank' },
                                     { label: 'Price: Low to High', value: 'price_asc' },
@@ -144,8 +144,8 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
                                             }}
                                             className={`w-full text-left px-3 py-2 text-sm rounded-xl transition-all flex items-center gap-2 ${
                                                 isSelected
-                                                    ? 'bg-blue-600 text-white font-semibold'
-                                                    : 'text-slate-200 hover:bg-white/10 font-medium'
+                                                    ? 'bg-blue-600 text-white font-semibold shadow-sm'
+                                                    : 'text-slate-700 hover:bg-slate-100/80 font-medium'
                                             }`}
                                         >
                                             <span className="w-4 h-4 flex items-center justify-center font-bold text-xs text-white">
