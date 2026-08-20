@@ -1,11 +1,90 @@
 import { Star, MapPin, Phone, MessageSquare, ChevronLeft, ChevronRight, ShieldCheck, Wifi, Search, Bookmark, Tag, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../ui/badge';
+import { useAuth } from '../../context/AuthContext';
+import { getApiUrl, fetchWithAuth } from '../../config/api';
+import { toast } from 'react-hot-toast';
 
 export default function BusinessCard({ business, onEnquiryClick }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [showPhoneModal, setShowPhoneModal] = useState(false);
+    const { isAuthenticated } = useAuth();
+    const [isBookmarked, setIsBookmarked] = useState(false);
+
+    useEffect(() => {
+        const checkBookmark = async () => {
+            if (isAuthenticated) {
+                try {
+                    const res = await fetchWithAuth(getApiUrl('me/saved'));
+                    if (res.ok) {
+                        const data = await res.json();
+                        const list = data.data || [];
+                        setIsBookmarked(list.some(item => item._id === business._id));
+                    }
+                } catch (e) {
+                    console.error('Error checking saved business status:', e);
+                }
+            } else {
+                const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+                setIsBookmarked(bookmarks.includes(business._id));
+            }
+        };
+        checkBookmark();
+    }, [business._id, isAuthenticated]);
+
+    const handleBookmarkToggle = async (e) => {
+        e.preventDefault();
+        if (isAuthenticated) {
+            try {
+                const res = await fetchWithAuth(getApiUrl('me/saved/toggle'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ businessId: business._id })
+                });
+                if (res.ok) {
+                    setIsBookmarked(!isBookmarked);
+                    toast.success(!isBookmarked ? 'Business added to favorites!' : 'Business removed from favorites!');
+                    window.dispatchEvent(new Event('bookmarksUpdated'));
+                } else {
+                    toast.error('Failed to update favorites');
+                }
+            } catch (err) {
+                console.error('Error toggling business save status:', err);
+                toast.error('An error occurred');
+            }
+        } else {
+            try {
+                const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+                const bookmarksData = JSON.parse(localStorage.getItem('bookmarks_data') || '[]');
+                let updatedBookmarks;
+                let updatedBookmarksData;
+                if (bookmarks.includes(business._id)) {
+                    updatedBookmarks = bookmarks.filter(id => id !== business._id);
+                    updatedBookmarksData = bookmarksData.filter(item => item._id !== business._id);
+                    toast.success('Removed from favorites!');
+                } else {
+                    updatedBookmarks = [...bookmarks, business._id];
+                    updatedBookmarksData = [...bookmarksData, {
+                        _id: business._id,
+                        name: business.name,
+                        slug: business.slug,
+                        image: business.image || business.images?.[0] || fallbackImage,
+                        category: typeof business.category === 'object' ? business.category.name : business.category,
+                        rating: business.rating,
+                        city: business.city_id?.name || business.city?.name || 'Location'
+                    }];
+                    toast.success('Added to favorites!');
+                }
+                localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks));
+                localStorage.setItem('bookmarks_data', JSON.stringify(updatedBookmarksData));
+                setIsBookmarked(!bookmarks.includes(business._id));
+                window.dispatchEvent(new Event('bookmarksUpdated'));
+            } catch (err) {
+                console.error('Error saving local business bookmark:', err);
+            }
+        }
+    };
     const phoneNumbers = (business.phone || '09972219375')
         .split(/[\/,]/)
         .map(num => num.trim())
@@ -88,30 +167,11 @@ export default function BusinessCard({ business, onEnquiryClick }) {
                             </div>
                         </div>
                         <button 
-                            onClick={(e) => {
-                                e.preventDefault();
-                                const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
-                                const bookmarksData = JSON.parse(localStorage.getItem('bookmarks_data') || '[]');
-                                if (bookmarks.includes(business._id)) {
-                                    localStorage.setItem('bookmarks', JSON.stringify(bookmarks.filter(id => id !== business._id)));
-                                    localStorage.setItem('bookmarks_data', JSON.stringify(bookmarksData.filter(item => item._id !== business._id)));
-                                } else {
-                                    localStorage.setItem('bookmarks', JSON.stringify([...bookmarks, business._id]));
-                                    localStorage.setItem('bookmarks_data', JSON.stringify([...bookmarksData, {
-                                        _id: business._id,
-                                        name: business.name,
-                                        slug: business.slug,
-                                        image: business.image || business.images?.[0],
-                                        category: typeof business.category === 'object' ? business.category.name : business.category,
-                                        rating: business.rating,
-                                        city: business.city_id?.name || business.city?.name || 'Location'
-                                    }]));
-                                }
-                                window.dispatchEvent(new Event('bookmarksUpdated'));
-                            }}
+                            onClick={handleBookmarkToggle}
                             className="p-2 rounded-full hover:bg-slate-100 transition-colors"
+                            title="Save Business"
                         >
-                            <Bookmark className={`w-5 h-5 ${JSON.parse(localStorage.getItem('bookmarks') || '[]').includes(business._id) ? 'text-orange-500 fill-orange-500' : 'text-slate-400'}`} />
+                            <Bookmark className={`w-5 h-5 ${isBookmarked ? 'text-orange-500 fill-orange-500' : 'text-slate-400'}`} />
                         </button>
                     </div>
 
