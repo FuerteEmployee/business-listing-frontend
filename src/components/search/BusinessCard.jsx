@@ -1,4 +1,4 @@
-import { Star, MapPin, Phone, MessageSquare, ChevronLeft, ChevronRight, ShieldCheck, Wifi, Search, Bookmark, Tag, X } from 'lucide-react';
+import { Star, MapPin, Phone, MessageSquare, ChevronLeft, ChevronRight, ShieldCheck, Wifi, Search, Bookmark, Tag, X, Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../ui/badge';
@@ -171,7 +171,7 @@ export default function BusinessCard({ business, onEnquiryClick }) {
                             className="p-2 rounded-full hover:bg-slate-100 transition-colors"
                             title="Save Business"
                         >
-                            <Bookmark className={`w-5 h-5 ${isBookmarked ? 'text-orange-500 fill-orange-500' : 'text-slate-400'}`} />
+                            <Heart className={`w-5 h-5 ${isBookmarked ? 'text-rose-500 fill-rose-500' : 'text-slate-400'}`} />
                         </button>
                     </div>
 
