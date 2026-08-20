@@ -50,7 +50,7 @@ export default function ListingFilters({ activeFilters, onFilterChange, onReset 
 
     return (
         <div className="bg-white border-b border-slate-200 sticky top-[72px] z-30 py-3 flex flex-col gap-2">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-3 overflow-x-auto no-scrollbar w-full">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center gap-3 w-full">
                 {filterGroups.map((group) => (
                     <div key={group.key} className="relative flex-shrink-0">
                         <button
