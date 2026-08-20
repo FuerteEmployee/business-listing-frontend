@@ -1,7 +1,7 @@
 import BusinessCard from './BusinessCard';
 import ListingFilters from './ListingFilters';
 import { Button } from '../ui/button';
-import { Loader2, Mail, CheckSquare, Square, X, Wrench, Cpu, Wind, Droplet, Hammer } from 'lucide-react';
+import { Loader2, Mail, CheckSquare, Square, X, Wrench, Cpu, Wind, Droplet, Hammer, Phone, MapPin } from 'lucide-react';
 import EnquiryModal from '../ui/EnquiryModal';
 import { useState, useEffect, useRef } from 'react';
 
@@ -249,6 +249,46 @@ export default function BusinessListing({
                                         ))}
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="mt-6 p-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm relative overflow-hidden">
+                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Customer Support</span>
+                                <h4 className="text-base font-black text-slate-900 mt-2">Engitech Expo</h4>
+                                <p className="text-slate-500 text-xs mt-2 leading-relaxed">
+                                    Have questions about listings or need direct assistance finding the right suppliers? Speak with our team.
+                                </p>
+                                
+                                <div className="mt-5 border-t border-slate-100 pt-5 space-y-3.5">
+                                    <div className="flex items-center gap-3 text-slate-700 text-sm font-semibold">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                            <Phone className="w-4 h-4" />
+                                        </div>
+                                        <a href="tel:+919601945255" className="hover:text-blue-600 transition-colors">
+                                            +91 96019 45255
+                                        </a>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-slate-700 text-sm font-semibold">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                            <Mail className="w-4 h-4" />
+                                        </div>
+                                        <a href="mailto:info@engitechexpo.com" className="hover:text-blue-600 transition-colors">
+                                            info@engitechexpo.com
+                                        </a>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-slate-700 text-sm font-semibold">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                            <MapPin className="w-4 h-4" />
+                                        </div>
+                                        <span>Delhi, India</span>
+                                    </div>
+                                </div>
+
+                                <a 
+                                    href="tel:+919601945255"
+                                    className="mt-6 w-full py-3 bg-slate-950 hover:bg-slate-900 text-white rounded-xl font-bold text-xs uppercase tracking-widest text-center transition-colors block"
+                                >
+                                    Call Support
+                                </a>
                             </div>
                         </div>
                     </div>
