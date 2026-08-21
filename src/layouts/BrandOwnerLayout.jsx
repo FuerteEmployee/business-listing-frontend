@@ -69,7 +69,7 @@ export default function BrandOwnerLayout() {
         { label: "Notification Center", path: "/brand/notifications/settings", icon: Bell },
         { label: "Help & Support", path: "/brand/support", icon: LifeBuoy },
         { label: "Audit Logs", path: "/brand/audit-logs", icon: History },
-        { label: "Settings", path: "/brand/settings", icon: Settings },
+        { label: "Profile & Settings", path: "/brand/settings", icon: Settings },
     ].filter(item => {
         // Check if feature is hidden by Master Control
         const featureKey = item.label.toLowerCase().replace(/\s+/g, '').replace(/&/g, '');
