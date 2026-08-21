@@ -87,7 +87,7 @@ export default function LeadFormSidebar({ title }) {
                     ...formData,
                     category: title,
                     agreedToPrivacy: agreed,
-                    source: 'Verified Web Enquiry'
+                    source: 'Search Results'
                 })
             });
 

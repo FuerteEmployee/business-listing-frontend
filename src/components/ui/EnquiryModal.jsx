@@ -50,7 +50,7 @@ export default function EnquiryModal({ isOpen, onClose, business, businessIds = 
                 body: JSON.stringify({
                     businessIds: ids,
                     ...enquiryForm,
-                    source: business ? 'Business Detail' : 'Search Results'
+                    source: business ? 'Business Details Page' : 'Search Results'
                 })
             });
 

@@ -178,7 +178,7 @@ export default function Products() {
                         leftIcon={Plus}
                         onClick={() => navigate(`${basePath}/products/add`)}
                     >
-                        Expand Catalog
+                        Add Product
                     </Button>
                 }
             />

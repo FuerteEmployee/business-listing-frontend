@@ -252,8 +252,18 @@ export default function ProductDetail() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2 mb-6">
-                                <span className="text-2xl font-bold text-slate-900">₹ {product.price?.toLocaleString()}</span>
+                             <div className="flex items-center gap-3 mb-6">
+                                {product.discountPrice && Number(product.discountPrice) < Number(product.price) ? (
+                                    <>
+                                        <span className="text-3xl font-black text-slate-900">₹ {Number(product.discountPrice).toLocaleString()}</span>
+                                        <span className="text-lg text-slate-400 line-through font-medium">₹ {Number(product.price).toLocaleString()}</span>
+                                        <span className="bg-rose-100 text-rose-700 text-xs font-black px-2 py-1 rounded-lg border border-rose-200">
+                                            ↓{Math.round(((Number(product.price) - Number(product.discountPrice)) / Number(product.price)) * 100)}%
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="text-2xl font-bold text-slate-900">₹ {product.price?.toLocaleString()}</span>
+                                )}
                                 <div className="group relative">
                                     <Info className="w-4 h-4 text-slate-300 cursor-help" />
                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
@@ -377,7 +387,10 @@ export default function ProductDetail() {
                             {/* Product Description */}
                             <section>
                                 <h3 className="text-lg font-bold text-slate-900 mb-4">Product Description</h3>
-                                <div className={`prose prose-slate max-w-none text-sm text-slate-600 leading-relaxed ${!showFullDescription && 'line-clamp-4'}`}>
+                                <div 
+                                    className={`prose prose-slate max-w-none text-sm text-slate-600 leading-relaxed ${!showFullDescription && 'line-clamp-4'}`}
+                                    style={{ wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}
+                                >
                                     {product.description || `The ${product.name} is designed to meet industrial standards, offering high performance and durability. Crafted with quality materials, it ensures long-term reliability for your operations. Perfect for heavy-duty applications...`}
                                 </div>
                                 <button 
@@ -387,6 +400,40 @@ export default function ProductDetail() {
                                     {showFullDescription ? 'View Less' : 'View More'}
                                 </button>
                             </section>
+
+                            {/* Product Specifications Section */}
+                            {product.specifications && product.specifications.length > 0 && (
+                                <section className="border-t border-slate-100 pt-8 mt-8">
+                                    <h3 className="text-lg font-bold text-slate-900 mb-6">Specifications</h3>
+                                    <div className="space-y-6">
+                                        {product.specifications.map((section, sIdx) => (
+                                            <div key={sIdx} className="space-y-3">
+                                                <h4 className="text-sm font-bold text-slate-800 tracking-tight border-b border-slate-100 pb-2 bg-slate-50/50 px-3 py-1.5 rounded-lg">
+                                                    {section.title}
+                                                </h4>
+                                                <div className="grid grid-cols-1 gap-y-3 px-3">
+                                                    {section.items.map((item, iIdx) => (
+                                                        <div key={iIdx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-slate-100/50 pb-2 text-sm">
+                                                            <span 
+                                                                className="text-slate-500 font-medium sm:col-span-1"
+                                                                style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                                                            >
+                                                                {item.key}
+                                                            </span>
+                                                            <span 
+                                                                className="text-slate-800 font-bold sm:col-span-2"
+                                                                style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                                                            >
+                                                                {item.value}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
                         </div>
 
                         {/* Column 3: Seller Sidebar */}

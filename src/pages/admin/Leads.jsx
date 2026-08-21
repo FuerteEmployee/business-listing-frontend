@@ -45,6 +45,23 @@ const getScoreColor = (score) => {
     return { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-300', ring: '#f43f5e' };
 };
 
+const normalizeLead = (lead) => {
+    if (!lead) return lead;
+    const src = (lead.source || '').toLowerCase().trim();
+    let normalizedSource = 'Search Results';
+    if (src.includes('dashboard') || src.includes('admin')) {
+        normalizedSource = 'Admin Dashboard';
+    } else if (src.includes('advertising') || src.includes('advertise') || src.includes('ad click') || src.includes('ad')) {
+        normalizedSource = 'Advertising';
+    } else if (src.includes('detail') || src.includes('enquiry') || src.includes('business')) {
+        normalizedSource = 'Business Details Page';
+    }
+    return {
+        ...lead,
+        source: normalizedSource
+    };
+};
+
 /** AI-generated contextual follow-up suggestion based on lead status */
 const getFollowUpSuggestion = (lead) => {
     if (!lead) return null;
@@ -107,6 +124,7 @@ export default function LeadsAdmin() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedSource, setSelectedSource] = useState("All");
     const [updatingId, setUpdatingId] = useState(null);
     const [view, setView] = useState('list'); // 'list' or 'analytics'
     const [users, setUsers] = useState([]);
@@ -188,7 +206,7 @@ export default function LeadsAdmin() {
             const response = await fetchWithAuth(url);
             const data = await response.json();
             if (response.ok && data.success) {
-                setLeads(data.leads);
+                setLeads(data.leads.map(normalizeLead));
             } else {
                 setError(data.message || data.msg || 'Failed to fetch leads');
                 toast.error(data.message || 'Failed to load leads');
@@ -315,8 +333,9 @@ export default function LeadsAdmin() {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                setLeads(leads.map(lead => lead._id === selectedLead._id ? data.lead : lead));
-                setSelectedLead(data.lead);
+                const normalizedLead = normalizeLead(data.lead);
+                setLeads(leads.map(lead => lead._id === selectedLead._id ? normalizedLead : lead));
+                setSelectedLead(normalizedLead);
                 setNoteText("");
                 toast.success('Activity log entry added');
             }
@@ -328,11 +347,20 @@ export default function LeadsAdmin() {
         }
     };
 
-    const filteredLeads = leads.filter(lead => 
-        lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.phone.includes(searchTerm) ||
-        (lead.category && lead.category.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const filteredLeads = leads.filter(lead => {
+        const matchesSearch = 
+            lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            lead.phone.includes(searchTerm) ||
+            (lead.category && lead.category.toLowerCase().includes(searchTerm.toLowerCase()));
+        
+        const matchesSource = 
+            selectedSource === 'All' || 
+            (lead.source || 'Web Results') === selectedSource;
+        
+        return matchesSearch && matchesSource;
+    });
+
+    const uniqueSources = ['All', ...new Set(leads.map(lead => lead.source || 'Web Results'))];
 
     const stats = {
         total: leads.length,
@@ -419,7 +447,7 @@ export default function LeadsAdmin() {
                     <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">
                         {name ? name.charAt(0) : '?'}
                     </div>
-                    <span className="text-xs font-semibold text-slate-600">{name || 'Unassigned'}</span>
+                    <span className="text-xs font-semibold text-slate-600">{(name === 'Merchant Owner' ? 'Brand Owner' : name) || 'Unassigned'}</span>
                 </div>
             )
         },
@@ -436,32 +464,22 @@ export default function LeadsAdmin() {
             )
         },
         {
-            key: 'score',
-            label: '🧠 AI Score',
+            key: 'source',
+            label: 'Inquiry Source',
             sortable: true,
-            render: (_, row) => {
-                const score = computeLeadScore(row);
-                const { bg, text, border, ring } = getScoreColor(score);
-                const circumference = 2 * Math.PI * 14;
-                const offset = circumference - (score / 100) * circumference;
+            render: (source) => {
+                const colors = {
+                    'Admin Dashboard': 'bg-slate-100 text-slate-700 border-slate-200',
+                    'Advertising': 'bg-blue-100 text-blue-700 border-blue-200',
+                    'Business Details Page': 'bg-amber-100 text-amber-700 border-amber-200',
+                    'Search Results': 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                };
+                const colorClass = colors[source] || 'bg-slate-100 text-slate-700 border-slate-200';
+                
                 return (
-                    <div className="flex items-center gap-2.5">
-                        <svg width="38" height="38" viewBox="0 0 38 38">
-                            <circle cx="19" cy="19" r="14" fill="none" stroke="#e2e8f0" strokeWidth="4" />
-                            <circle
-                                cx="19" cy="19" r="14" fill="none"
-                                stroke={ring} strokeWidth="4"
-                                strokeDasharray={circumference}
-                                strokeDashoffset={offset}
-                                strokeLinecap="round"
-                                transform="rotate(-90 19 19)"
-                            />
-                        </svg>
-                        <div>
-                            <div className={`text-sm font-black ${text}`}>{score}</div>
-                            <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">/{100}</div>
-                        </div>
-                    </div>
+                    <Badge className={`${colorClass} font-black uppercase tracking-wider text-[9px] px-2.5 py-1 border rounded-xl shadow-none`}>
+                        {source || 'Search Results'}
+                    </Badge>
                 );
             }
         },
@@ -494,7 +512,7 @@ export default function LeadsAdmin() {
             onClick: (row) => setUpdateModal({ isOpen: true, lead: row, field: 'priority', value: row.priority || 'Warm' })
         },
         {
-            label: 'Assign Merchant',
+            label: 'Assign to Brand',
             icon: UserPlus,
             onClick: (row) => setUpdateModal({ isOpen: true, lead: row, field: 'assignedTo', value: row.assignedTo || 'Unassigned' })
         }
@@ -528,15 +546,40 @@ export default function LeadsAdmin() {
                 <>
                     {/* Filter Hub */}
                     <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-                        <div className="relative w-full md:w-96">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder="Search by name, category or phone..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-400 transition-all shadow-inner"
-                            />
+                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto flex-1">
+                            <div className="relative w-full md:w-80">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search by name, category or phone..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-400 transition-all shadow-inner"
+                                />
+                            </div>
+                            
+                            {/* Source Filter Dropdown */}
+                            <div className="relative w-full sm:w-64">
+                                <select
+                                    value={selectedSource}
+                                    onChange={(e) => setSelectedSource(e.target.value)}
+                                    className="w-full px-4 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400 transition-all shadow-inner appearance-none cursor-pointer pr-10 text-ellipsis overflow-hidden"
+                                >
+                                    {uniqueSources.map(src => {
+                                        const count = src === 'All' 
+                                            ? leads.length 
+                                            : leads.filter(l => (l.source || 'Web Results') === src).length;
+                                        return (
+                                            <option key={src} value={src}>
+                                                {src} ({count})
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                                    <Filter className="w-4 h-4" />
+                                </div>
+                            </div>
                         </div>
                         <div className="flex items-center gap-3 self-end md:self-auto">
                             <button 
@@ -769,12 +812,12 @@ export default function LeadsAdmin() {
                         </div>
                     </div>
 
-                    {/* Merchant Leaderboard */}
+                    {/* Brand Leaderboard */}
                     <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
                          <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 opacity-50 border border-slate-100"></div>
                         <div className="flex items-center justify-between mb-8 relative z-10">
                             <div>
-                                <h3 className="text-xl font-bold text-slate-900 tracking-tight">Merchant Champions</h3>
+                                <h3 className="text-xl font-bold text-slate-900 tracking-tight">Brand Champions</h3>
                                 <p className="text-xs text-slate-500 font-medium mt-1">Global Ranking by performance metric score</p>
                             </div>
                             <div className="p-4 bg-amber-50 rounded-3xl border border-amber-100 shadow-sm shadow-amber-100">
@@ -889,6 +932,18 @@ export default function LeadsAdmin() {
                             <p className="text-sm text-slate-500 mt-1">
                                 Prospect established interest for "{selectedLead?.category}" portfolio via {selectedLead?.source} interface.
                             </p>
+                            {selectedLead?.email && (
+                                <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+                                    <Mail className="w-3.5 h-3.5 text-indigo-400" />
+                                    Email: <span className="font-semibold text-slate-750">{selectedLead.email}</span>
+                                </p>
+                            )}
+                            {selectedLead?.message && (
+                                <div className="mt-3 bg-white p-3 rounded-lg border border-slate-150 text-xs text-slate-600">
+                                    <p className="font-semibold text-slate-700 mb-1">Inquiry Message:</p>
+                                    <p className="italic">"{selectedLead.message}"</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -1024,7 +1079,7 @@ export default function LeadsAdmin() {
                     </div>
                 }
             >
-                <div className="py-2">
+                <div className="py-2 min-h-[280px]">
                     {updateModal.field === 'status' && (
                         <FormSelect 
                             label="New Status"
@@ -1047,7 +1102,7 @@ export default function LeadsAdmin() {
                     )}
                     {updateModal.field === 'assignedTo' && (
                         <FormSelect 
-                            label="Assign Merchant"
+                            label="Assign to Brand"
                             value={updateModal.value}
                             onChange={(e) => setUpdateModal({ ...updateModal, value: e.target.value })}
                             options={[

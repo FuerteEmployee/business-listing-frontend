@@ -37,6 +37,12 @@ export default function AddProduct() {
     });
 
     const [highlights, setHighlights] = useState([{ key: '', value: '' }]);
+    const [specifications, setSpecifications] = useState([
+        {
+            title: '',
+            items: [{ key: '', value: '' }]
+        }
+    ]);
     const [customWarrantyNumber, setCustomWarrantyNumber] = useState('');
     const [customWarrantyUnit, setCustomWarrantyUnit] = useState('Months');
 
@@ -106,6 +112,15 @@ export default function AddProduct() {
                     }
                 }
                 setHighlights(initialHighlights);
+
+                let initialSpecs = [{ title: '', items: [{ key: '', value: '' }] }];
+                if (data.specifications && Array.isArray(data.specifications) && data.specifications.length > 0) {
+                    initialSpecs = data.specifications.map(sec => ({
+                        title: sec.title || '',
+                        items: (sec.items || []).map(item => ({ key: item.key || '', value: item.value || '' }))
+                    }));
+                }
+                setSpecifications(initialSpecs);
                 
                 // Parse Custom Warranty Number & Unit
                 if (data.warranty && !['No Warranty', '6 Months', '8 Months', '1 Year', '2 Years'].includes(data.warranty)) {
@@ -237,9 +252,19 @@ export default function AddProduct() {
 
             // Filter out empty key/value pairs
             const activeHighlights = highlights.filter(hl => hl.key.trim() || hl.value.trim());
+
+            // Filter out empty specifications
+            const activeSpecs = specifications
+                .map(sec => ({
+                    title: sec.title.trim(),
+                    items: sec.items.filter(item => item.key.trim() && item.value.trim())
+                }))
+                .filter(sec => sec.title && sec.items.length > 0);
+
             const payload = {
                 ...formData,
                 highlights: JSON.stringify(activeHighlights),
+                specifications: activeSpecs,
                 status: submitStatus,
                 images: uploadedImageUrls,
                 price: Number(formData.price),
@@ -522,6 +547,107 @@ export default function AddProduct() {
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    </div>
+
+                    {/* Specifications Nested Editor */}
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 rounded-t-xl flex justify-between items-center">
+                            <h2 className="font-semibold text-slate-800">Product Specifications</h2>
+                            <button
+                                type="button"
+                                onClick={() => setSpecifications([...specifications, { title: '', items: [{ key: '', value: '' }] }])}
+                                className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-all"
+                            >
+                                + Add Section
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            {specifications.map((section, sIdx) => (
+                                <div key={sIdx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="text"
+                                            value={section.title}
+                                            onChange={e => {
+                                                const updated = [...specifications];
+                                                updated[sIdx].title = e.target.value;
+                                                setSpecifications(updated);
+                                            }}
+                                            placeholder="Section Title (e.g. Dimensions, Display Features)"
+                                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                        />
+                                        {specifications.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const updated = specifications.filter((_, i) => i !== sIdx);
+                                                    setSpecifications(updated);
+                                                }}
+                                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                title="Delete Section"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-3 pl-4 border-l-2 border-indigo-100">
+                                        {section.items.map((item, iIdx) => (
+                                            <div key={iIdx} className="flex items-center gap-3">
+                                                <input
+                                                    type="text"
+                                                    value={item.key}
+                                                    onChange={e => {
+                                                        const updated = [...specifications];
+                                                        updated[sIdx].items[iIdx].key = e.target.value;
+                                                        setSpecifications(updated);
+                                                    }}
+                                                    placeholder="Specification Key (e.g. Width, Display Size)"
+                                                    className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={item.value}
+                                                    onChange={e => {
+                                                        const updated = [...specifications];
+                                                        updated[sIdx].items[iIdx].value = e.target.value;
+                                                        setSpecifications(updated);
+                                                    }}
+                                                    placeholder="Specification Value (e.g. 71.5 mm, 16.0 cm)"
+                                                    className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                                />
+                                                {section.items.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const updated = [...specifications];
+                                                            updated[sIdx].items = section.items.filter((_, i) => i !== iIdx);
+                                                            setSpecifications(updated);
+                                                        }}
+                                                        className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                        title="Delete Key-Value Pair"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const updated = [...specifications];
+                                                updated[sIdx].items.push({ key: '', value: '' });
+                                                setSpecifications(updated);
+                                            }}
+                                            className="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 text-xs font-bold transition-colors mt-2"
+                                        >
+                                            + Add Field
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 

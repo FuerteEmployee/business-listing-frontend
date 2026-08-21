@@ -12,6 +12,7 @@ import SearchPage from "./pages/SearchPage";
 import CategoriesPage from "./pages/CategoriesPage";
 import Careers from "./pages/Careers";
 import Investors from "./pages/Investors";
+import Advertise from "./pages/Advertise";
 import Settings from "./pages/admin/Settings";
 import Products from "./pages/admin/Products";
 import AddProduct from "./pages/admin/AddProduct";
@@ -162,6 +163,7 @@ export default function App() {
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/careers" element={<Careers />} />
             <Route path="/investors" element={<Investors />} />
+            <Route path="/advertise" element={<Advertise />} />
             <Route path="/business/:slug" element={<BusinessDetail />} />
             <Route path="/product/:slug" element={<ProductDetail />} />
             <Route path="/add-business" element={<OnboardingLanding />} />

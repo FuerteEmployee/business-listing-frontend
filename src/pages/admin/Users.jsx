@@ -302,7 +302,7 @@ export default function Users() {
             key: "role",
             render: (value, row) => (
                 <Badge variant={value === 'Super Admin' ? 'premium' : (value === 'Admin' ? 'indigo' : 'slate')} size="sm">
-                    {value === 'Merchant' || value === 'Company Owner' ? 'MERCHANT' : value.toUpperCase()}
+                    {value === 'Merchant' || value === 'Company Owner' ? 'BRAND' : value.toUpperCase()}
                 </Badge>
             )
         },
@@ -485,7 +485,7 @@ export default function Users() {
                             { label: 'All Tiers', value: '' },
                             { label: 'Super Admin', value: 'Super Admin' },
                             { label: 'Admin', value: 'Admin' },
-                            { label: 'Merchant / Owner', value: 'Merchant' },
+                            { label: 'Brand / Owner', value: 'Merchant' },
                             { label: 'User', value: 'User' }
                         ]}
                         className="!mb-0"
@@ -810,7 +810,7 @@ export default function Users() {
                             onChange={(e) => setUserModal(prev => ({ ...prev, formData: { ...prev.formData, role: e.target.value } }))}
                             options={[
                                 { label: 'User', value: 'User' },
-                                { label: 'Merchant / Owner', value: 'Merchant' }
+                                { label: 'Brand / Owner', value: 'Merchant' }
                             ]}
                             required
                         />
