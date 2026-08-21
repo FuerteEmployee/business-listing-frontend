@@ -13,7 +13,7 @@ import ReviewsSection from '../components/homepage/ReviewsSection';
 import Footer from '../components/homepage/Footer';
 import NearMeChips from '../components/homepage/NearMeChips';
 import RecentlyViewed from '../components/homepage/RecentlyViewed';
-import { getApiUrl, fetchWithAuth } from '../config/api';
+import { getApiUrl, apiGet } from '../config/api';
 import { getDeviceLocation, findNearestCity } from '../utils/geolocation';
 import { useTheme } from '../context/ThemeContext';
 
@@ -44,42 +44,31 @@ export default function HomePage() {
     useEffect(() => {
         if (cities.length > 0 && userLocation && !selectedCity?.isManuallySelected) {
             const nearest = findNearestCity(userLocation.latitude, userLocation.longitude, cities);
-            if (nearest) {
-                console.log('Nearest city detected:', nearest.name);
+            if (nearest) {
                 setSelectedCity(nearest);
             }
         }
     }, [cities, userLocation, selectedCity?.isManuallySelected]);
 
     const fetchCities = async () => {
-        try {
-            const url = getApiUrl('locations/cities?limit=50');
-            const response = await fetchWithAuth(url);
-            const data = await response.json();
+        const result = await apiGet(getApiUrl('locations/cities?limit=50'));
 
-            if (response.ok && data.data && data.data.length > 0) {
-                const citiesData = data.data;
-                setCities(citiesData);
-                setSelectedCity(citiesData[0]);
-            } else {
-                console.warn('No cities from API, leaving city list empty');
-                setCities([]);
-                setSelectedCity(null);
-            }
-        } catch (err) {
-            console.error('Error fetching cities:', err);
+        const citiesData = Array.isArray(result.data) ? result.data : [];
+        if (result.ok && citiesData.length > 0) {
+            setCities(citiesData);
+            setSelectedCity(citiesData[0]);
+        } else {
+            if (!result.ok) console.error('Error fetching cities:', result.error);
             setCities([]);
             setSelectedCity(null);
-        } finally {
-            setLoadingCities(false);
         }
+        setLoadingCities(false);
     };
 
     const detectUserLocation = async () => {
         try {
             const location = await getDeviceLocation();
-            setUserLocation(location);
-            console.log('Device location:', location);
+            setUserLocation(location);
         } catch (err) {
             console.warn('Geolocation not available:', err.message);
             setLocationError(err.message);

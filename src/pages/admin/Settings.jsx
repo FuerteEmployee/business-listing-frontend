@@ -9,7 +9,15 @@ import { useTheme } from "../../context/ThemeContext";
 import HomepageSettingsManager from "../../components/admin/HomepageSettingsManager";
 
 export default function Settings() {
-    const { settings, updateSettingsState } = useTheme();
+    const { settings, updateSettingsState, fetchSettings } = useTheme();
+
+    // rankingWeights is only returned to Super Admins, and ThemeContext may have
+    // loaded its copy before login. Refetch with the admin token on mount so the
+    // form edits the real weights instead of saving defaults over them.
+    useEffect(() => {
+        fetchSettings();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     const [activeTab, setActiveTab] = useState("global"); // 'global' or 'homepage' or 'ai'
 
     const [formData, setFormData] = useState({

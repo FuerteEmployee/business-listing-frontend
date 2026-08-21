@@ -23,7 +23,7 @@ export default function AddProduct() {
         name: '',
         shortDescription: '',
         description: '',
-        warranty: 'No Warranty',
+        warranty: '',
         listingId: currentUser?.companyId || currentUser?.company || '',
         categoryId: '',
         subCategoryId: '',
@@ -86,7 +86,7 @@ export default function AddProduct() {
                     slug: data.slug || '',
                     shortDescription: data.shortDescription || '',
                     description: data.description || '',
-                    warranty: data.warranty || 'No Warranty',
+                    warranty: data.warranty || '',
                     listingId: data.listingId?._id || data.listingId || '',
                     categoryId: data.categoryId?._id || data.categoryId || '',
                     subCategoryId: data.subCategoryId?._id || data.subCategoryId || '',
@@ -115,10 +115,38 @@ export default function AddProduct() {
 
                 let initialSpecs = [{ title: '', items: [{ key: '', value: '' }] }];
                 if (data.specifications && Array.isArray(data.specifications) && data.specifications.length > 0) {
-                    initialSpecs = data.specifications.map(sec => ({
-                        title: sec.title || '',
-                        items: (sec.items || []).map(item => ({ key: item.key || '', value: item.value || '' }))
-                    }));
+                    const isNested = data.specifications[0].title !== undefined || Array.isArray(data.specifications[0].items);
+                    if (isNested) {
+                        initialSpecs = data.specifications.map(sec => ({
+                            title: sec.title || '',
+                            items: (sec.items || []).map(item => ({ key: item.key || '', value: item.value || '' }))
+                        }));
+                    } else {
+                        initialSpecs = [{
+                            title: 'General',
+                            items: data.specifications.map(s => ({ key: s.key || '', value: s.value || '' }))
+                        }];
+                    }
+                } else if (typeof data.specifications === 'string' && data.specifications.trim()) {
+                    try {
+                        const parsed = JSON.parse(data.specifications);
+                        if (Array.isArray(parsed) && parsed.length) {
+                            initialSpecs = [{
+                                title: 'General',
+                                items: parsed.map(s => ({ key: s.key || '', value: s.value || '' }))
+                            }];
+                        } else {
+                            initialSpecs = [{
+                                title: 'General',
+                                items: [{ key: 'Specification', value: data.specifications }]
+                            }];
+                        }
+                    } catch {
+                        initialSpecs = [{
+                            title: 'General',
+                            items: [{ key: 'Specification', value: data.specifications }]
+                        }];
+                    }
                 }
                 setSpecifications(initialSpecs);
                 
@@ -135,10 +163,11 @@ export default function AddProduct() {
                         setCustomWarrantyNumber(data.warranty);
                         setCustomWarrantyUnit('Months');
                     }
-                } else {
-                    setCustomWarrantyNumber('');
-                    setCustomWarrantyUnit('Months');
                 }
+                    }
+                }
+                setSpecifications(initialSpecs);
+
                 if (data.categoryId) {
                     const catId = data.categoryId?._id || data.categoryId;
                     const subRes = await fetchWithAuth(getApiUrl(`categories?parentId=${catId}`));
@@ -422,74 +451,99 @@ export default function AddProduct() {
                                 </button>
                             </div>
 
-                            {/* Warranty Period Selector with Custom Option */}
+                            {/* Product Specifications Key-Value Editor */}
                             <div className="space-y-3">
-                                <label className="block text-sm font-semibold text-slate-700">Warranty Period</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {['No Warranty', '6 Months', '8 Months', '1 Year', '2 Years', 'Custom'].map((opt) => {
-                                        const isSelected = opt === 'Custom' 
-                                            ? !['No Warranty', '6 Months', '8 Months', '1 Year', '2 Years'].includes(formData.warranty)
-                                            : formData.warranty === opt;
-
-                                        return (
-                                            <button
-                                                key={opt}
-                                                type="button"
-                                                onClick={() => {
-                                                    if (opt === 'Custom') {
-                                                        setFormData({...formData, warranty: ''}); // clear to allow custom entry
-                                                        setCustomWarrantyNumber('');
-                                                        setCustomWarrantyUnit('Months');
-                                                    } else {
-                                                        setFormData({...formData, warranty: opt});
-                                                    }
-                                                }}
-                                                className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition-all ${
-                                                    isSelected
-                                                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100'
-                                                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                                                }`}
-                                            >
-                                                {opt}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                                
-                                {/* Custom Warranty Selector: Number Input + Unit Dropdown */}
-                                {!['No Warranty', '6 Months', '8 Months', '1 Year', '2 Years'].includes(formData.warranty) && (
-                                    <div className="mt-3 flex items-center gap-3 animate-in fade-in duration-200">
-                                        <div className="w-32">
-                                            <input 
-                                                type="number"
-                                                min="1"
-                                                value={customWarrantyNumber}
+                                <label className="block text-sm font-semibold text-slate-700">Product Specifications</label>
+                                <p className="text-xs text-slate-500 -mt-1">
+                                    Add any technical parameters for this product — Power, Capacity, Application, Frequency, Dimensions, and so on. Leave blank if not applicable.
+                                </p>
+                                <div className="space-y-2">
+                                    {specifications.map((sp, idx) => (
+                                        <div key={idx} className="flex items-center gap-3">
+                                            <input
+                                                type="text"
+                                                value={sp.key}
                                                 onChange={e => {
-                                                    const num = e.target.value;
-                                                    setCustomWarrantyNumber(num);
-                                                    setFormData({...formData, warranty: num ? `${num} ${customWarrantyUnit}` : ''});
+                                                    const updated = [...specifications];
+                                                    updated[idx] = { ...updated[idx], key: e.target.value };
+                                                    setSpecifications(updated);
                                                 }}
-                                                placeholder="e.g. 18"
-                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                                placeholder="Parameter (e.g. Power, Capacity)"
+                                                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
                                             />
-                                        </div>
-                                        <div className="w-40">
-                                            <select
-                                                value={customWarrantyUnit}
+                                            <input
+                                                type="text"
+                                                value={sp.value}
                                                 onChange={e => {
-                                                    const unit = e.target.value;
-                                                    setCustomWarrantyUnit(unit);
-                                                    setFormData({...formData, warranty: customWarrantyNumber ? `${customWarrantyNumber} ${unit}` : ''});
+                                                    const updated = [...specifications];
+                                                    updated[idx] = { ...updated[idx], value: e.target.value };
+                                                    setSpecifications(updated);
                                                 }}
-                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
-                                            >
-                                                <option value="Days">Days</option>
-                                                <option value="Months">Months</option>
-                                                <option value="Years">Years</option>
-                                            </select>
+                                                placeholder="Value (e.g. 7.5 kW, 500 L)"
+                                                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                            />
+                                            {specifications.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSpecifications(specifications.filter((_, i) => i !== idx))}
+                                                    className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all flex-shrink-0"
+                                                >
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            )}
                                         </div>
-                                    </div>
-                                )}
+                                    ))}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setSpecifications([...specifications, { key: '', value: '' }])}
+                                    className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 text-xs font-bold transition-colors mt-2"
+                                >
+                                    + Add New Specification
+                                </button>
+                            </div>
+
+                            {/* Warranty: free-text, no default. Chips only pre-fill the field. */}
+                            <div className="space-y-3">
+                                <label className="block text-sm font-semibold text-slate-700">Warranty</label>
+                                <p className="text-xs text-slate-500 -mt-1">
+                                    Enter this product's warranty terms in your own words. Leave blank if no warranty applies — nothing will be shown on the product page.
+                                </p>
+                                <input
+                                    type="text"
+                                    value={formData.warranty}
+                                    onChange={e => setFormData({ ...formData, warranty: e.target.value })}
+                                    placeholder="e.g. 1 Year on motor, 6 Months on spare parts"
+                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                />
+                                <div className="flex flex-wrap gap-2">
+                                    {['6 Months', '1 Year', '2 Years', 'No Warranty'].map((opt) => (
+                                        <button
+                                            key={opt}
+                                            type="button"
+                                            onClick={() => setFormData({
+                                                ...formData,
+                                                warranty: formData.warranty === opt ? '' : opt
+                                            })}
+                                            className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                                                formData.warranty === opt
+                                                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100'
+                                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            {opt}
+                                        </button>
+                                    ))}
+                                    {formData.warranty && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, warranty: '' })}
+                                            className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-400 hover:text-red-500 hover:border-red-200 transition-all"
+                                        >
+                                            Clear
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

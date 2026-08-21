@@ -13,9 +13,14 @@ import FormInput from "../../components/ui/FormInput";
 import { FormTextarea } from "../../components/ui/FormTextarea";
 import { Button } from "../../components/ui/button";
 import AdminHeader from "../../components/admin/AdminHeader";
+import BusinessHoursEditor from "../../components/ui/BusinessHoursEditor";
+import { emptyBusinessHours, normalizeBusinessHours } from "../../utils/businessHours";
 
 export default function EditCompany() {
-    const { slug } = useParams();
+    // Mounted on both /admin/listings/:slug/edit and /admin/companies/:id/edit;
+    // the admin detail endpoint accepts either a slug or an ObjectId.
+    const { slug, id } = useParams();
+    const listingKey = slug || id;
     const navigate = useNavigate();
     
     const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +37,8 @@ export default function EditCompany() {
         address: "", latitude: null, longitude: null,
         status: "Pending", claimed: false, verified: false, 
         verificationStatus: "Not Verified", isFeatured: false, 
-        manualRank: 0, image: null, owner: ""
+        manualRank: 0, image: null, owner: "",
+        businessHours: emptyBusinessHours()
     };
     
     const [formData, setFormData] = useState(defaultFormState);
@@ -50,7 +56,7 @@ export default function EditCompany() {
                 const [catsRes, usersRes, companyRes] = await Promise.all([
                     fetchWithAuth(`${API_BASE_URL}/categories`),
                     fetchWithAuth(`${API_BASE_URL}/users`),
-                    fetchWithAuth(`${API_BASE_URL}/admin/listings/${slug}`)
+                    fetchWithAuth(`${API_BASE_URL}/admin/listings/${listingKey}`)
                 ]);
 
                 if (catsRes.ok) {
@@ -84,7 +90,8 @@ export default function EditCompany() {
                         isFeatured: company.isFeatured || false,
                         manualRank: company.manualRank || 0,
                         image: company.image || null,
-                        owner: company.owner?._id || company.owner || ""
+                        owner: company.owner?._id || company.owner || "",
+                        businessHours: normalizeBusinessHours(company.businessHours)
                     });
                     setImagePreview(company.image || null);
                 } else {
@@ -100,7 +107,7 @@ export default function EditCompany() {
         };
 
         fetchData();
-    }, [slug]);
+    }, [listingKey]);
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -157,7 +164,7 @@ export default function EditCompany() {
             }
 
             const payload = { ...formData, image: imageUrl };
-            const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/${slug}`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/${listingKey}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -277,7 +284,7 @@ export default function EditCompany() {
                             showLabel={true}
                         />
 
-                        <FormInput 
+                        <FormInput
                             label="Street Address / Building"
                             name="address"
                             value={formData.address}
@@ -285,6 +292,12 @@ export default function EditCompany() {
                             placeholder="House No, Suite, Area..."
                         />
                     </div>
+
+                    {/* Business / Working Hours — per day, nothing defaulted */}
+                    <BusinessHoursEditor
+                        value={formData.businessHours}
+                        onChange={hours => setFormData(prev => ({ ...prev, businessHours: hours }))}
+                    />
                 </div>
 
                 {/* Right Column: Status & Images */}

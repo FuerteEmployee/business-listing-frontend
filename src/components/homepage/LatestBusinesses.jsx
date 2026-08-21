@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getApiUrl, fetchWithAuth } from '../../config/api';
+import { getApiUrl, apiGet } from '../../config/api';
+import SectionError from '../ui/SectionError';
 import { Star, MapPin, ArrowRight, Clock } from 'lucide-react';
 
 export default function LatestBusinesses() {
@@ -13,36 +14,38 @@ export default function LatestBusinesses() {
     }, []);
 
     const fetchLatestBusinesses = async () => {
-        try {
-            setLoading(true);
-            const url = `${getApiUrl('companies')}?limit=8&sort=latest`;
-            const response = await fetch(url);
-            const data = await response.json();
+        setLoading(true);
+        setError(null);
 
-            if (response.ok) {
-                // Handle different response formats
-                if (Array.isArray(data)) {
-                    setBusinesses(data);
-                } else if (data.data && Array.isArray(data.data)) {
-                    setBusinesses(data.data);
-                } else if (data.companies && Array.isArray(data.companies)) {
-                    setBusinesses(data.companies);
-                } else {
-                    setBusinesses([]);
-                }
-            } else {
-                setBusinesses([]);
-            }
-        } catch (err) {
-            console.error('Error fetching businesses:', err);
+        const result = await apiGet(`${getApiUrl('companies')}?limit=8&sort=latest`);
+
+        if (result.ok) {
+            const payload = result.data;
+            setBusinesses(
+                Array.isArray(payload) ? payload
+                    : Array.isArray(payload?.companies) ? payload.companies
+                        : []
+            );
+        } else {
             setBusinesses([]);
-            setError('Unable to load latest businesses at the moment.');
-        } finally {
-            setLoading(false);
+            setError(result.error);
         }
+        setLoading(false);
     };
 
-    if (error || (!loading && businesses.length === 0)) {
+    if (error) {
+        return (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <SectionError
+                    title="Couldn't load latest businesses"
+                    message={error}
+                    onRetry={fetchLatestBusinesses}
+                />
+            </div>
+        );
+    }
+
+    if (!loading && businesses.length === 0) {
         return null;
     }
 

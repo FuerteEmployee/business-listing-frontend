@@ -1,25 +1,65 @@
+export const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+// Blank by default — an unset day renders as "Not specified" on the public page
+// rather than inventing a timing.
+export const emptyBusinessHours = () => DAYS.reduce((acc, day) => {
+    acc[day] = { open: '', close: '', closed: false };
+    return acc;
+}, {});
+
+// Turns whatever the API returned into a complete, controlled 7-day map.
+export const normalizeBusinessHours = (businessHours) => DAYS.reduce((acc, day) => {
+    const h = businessHours?.[day];
+    acc[day] = {
+        open: h?.open || '',
+        close: h?.close || '',
+        closed: Boolean(h?.closed)
+    };
+    return acc;
+}, {});
+
+// Open/closed state for a listing's businessHours map.
+// Hours the merchant never filled in report as unknown — we don't assume a window.
+const UNKNOWN = { status: 'Timings not specified', color: 'text-slate-500', tone: 'unknown' };
+const CLOSED = { status: 'Closed Now', color: 'text-rose-600', tone: 'closed' };
+const OPEN = { status: 'Open Now', color: 'text-emerald-600', tone: 'open' };
+
+// Accepts both "9:00 AM" and 24h "09:00".
+const parseTime = (timeStr) => {
+    const [time, modifier] = String(timeStr).trim().split(/\s+/);
+    let [hours, minutes] = time.split(':').map(Number);
+    if (Number.isNaN(hours)) return null;
+    const mod = (modifier || '').toUpperCase();
+    if (mod === 'PM' && hours < 12) hours += 12;
+    if (mod === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + (minutes || 0);
+};
+
 export const isBusinessOpen = (businessHours) => {
-    if (!businessHours) return { status: 'Open Now', color: 'text-emerald-600' }; // Default if no hours set
+    if (!businessHours) return UNKNOWN;
 
     const now = new Date();
+    // Indexed by Date#getDay(), which is Sunday-first — not the same order as DAYS.
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const today = days[now.getDay()];
     const hours = businessHours[today];
 
-    if (!hours || hours.closed) {
-        return { status: 'Closed Now', color: 'text-rose-600' };
-    }
+    if (!hours) return UNKNOWN;
+    if (hours.closed) return CLOSED;
+    if (!hours.open || !hours.close) return UNKNOWN;
 
-    const [openH, openM] = hours.open.split(':').map(Number);
-    const [closeH, closeM] = hours.close.split(':').map(Number);
-    
+    const openTime = parseTime(hours.open);
+    const closeTime = parseTime(hours.close);
+    if (openTime === null || closeTime === null) return UNKNOWN;
+
     const currentTime = now.getHours() * 60 + now.getMinutes();
-    const openTime = openH * 60 + openM;
-    const closeTime = closeH * 60 + closeM;
+    return currentTime >= openTime && currentTime < closeTime ? OPEN : CLOSED;
+};
 
-    if (currentTime >= openTime && currentTime < closeTime) {
-        return { status: 'Open Now', color: 'text-emerald-600' };
-    }
-
-    return { status: 'Closed Now', color: 'text-rose-600' };
+// Renders a single day's entry without inventing a timing.
+export const formatDayHours = (dayHours) => {
+    if (!dayHours) return 'Not specified';
+    if (dayHours.closed) return 'Closed';
+    if (!dayHours.open || !dayHours.close) return 'Not specified';
+    return `${dayHours.open} - ${dayHours.close}`;
 };

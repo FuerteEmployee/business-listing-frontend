@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, fetchWithAuth } from '../config/api';
 
 const ThemeContext = createContext();
 
@@ -69,7 +69,10 @@ export const ThemeProvider = ({ children }) => {
 
     const fetchSettings = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/settings`);
+            // fetchWithAuth so a Super Admin receives the admin-only fields (rankingWeights,
+            // hiddenFeatures) that the settings editor needs; anonymous visitors get the
+            // public subset. Sending no token is fine — the header is simply omitted.
+            const res = await fetchWithAuth(`${API_BASE_URL}/settings`);
             if (res.ok) {
                 const data = await res.json();
                 if (data.success && data.data) {

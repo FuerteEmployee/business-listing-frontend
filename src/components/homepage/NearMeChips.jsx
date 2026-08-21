@@ -5,7 +5,7 @@ import {
     BookOpen, CreditCard, Sparkles, ShoppingBag,
     ChevronRight, ShoppingCart
 } from 'lucide-react';
-import { getApiUrl } from '../../config/api';
+import { getApiUrl, apiGet } from '../../config/api';
 import { useTheme } from '../../context/ThemeContext';
 
 const ICON_MAP = {
@@ -33,14 +33,10 @@ export default function NearMeChips({ selectedCity }) {
         }
 
         const fetchChips = async () => {
-            try {
-                const response = await fetch(getApiUrl('mc/public-discovery'));
-                const data = await response.json();
-                if (Array.isArray(data)) {
-                    setChips(data);
-                }
-            } catch (err) {
-                console.error("Error fetching discovery chips:", err);
+            // Decorative row — on failure just stay empty rather than throwing.
+            const result = await apiGet(getApiUrl('mc/public-discovery'));
+            if (result.ok && Array.isArray(result.data)) {
+                setChips(result.data);
             }
         };
         fetchChips();
