@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { getApiUrl, fetchWithAuth } from '../../config/api';
+import { getApiUrl, apiGet } from '../../config/api';
 import { Star, User } from 'lucide-react';
+import SectionError from '../ui/SectionError';
 
 export default function ReviewsSection() {
     const [reviews, setReviews] = useState([]);
@@ -12,25 +13,37 @@ export default function ReviewsSection() {
     }, []);
 
     const fetchLatestReviews = async () => {
-        try {
-            setLoading(true);
-            const url = getApiUrl('reviews/latest?limit=3');
-            const response = await fetch(url);
-            const data = await response.json();
+        setLoading(true);
+        setError(null);
 
-            if (response.ok && Array.isArray(data.data)) {
-                setReviews(data.data);
-            } else {
-                setReviews([]);
-            }
-        } catch (err) {
-            console.error('Error fetching reviews:', err);
+        // This endpoint returns a bare array, not a { data } envelope. The old
+        // code checked Array.isArray(data.data), which was never true, so the
+        // section rendered nothing even on a perfectly good response.
+        // apiGet normalises both shapes.
+        const result = await apiGet(getApiUrl('reviews/latest?limit=3'));
+
+        if (result.ok) {
+            setReviews(Array.isArray(result.data) ? result.data : []);
+        } else {
             setReviews([]);
-            setError('Unable to load reviews at the moment.');
-        } finally {
-            setLoading(false);
+            setError(result.error);
         }
+        setLoading(false);
     };
+
+    if (error) {
+        return (
+            <div className="bg-white py-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <SectionError
+                        title="Couldn't load reviews"
+                        message={error}
+                        onRetry={fetchLatestReviews}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     if (!loading && reviews.length === 0) {
         return null;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getApiUrl } from '../../config/api';
+import { getApiUrl, apiGet } from '../../config/api';
+import SectionError from '../ui/SectionError';
 import {
     Utensils, Hotel, Stethoscope, BookOpen, Home,
     Wrench, Car, Sparkles, ShoppingCart, Clapperboard, Dumbbell, Briefcase, Pill, Laptop, Plane, HeartPulse, Palette
@@ -42,27 +43,33 @@ export default function CategoryGrid() {
     }, []);
 
     const fetchCategories = async () => {
-        try {
-            setLoading(true);
-            const url = `${getApiUrl('categories')}?parentId=null`;
-            const response = await fetch(url);
-            const data = await response.json();
+        setLoading(true);
+        setError(null);
 
-            if (response.ok && Array.isArray(data)) {
-                setCategories(data);
-            } else {
-                setCategories([]);
-            }
-        } catch (err) {
-            console.error('Error fetching categories:', err);
+        // This endpoint returns a bare array.
+        const result = await apiGet(`${getApiUrl('categories')}?parentId=null`);
+
+        if (result.ok) {
+            setCategories(Array.isArray(result.data) ? result.data : []);
+        } else {
             setCategories([]);
-        } finally {
-            setLoading(false);
+            setError(result.error);
         }
+        setLoading(false);
     };
 
     if (error) {
-        return null;
+        return (
+            <div className="w-full bg-white pt-6 pb-12">
+                <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+                    <SectionError
+                        title="Couldn't load categories"
+                        message={error}
+                        onRetry={fetchCategories}
+                    />
+                </div>
+            </div>
+        );
     }
     
     // We'll show a maximum of 22 categories in the grid, or just all of them if few

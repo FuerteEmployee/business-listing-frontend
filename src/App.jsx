@@ -1,97 +1,98 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import SuperAdminLayout from "./layouts/SuperAdminLayout";
-import BrandOwnerLayout from "./layouts/BrandOwnerLayout";
-import Dashboard from "./pages/admin/Dashboard";
-import Categories from "./pages/admin/Categories";
-import Companies from "./pages/admin/Companies";
-import Catalogue from "./pages/merchant/Catalogue";
-import Locations from "./pages/admin/Locations";
-import Users from "./pages/admin/Users";
+const SuperAdminLayout = lazy(() => import("./layouts/SuperAdminLayout"));
+const BrandOwnerLayout = lazy(() => import("./layouts/BrandOwnerLayout"));
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const Categories = lazy(() => import("./pages/admin/Categories"));
+const Companies = lazy(() => import("./pages/admin/Companies"));
+const Catalogue = lazy(() => import("./pages/merchant/Catalogue"));
+const Locations = lazy(() => import("./pages/admin/Locations"));
+const Users = lazy(() => import("./pages/admin/Users"));
 import HomePage from "./pages/HomePage";
 import SearchPage from "./pages/SearchPage";
 import CategoriesPage from "./pages/CategoriesPage";
 import Careers from "./pages/Careers";
 import Investors from "./pages/Investors";
-import Settings from "./pages/admin/Settings";
-import Products from "./pages/admin/Products";
-import AddProduct from "./pages/admin/AddProduct";
-import Services from "./pages/admin/Services";
-import AddService from "./pages/admin/AddService";
-import ClaimRequests from "./pages/admin/ClaimRequests";
-import Plans from "./pages/admin/Plans";
-import Coupons from "./pages/admin/Coupons";
-import BrandDashboard from "./pages/brand/BrandDashboard";
-import BrandLocations from "./pages/brand/BrandLocations";
+const Settings = lazy(() => import("./pages/admin/Settings"));
+const Products = lazy(() => import("./pages/admin/Products"));
+const AddProduct = lazy(() => import("./pages/admin/AddProduct"));
+const Services = lazy(() => import("./pages/admin/Services"));
+const AddService = lazy(() => import("./pages/admin/AddService"));
+const ClaimRequests = lazy(() => import("./pages/admin/ClaimRequests"));
+const Plans = lazy(() => import("./pages/admin/Plans"));
+const Coupons = lazy(() => import("./pages/admin/Coupons"));
+const BrandDashboard = lazy(() => import("./pages/brand/BrandDashboard"));
+const BrandLocations = lazy(() => import("./pages/brand/BrandLocations"));
 import BusinessDetail from "./pages/BusinessDetail";
 import ProductDetail from "./pages/ProductDetail";
-import OnboardingWizard from "./pages/OnboardingWizard";
-import Leads from "./pages/admin/Leads";
-import MerchantLeads from "./pages/merchant/Leads";
-import MerchantReviews from "./pages/merchant/Reviews";
-import MerchantFAQs from "./pages/merchant/FAQs";
-import MerchantQuestions from "./pages/merchant/Questions";
-import BrandSettings from "./pages/merchant/BrandSettings";
-import OnboardingLanding from "./pages/merchant/OnboardingLanding";
-import LeadDetail from "./pages/merchant/LeadDetail";
-import ProfileEditor from "./pages/merchant/ProfileEditor";
-import Pricing from "./pages/merchant/Pricing";
-import Billing from "./pages/merchant/Billing";
-import Analytics from "./pages/merchant/Analytics";
-import Promotions from "./pages/merchant/Promotions";
-import Offers from "./pages/merchant/Offers";
-import SupportTickets from "./pages/merchant/SupportTickets";
-import MyReviews from "./pages/user/MyReviews";
-import MyEnquiries from "./pages/user/MyEnquiries";
-import ProfileLayout from './pages/user/ProfileLayout';
-import ProfilePage from './pages/user/ProfilePage';
-import SavedListings from './pages/user/SavedListings';
-import AddressBook from './pages/user/AddressBook';
-import AccountSettings from './pages/user/AccountSettings';
-import SecurityPage from './pages/user/SecurityPage';
-import NotificationsPage from './pages/user/NotificationsPage';
-import MerchantNotificationSettings from './pages/merchant/NotificationSettings';
-import Sessions from './pages/user/Sessions';
+const OnboardingWizard = lazy(() => import("./pages/OnboardingWizard"));
+const Leads = lazy(() => import("./pages/admin/Leads"));
+const MerchantLeads = lazy(() => import("./pages/merchant/Leads"));
+const MerchantReviews = lazy(() => import("./pages/merchant/Reviews"));
+const MerchantFAQs = lazy(() => import("./pages/merchant/FAQs"));
+const MerchantQuestions = lazy(() => import("./pages/merchant/Questions"));
+const BrandSettings = lazy(() => import("./pages/merchant/BrandSettings"));
+const OnboardingLanding = lazy(() => import("./pages/merchant/OnboardingLanding"));
+const LeadDetail = lazy(() => import("./pages/merchant/LeadDetail"));
+const ProfileEditor = lazy(() => import("./pages/merchant/ProfileEditor"));
+const Pricing = lazy(() => import("./pages/merchant/Pricing"));
+const Billing = lazy(() => import("./pages/merchant/Billing"));
+const Analytics = lazy(() => import("./pages/merchant/Analytics"));
+const Promotions = lazy(() => import("./pages/merchant/Promotions"));
+const Offers = lazy(() => import("./pages/merchant/Offers"));
+const SupportTickets = lazy(() => import("./pages/merchant/SupportTickets"));
+const MyReviews = lazy(() => import("./pages/user/MyReviews"));
+const MyEnquiries = lazy(() => import("./pages/user/MyEnquiries"));
+const ProfileLayout = lazy(() => import("./pages/user/ProfileLayout"));
+const ProfilePage = lazy(() => import("./pages/user/ProfilePage"));
+const SavedListings = lazy(() => import("./pages/user/SavedListings"));
+const AddressBook = lazy(() => import("./pages/user/AddressBook"));
+const AccountSettings = lazy(() => import("./pages/user/AccountSettings"));
+const SecurityPage = lazy(() => import("./pages/user/SecurityPage"));
+const NotificationsPage = lazy(() => import("./pages/user/NotificationsPage"));
+const MerchantNotificationSettings = lazy(() => import("./pages/merchant/NotificationSettings"));
+const Sessions = lazy(() => import("./pages/user/Sessions"));
 
 // Essential Admin Modules
-import Listings from "./pages/admin/Listings";
-import ReviewModeration from "./pages/admin/ReviewModeration";
-import QuestionModeration from "./pages/admin/QuestionModeration";
-import RoleManager from "./pages/admin/RoleManager";
-import FraudDashboard from "./pages/admin/FraudDashboard";
-import AuditLogs from "./pages/admin/AuditLogs";
-import BroadcastManager from "./pages/admin/BroadcastManager";
-import OSMDiscovery from "./pages/admin/OSMDiscovery";
-import PhotoModeration from "./pages/admin/PhotoModeration";
+const Listings = lazy(() => import("./pages/admin/Listings"));
+const ReviewModeration = lazy(() => import("./pages/admin/ReviewModeration"));
+const QuestionModeration = lazy(() => import("./pages/admin/QuestionModeration"));
+const RoleManager = lazy(() => import("./pages/admin/RoleManager"));
+const FraudDashboard = lazy(() => import("./pages/admin/FraudDashboard"));
+const AuditLogs = lazy(() => import("./pages/admin/AuditLogs"));
+const BroadcastManager = lazy(() => import("./pages/admin/BroadcastManager"));
+const OSMDiscovery = lazy(() => import("./pages/admin/OSMDiscovery"));
+const PhotoModeration = lazy(() => import("./pages/admin/PhotoModeration"));
 
-import SubscriptionsAdmin from "./pages/admin/SubscriptionsAdmin";
-import CreateListing from "./pages/admin/CreateListing";
-import CMSDashboard from "./pages/admin/CMSDashboard";
-import ArticleList from "./pages/admin/ArticleList";
-import ArticleEditor from "./pages/admin/ArticleEditor";
-import PageList from "./pages/admin/PageList";
-import PageEditor from "./pages/admin/PageEditor";
-import FAQManager from "./pages/admin/FAQManager";
-import BannerManager from "./pages/admin/BannerManager";
-import SEOContentManager from "./pages/admin/SEOContentManager";
-import MediaLibrary from "./pages/admin/MediaLibrary";
-import AdminUserManager from "./pages/admin/AdminUserManager";
-import EditCompany from "./pages/admin/EditCompany";
-import Reports from "./pages/admin/Reports";
-import ComponentGallery from "./pages/ComponentGallery";
+const SubscriptionsAdmin = lazy(() => import("./pages/admin/SubscriptionsAdmin"));
+const CreateListing = lazy(() => import("./pages/admin/CreateListing"));
+const CMSDashboard = lazy(() => import("./pages/admin/CMSDashboard"));
+const ArticleList = lazy(() => import("./pages/admin/ArticleList"));
+const ArticleEditor = lazy(() => import("./pages/admin/ArticleEditor"));
+const PageList = lazy(() => import("./pages/admin/PageList"));
+const PageEditor = lazy(() => import("./pages/admin/PageEditor"));
+const FAQManager = lazy(() => import("./pages/admin/FAQManager"));
+const BannerManager = lazy(() => import("./pages/admin/BannerManager"));
+const SEOContentManager = lazy(() => import("./pages/admin/SEOContentManager"));
+const MediaLibrary = lazy(() => import("./pages/admin/MediaLibrary"));
+const AdminUserManager = lazy(() => import("./pages/admin/AdminUserManager"));
+const EditCompany = lazy(() => import("./pages/admin/EditCompany"));
+const Reports = lazy(() => import("./pages/admin/Reports"));
+const ComponentGallery = lazy(() => import("./pages/ComponentGallery"));
 
 // Revenue & Finance Modules
-import RevenueDashboard from "./pages/admin/RevenueDashboard";
-import TransactionHistory from "./pages/admin/TransactionHistory";
-import RefundQueue from "./pages/admin/RefundQueue";
-import InvoiceManager from "./pages/admin/InvoiceManager";
-import GSTReport from "./pages/admin/GSTReport";
-import FailedPayments from "./pages/admin/FailedPayments";
-import PayoutTracker from "./pages/admin/PayoutTracker";
+const RevenueDashboard = lazy(() => import("./pages/admin/RevenueDashboard"));
+const TransactionHistory = lazy(() => import("./pages/admin/TransactionHistory"));
+const RefundQueue = lazy(() => import("./pages/admin/RefundQueue"));
+const InvoiceManager = lazy(() => import("./pages/admin/InvoiceManager"));
+const GSTReport = lazy(() => import("./pages/admin/GSTReport"));
+const FailedPayments = lazy(() => import("./pages/admin/FailedPayments"));
+const PayoutTracker = lazy(() => import("./pages/admin/PayoutTracker"));
 
 // Advertisement Manager
-import AdSlotConfig from "./pages/admin/AdSlotConfig";
-import AdManager from "./pages/admin/AdManager";
-import AdAnalytics from "./pages/admin/AdAnalytics";
+const AdSlotConfig = lazy(() => import("./pages/admin/AdSlotConfig"));
+const AdManager = lazy(() => import("./pages/admin/AdManager"));
+const AdAnalytics = lazy(() => import("./pages/admin/AdAnalytics"));
 
 // Auth
 import { AuthProvider } from './context/AuthContext';
@@ -99,11 +100,23 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ConfigProvider } from './context/ConfigContext';
 import { Toaster } from 'react-hot-toast';
 import FcmTokenHandler from './components/auth/FcmTokenHandler';
-import Login from './pages/auth/Login';
-import Signup from './pages/auth/Signup';
-import OTPScreen from './pages/auth/OTPScreen';
-import ForgotPassword from './pages/auth/ForgotPassword';
+const Login = lazy(() => import("./pages/auth/Login"));
+const Signup = lazy(() => import("./pages/auth/Signup"));
+const OTPScreen = lazy(() => import("./pages/auth/OTPScreen"));
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 import ProtectedRoute from './components/auth/ProtectedRoute';
+
+// Shown while a lazy route chunk is in flight.
+function RouteLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm font-semibold text-slate-500">Loading…</p>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   return (
@@ -151,6 +164,9 @@ export default function App() {
         />
         <FcmTokenHandler />
         <Router>
+          {/* Admin, merchant, brand, profile and auth routes are lazy so a public
+              visitor never downloads them. Suspense catches the load gap. */}
+          <Suspense fallback={<RouteLoading />}>
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
@@ -298,6 +314,7 @@ export default function App() {
             {/* Catch-all route: intercepts unknown paths like root /dashboard and redirects to login */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
+          </Suspense>
         </Router>
         </AuthProvider>
       </ThemeProvider>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Menu, X, ChevronDown, LogOut, Bell, User, Heart, Settings, MessageSquare, ShieldCheck, Globe, Volume2, TrendingUp, Bookmark } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
@@ -11,30 +11,51 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     
+    // One panel open at a time. Previously each dropdown had its own boolean, so
+    // the bookmark, heart and profile panels could all be on screen at once,
+    // overlapping each other.
+    const [openPanel, setOpenPanel] = useState(null);
+    const closePanels = useCallback(() => setOpenPanel(null), []);
+
+    const isNotificationOpen = openPanel === 'notifications';
+    const isProfileOpen = openPanel === 'profile';
+    const isFavoritesOpen = openPanel === 'favorites';
+    const isProductsOpen = openPanel === 'products';
+    const isLangOpen = openPanel === 'lang';
+
+    // Shims keeping the existing setIsXOpen(bool) / setIsXOpen(prev => !prev)
+    // call sites intact while routing them through the single state.
+    const panelSetter = (name) => (next) => setOpenPanel(prev => {
+        const currentlyOpen = prev === name;
+        const shouldOpen = typeof next === 'function' ? next(currentlyOpen) : next;
+        if (shouldOpen) return name;
+        return currentlyOpen ? null : prev;
+    });
+    const setIsNotificationOpen = panelSetter('notifications');
+    const setIsProfileOpen = panelSetter('profile');
+    const setIsFavoritesOpen = panelSetter('favorites');
+    const setIsProductsOpen = panelSetter('products');
+    const setIsLangOpen = panelSetter('lang');
+
     // Notifications state
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const notificationRef = useRef(null);
 
     // Profile Dropdown state
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileRef = useRef(null);
 
     // Favorites (Businesses) Dropdown state
-    const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
     const [favoriteItems, setFavoriteItems] = useState([]);
     const favoritesRef = useRef(null);
     const favoritesGuestRef = useRef(null);
 
     // Saved Products Dropdown state
-    const [isProductsOpen, setIsProductsOpen] = useState(false);
     const [savedProducts, setSavedProducts] = useState([]);
     const productsRef = useRef(null);
     const productsGuestRef = useRef(null);
 
     // Language Dropdown state
-    const [isLangOpen, setIsLangOpen] = useState(false);
     const [selectedLang, setSelectedLang] = useState('EN');
     const langRef = useRef(null);
     const languages = [
@@ -107,25 +128,8 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
 
         window.addEventListener('bookmarksUpdated', handleBookmarksUpdated);
 
-        const handleClickOutside = (event) => {
-            if (
-                (favoritesRef.current && !favoritesRef.current.contains(event.target)) &&
-                (favoritesGuestRef.current && !favoritesGuestRef.current.contains(event.target))
-            ) {
-                setIsFavoritesOpen(false);
-            }
-            if (
-                (productsRef.current && !productsRef.current.contains(event.target)) &&
-                (productsGuestRef.current && !productsGuestRef.current.contains(event.target))
-            ) {
-                setIsProductsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-
         return () => {
             window.removeEventListener('bookmarksUpdated', handleBookmarksUpdated);
-            document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isAuthenticated]);
 
@@ -228,22 +232,34 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
         };
     }, []);
 
-    // Close dropdowns on outside click
+    // Close the open dropdown on outside click or Escape.
     useEffect(() => {
+        if (!openPanel) return undefined;
+
+        // Only one of the authed/guest ref pairs is mounted at a time, so a null
+        // ref must count as "not containing the click". The previous version
+        // required both refs to be non-null, which made the condition never
+        // true and left the panels permanently open.
+        const clickedInsideAnyPanel = (target) => [
+            notificationRef, profileRef, langRef,
+            favoritesRef, favoritesGuestRef,
+            productsRef, productsGuestRef
+        ].some(ref => ref.current && ref.current.contains(target));
+
         const handleClickOutside = (event) => {
-            if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-                setIsNotificationOpen(false);
-            }
-            if (langRef.current && !langRef.current.contains(event.target)) {
-                setIsLangOpen(false);
-            }
-            if (profileRef.current && !profileRef.current.contains(event.target)) {
-                setIsProfileOpen(false);
-            }
+            if (!clickedInsideAnyPanel(event.target)) closePanels();
         };
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') closePanels();
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [openPanel, closePanels]);
 
     const location = useLocation();
     const isHomePage = location.pathname === '/';
