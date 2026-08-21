@@ -14,8 +14,20 @@ import { FormTextarea } from "../../components/ui/FormTextarea";
 import { Button } from "../../components/ui/button";
 import AdminHeader from "../../components/admin/AdminHeader";
 
+const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+// Blank by default — an unset day renders as "Not specified" on the public page
+// rather than inventing a timing.
+const emptyBusinessHours = () => DAYS.reduce((acc, day) => {
+    acc[day] = { open: '', close: '', closed: false };
+    return acc;
+}, {});
+
 export default function EditCompany() {
-    const { slug } = useParams();
+    // Mounted on both /admin/listings/:slug/edit and /admin/companies/:id/edit;
+    // the admin detail endpoint accepts either a slug or an ObjectId.
+    const { slug, id } = useParams();
+    const listingKey = slug || id;
     const navigate = useNavigate();
     
     const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +44,8 @@ export default function EditCompany() {
         address: "", latitude: null, longitude: null,
         status: "Pending", claimed: false, verified: false, 
         verificationStatus: "Not Verified", isFeatured: false, 
-        manualRank: 0, image: null, owner: ""
+        manualRank: 0, image: null, owner: "",
+        businessHours: emptyBusinessHours()
     };
     
     const [formData, setFormData] = useState(defaultFormState);
@@ -50,7 +63,7 @@ export default function EditCompany() {
                 const [catsRes, usersRes, companyRes] = await Promise.all([
                     fetchWithAuth(`${API_BASE_URL}/categories`),
                     fetchWithAuth(`${API_BASE_URL}/users`),
-                    fetchWithAuth(`${API_BASE_URL}/admin/listings/${slug}`)
+                    fetchWithAuth(`${API_BASE_URL}/admin/listings/${listingKey}`)
                 ]);
 
                 if (catsRes.ok) {
@@ -84,7 +97,16 @@ export default function EditCompany() {
                         isFeatured: company.isFeatured || false,
                         manualRank: company.manualRank || 0,
                         image: company.image || null,
-                        owner: company.owner?._id || company.owner || ""
+                        owner: company.owner?._id || company.owner || "",
+                        businessHours: DAYS.reduce((acc, day) => {
+                            const h = company.businessHours?.[day];
+                            acc[day] = {
+                                open: h?.open || "",
+                                close: h?.close || "",
+                                closed: Boolean(h?.closed)
+                            };
+                            return acc;
+                        }, {})
                     });
                     setImagePreview(company.image || null);
                 } else {
@@ -100,7 +122,7 @@ export default function EditCompany() {
         };
 
         fetchData();
-    }, [slug]);
+    }, [listingKey]);
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -111,6 +133,33 @@ export default function EditCompany() {
             if (name === 'claimed' && !finalValue) newState.owner = "";
             return newState;
         });
+    };
+
+    const updateDayHours = (day, patch) => {
+        setFormData(prev => ({
+            ...prev,
+            businessHours: {
+                ...prev.businessHours,
+                [day]: { ...prev.businessHours[day], ...patch }
+            }
+        }));
+    };
+
+    const copyMondayToAllDays = () => {
+        setFormData(prev => {
+            const monday = prev.businessHours.monday;
+            return {
+                ...prev,
+                businessHours: DAYS.reduce((acc, day) => {
+                    acc[day] = { ...monday };
+                    return acc;
+                }, {})
+            };
+        });
+    };
+
+    const clearAllHours = () => {
+        setFormData(prev => ({ ...prev, businessHours: emptyBusinessHours() }));
     };
 
     const handleImageUpload = (e) => {
@@ -157,7 +206,7 @@ export default function EditCompany() {
             }
 
             const payload = { ...formData, image: imageUrl };
-            const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/${slug}`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/${listingKey}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -277,13 +326,86 @@ export default function EditCompany() {
                             showLabel={true}
                         />
 
-                        <FormInput 
+                        <FormInput
                             label="Street Address / Building"
                             name="address"
                             value={formData.address}
                             onChange={handleInputChange}
                             placeholder="House No, Suite, Area..."
                         />
+                    </div>
+
+                    {/* Business / Working Hours — per day, nothing defaulted */}
+                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                        <div className="flex items-center justify-between gap-3 pb-2 border-b border-slate-50">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+                                    <Clock className="w-5 h-5 text-indigo-600" />
+                                </div>
+                                <h2 className="font-black text-slate-800 uppercase tracking-widest text-xs">Business Hours</h2>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={copyMondayToAllDays}
+                                    className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:underline"
+                                >
+                                    Copy Monday to all
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={clearAllHours}
+                                    className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500"
+                                >
+                                    Clear all
+                                </button>
+                            </div>
+                        </div>
+
+                        <p className="text-xs text-slate-500">
+                            Set the opening and closing time for each day. Leave a day blank to show
+                            &ldquo;Not specified&rdquo; on the public page, or tick <span className="font-semibold">Closed</span> to mark it a day off.
+                        </p>
+
+                        <div className="space-y-2">
+                            {DAYS.map(day => {
+                                const hours = formData.businessHours[day] || { open: "", close: "", closed: false };
+                                return (
+                                    <div
+                                        key={day}
+                                        className="flex flex-wrap items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100"
+                                    >
+                                        <span className="w-24 text-sm font-bold text-slate-700 capitalize">{day}</span>
+
+                                        <input
+                                            type="time"
+                                            value={hours.open}
+                                            disabled={hours.closed}
+                                            onChange={e => updateDayHours(day, { open: e.target.value })}
+                                            className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors disabled:bg-slate-100 disabled:text-slate-400"
+                                        />
+                                        <span className="text-slate-400 text-sm">to</span>
+                                        <input
+                                            type="time"
+                                            value={hours.close}
+                                            disabled={hours.closed}
+                                            onChange={e => updateDayHours(day, { close: e.target.value })}
+                                            className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors disabled:bg-slate-100 disabled:text-slate-400"
+                                        />
+
+                                        <label className="flex items-center gap-2 ml-auto cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={hours.closed}
+                                                onChange={e => updateDayHours(day, { closed: e.target.checked })}
+                                                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-0"
+                                            />
+                                            <span className="text-xs font-bold text-slate-500">Closed</span>
+                                        </label>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
 

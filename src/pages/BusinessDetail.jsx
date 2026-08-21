@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/homepage/Header';
 import Footer from '../components/homepage/Footer';
 import { logAnalyticsEvent } from '../utils/tracker';
+import { isBusinessOpen, formatDayHours } from '../utils/businessHours';
 import EnquiryModal from '../components/ui/EnquiryModal';
 
 export default function BusinessDetail() {
@@ -583,33 +584,6 @@ export default function BusinessDetail() {
         window.open(url, '_blank');
     };
 
-    const isBusinessOpen = (hours) => {
-        if (!hours) return { status: 'Open now', color: 'text-emerald-500' }; // Default if no hours
-        const now = new Date();
-        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        const day = days[now.getDay()];
-        const dayHours = hours[day];
-
-        if (!dayHours || dayHours.closed) return { status: 'Closed now', color: 'text-rose-500' };
-
-        // Simple time parsing (assuming "9:00 AM")
-        const parseTime = (timeStr) => {
-            const [time, modifier] = timeStr.split(' ');
-            let [hours, minutes] = time.split(':').map(Number);
-            if (modifier === 'PM' && hours < 12) hours += 12;
-            if (modifier === 'AM' && hours === 12) hours = 0;
-            return hours * 60 + (minutes || 0);
-        };
-
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        const openMinutes = parseTime(dayHours.open || '9:00 AM');
-        const closeMinutes = parseTime(dayHours.close || '9:00 PM');
-
-        if (currentMinutes >= openMinutes && currentMinutes <= closeMinutes) {
-            return { status: 'Open now', color: 'text-emerald-500' };
-        }
-        return { status: 'Closed now', color: 'text-rose-500' };
-    };
 
     const handleReportListing = async (e) => {
         e.preventDefault();
@@ -825,7 +799,7 @@ export default function BusinessDetail() {
                                                     <div className="absolute top-full left-0 mt-2 p-4 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 opacity-0 group-hover/hours:opacity-100 transition-all pointer-events-none w-64 text-xs">
                                                         <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-50">
                                                             <span className="font-black text-slate-900 uppercase tracking-widest text-[10px]">Weekly Hours</span>
-                                                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${status.color === 'text-emerald-500' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${status.tone === 'open' ? 'bg-emerald-50 text-emerald-600' : status.tone === 'closed' ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-500'}`}>
                                                                 {status.status}
                                                             </span>
                                                         </div>
@@ -837,7 +811,7 @@ export default function BusinessDetail() {
                                                                     <div key={day} className={`flex justify-between items-center ${isToday ? 'bg-orange-50 -mx-2 px-2 py-1 rounded-lg' : ''}`}>
                                                                         <span className={`capitalize ${isToday ? 'font-bold text-orange-700' : 'text-slate-500'}`}>{day}</span>
                                                                         <span className={`${isToday ? 'font-bold text-orange-600' : 'text-slate-700'}`}>
-                                                                            {dayHours ? (dayHours.closed ? 'Closed' : `${dayHours.open} - ${dayHours.close}`) : '9:00 AM - 9:00 PM'}
+                                                                            {formatDayHours(dayHours)}
                                                                         </span>
                                                                     </div>
                                                                 );
@@ -967,8 +941,11 @@ export default function BusinessDetail() {
                                                     value: (
                                                         <div className="flex flex-col gap-1 w-full">
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-emerald-600 font-bold">Open now</span>
-                                                                <button 
+                                                                {(() => {
+                                                                    const status = isBusinessOpen(business?.businessHours);
+                                                                    return <span className={`font-bold ${status.color}`}>{status.status}</span>;
+                                                                })()}
+                                                                <button
                                                                     onClick={() => setShowFullHours(!showFullHours)}
                                                                     className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
                                                                 >
@@ -984,7 +961,7 @@ export default function BusinessDetail() {
                                                                             <div key={day} className={`flex justify-between text-xs ${isToday ? 'bg-indigo-50 -mx-3 px-3 py-1.5 rounded-lg border border-indigo-100' : ''}`}>
                                                                                 <span className={`capitalize ${isToday ? 'font-black text-indigo-700' : 'text-slate-500'}`}>{day}</span>
                                                                                 <span className={`${isToday ? 'font-black text-indigo-600' : 'text-slate-700'}`}>
-                                                                                    {h ? (h.closed ? 'Closed' : `${h.open} - ${h.close}`) : '9:00 AM - 9:00 PM'}
+                                                                                    {formatDayHours(h)}
                                                                                 </span>
                                                                             </div>
                                                                         );
@@ -996,7 +973,7 @@ export default function BusinessDetail() {
                                                                     {(() => {
                                                                         const d = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
                                                                         const h = business?.businessHours?.[d];
-                                                                        return h ? (h.closed ? 'Closed Today' : `${h.open} - ${h.close}`) : '9:00 AM - 9:00 PM';
+                                                                        return h && h.closed ? 'Closed Today' : formatDayHours(h);
                                                                     })()}
                                                                 </span>
                                                             )}

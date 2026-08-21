@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
     ChevronLeft, 
@@ -31,6 +31,9 @@ import { logAnalyticsEvent } from '../utils/tracker';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
+// Specs beyond this count collapse behind a "Show All" toggle.
+const SPEC_PREVIEW_COUNT = 6;
+
 export default function ProductDetail() {
     const { slug } = useParams();
     const navigate = useNavigate();
@@ -43,6 +46,8 @@ export default function ProductDetail() {
     const [showPhoneModal, setShowPhoneModal] = useState(false);
     const { isAuthenticated } = useAuth();
     const [isBookmarked, setIsBookmarked] = useState(false);
+    const [showAllSpecs, setShowAllSpecs] = useState(false);
+    const specsRef = useRef(null);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -55,6 +60,7 @@ export default function ProductDetail() {
                     setProduct(data.data);
                     setSimilarProducts(data.similarProducts || []);
                     setActiveImage(0);
+                    setShowAllSpecs(false);
                 } else {
                     setError(data.error || 'Product not found');
                 }
@@ -226,6 +232,21 @@ export default function ProductDetail() {
             highlightsList = [{ key: 'Highlight', value: product.highlights }];
         }
     }
+    // Only keep rows the manufacturer actually filled in — no placeholder rows.
+    const filledPairs = (list) => (Array.isArray(list) ? list : [])
+        .filter(row => row && String(row.value ?? '').trim());
+    highlightsList = filledPairs(highlightsList);
+
+    let specificationsList = product.specifications;
+    if (typeof specificationsList === 'string' && specificationsList.trim()) {
+        try {
+            const parsed = JSON.parse(specificationsList);
+            specificationsList = Array.isArray(parsed) ? parsed : [{ key: 'Specification', value: specificationsList }];
+        } catch {
+            specificationsList = [{ key: 'Specification', value: specificationsList }];
+        }
+    }
+    specificationsList = filledPairs(specificationsList);
 
     return (
         <div className="min-h-screen bg-white flex flex-col">
@@ -307,10 +328,10 @@ export default function ProductDetail() {
 
                         {/* Column 2: Highlights and Description */}
                         <div className="lg:col-span-5 space-y-10">
-                            {/* Highlights */}
-                            <section>
-                                <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">Highlights</h3>
-                                {highlightsList && highlightsList.length > 0 ? (
+                            {/* Highlights — shown only when the manufacturer supplied them */}
+                            {highlightsList.length > 0 && (
+                                <section>
+                                    <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">Highlights</h3>
                                     <div className="space-y-3 bg-slate-50 p-5 rounded-xl border border-slate-100">
                                         {highlightsList.map((hl, idx) => (
                                             <div key={idx} className="grid grid-cols-3 gap-4 text-sm">
@@ -319,61 +340,59 @@ export default function ProductDetail() {
                                             </div>
                                         ))}
                                     </div>
-                                ) : (
-                                    <>
-                                        <div className="space-y-3">
-                                            <div className="grid grid-cols-3 gap-4 text-sm">
-                                                <span className="text-slate-500">Brand:</span>
-                                                <span className="col-span-2 text-slate-800 font-medium">{product.brandId?.name || 'Generic'}</span>
-                                            </div>
-                                            <div className="grid grid-cols-3 gap-4 text-sm">
-                                                <span className="text-slate-500">Material:</span>
-                                                <span className="col-span-2 text-slate-800 font-medium">High Strength Steel</span>
-                                            </div>
-                                            <div className="grid grid-cols-3 gap-4 text-sm">
-                                                <span className="text-slate-500">Type:</span>
-                                                <span className="col-span-2 text-slate-800 font-medium">{product.categoryId?.name || 'Industrial'}</span>
-                                            </div>
-                                            <div className="grid grid-cols-3 gap-4 text-sm">
-                                                <span className="text-slate-500">Power Source:</span>
-                                                <span className="col-span-2 text-slate-800 font-medium">Hydraulic</span>
-                                            </div>
-                                            <div className="grid grid-cols-3 gap-4 text-sm">
-                                                <span className="text-slate-500">Capacity:</span>
-                                                <span className="col-span-2 text-slate-800 font-medium">100 Tons</span>
-                                            </div>
-                                        </div>
-                                        <button className="mt-4 text-blue-600 text-sm font-bold hover:underline">View Full Specification</button>
-                                    </>
-                                )}
-                            </section>
+                                    {specificationsList.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowAllSpecs(true);
+                                                specsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            }}
+                                            className="mt-4 text-blue-600 text-sm font-bold hover:underline"
+                                        >
+                                            View Full Specification
+                                        </button>
+                                    )}
+                                </section>
+                            )}
 
-                            {/* Warranty */}
-                            {product.warranty && product.warranty !== 'No Warranty' ? (
+                            {/* Specifications — manufacturer-defined parameters, nothing defaulted */}
+                            {specificationsList.length > 0 && (
+                                <section ref={specsRef}>
+                                    <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">Specifications</h3>
+                                    <div className="divide-y divide-slate-100 bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
+                                        {(showAllSpecs ? specificationsList : specificationsList.slice(0, SPEC_PREVIEW_COUNT)).map((sp, idx) => (
+                                            <div key={idx} className="grid grid-cols-3 gap-4 text-sm px-5 py-3">
+                                                <span className="text-slate-500 font-medium">{sp.key}:</span>
+                                                <span className="col-span-2 text-slate-800 font-bold">{sp.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {specificationsList.length > SPEC_PREVIEW_COUNT && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowAllSpecs(!showAllSpecs)}
+                                            className="mt-3 text-blue-600 text-sm font-bold hover:underline"
+                                        >
+                                            {showAllSpecs
+                                                ? 'Show Less'
+                                                : `Show All ${specificationsList.length} Specifications`}
+                                        </button>
+                                    )}
+                                </section>
+                            )}
+
+                            {/* Warranty — shown only when the manufacturer entered terms */}
+                            {product.warranty && product.warranty.trim() && product.warranty !== 'No Warranty' && (
                                 <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
                                     <div className="p-2 bg-emerald-100 rounded-full text-emerald-600">
                                         <CheckCircle2 className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-bold text-slate-900">{product.warranty} Warranty</h4>
-                                        <p className="text-xs text-slate-500 mt-1">Comes with brand warranty</p>
+                                        <h4 className="text-sm font-bold text-slate-900">{product.warranty}</h4>
+                                        <p className="text-xs text-slate-500 mt-1">Warranty as specified by the manufacturer</p>
                                     </div>
                                 </div>
-                            ) : (
-                                !product.warranty && (
-                                    <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                        <div className="p-2 bg-emerald-100 rounded-full text-emerald-600">
-                                            <CheckCircle2 className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-bold text-slate-900">6 Months Warranty</h4>
-                                            <p className="text-xs text-slate-500 mt-1">Comes with brand warranty</p>
-                                            <button className="text-[10px] font-bold text-blue-600 uppercase mt-1">Know More</button>
-                                        </div>
-                                    </div>
-                                )
                             )}
-
                             {/* Product Description */}
                             <section>
                                 <h3 className="text-lg font-bold text-slate-900 mb-4">Product Description</h3>
