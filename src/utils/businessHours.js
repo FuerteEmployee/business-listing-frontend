@@ -1,3 +1,23 @@
+export const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+// Blank by default — an unset day renders as "Not specified" on the public page
+// rather than inventing a timing.
+export const emptyBusinessHours = () => DAYS.reduce((acc, day) => {
+    acc[day] = { open: '', close: '', closed: false };
+    return acc;
+}, {});
+
+// Turns whatever the API returned into a complete, controlled 7-day map.
+export const normalizeBusinessHours = (businessHours) => DAYS.reduce((acc, day) => {
+    const h = businessHours?.[day];
+    acc[day] = {
+        open: h?.open || '',
+        close: h?.close || '',
+        closed: Boolean(h?.closed)
+    };
+    return acc;
+}, {});
+
 // Open/closed state for a listing's businessHours map.
 // Hours the merchant never filled in report as unknown — we don't assume a window.
 const UNKNOWN = { status: 'Timings not specified', color: 'text-slate-500', tone: 'unknown' };
@@ -19,6 +39,7 @@ export const isBusinessOpen = (businessHours) => {
     if (!businessHours) return UNKNOWN;
 
     const now = new Date();
+    // Indexed by Date#getDay(), which is Sunday-first — not the same order as DAYS.
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const today = days[now.getDay()];
     const hours = businessHours[today];

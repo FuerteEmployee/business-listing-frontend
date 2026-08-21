@@ -18,6 +18,8 @@ import { FormTextarea } from "../../components/ui/FormTextarea";
 import { Button } from "../../components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs";
 import MapPicker from "../../components/location/MapPicker";
+import BusinessHoursEditor from "../../components/ui/BusinessHoursEditor";
+import { emptyBusinessHours, normalizeBusinessHours } from "../../utils/businessHours";
 
 export default function ProfileEditor() {
     const { id } = useParams();
@@ -46,7 +48,8 @@ export default function ProfileEditor() {
         images: [],
         videos: [],
         serviceRadius: 0,
-        serviceArea: { type: 'Polygon', coordinates: [] }
+        serviceArea: { type: 'Polygon', coordinates: [] },
+        businessHours: emptyBusinessHours()
     };
     
     const [formData, setFormData] = useState(defaultFormState);
@@ -85,7 +88,8 @@ export default function ProfileEditor() {
                         socialLinks: { ...defaultFormState.socialLinks, ...(company.socialLinks || {}) },
                         languages: Array.isArray(company.languages) ? company.languages : [],
                         paymentMethods: Array.isArray(company.paymentMethods) ? company.paymentMethods : [],
-                        tags: Array.isArray(company.tags) ? company.tags : []
+                        tags: Array.isArray(company.tags) ? company.tags : [],
+                        businessHours: normalizeBusinessHours(company.businessHours)
                     });
                     setImagePreview(company.image || null);
                 } else {
@@ -285,10 +289,20 @@ export default function ProfileEditor() {
                     <TabsTrigger value="location" className="rounded-xl px-6 py-2.5">Location & Area</TabsTrigger>
                     <TabsTrigger value="media" className="rounded-xl px-6 py-2.5">Media & Gallery</TabsTrigger>
                     <TabsTrigger value="contact" className="rounded-xl px-6 py-2.5">Contact & Social</TabsTrigger>
+                    <TabsTrigger value="hours" className="rounded-xl px-6 py-2.5">Business Hours</TabsTrigger>
                     <TabsTrigger value="features" className="rounded-xl px-6 py-2.5">Additional Details</TabsTrigger>
                 </TabsList>
 
                 <div className="grid grid-cols-1 gap-8">
+                    {/* Business Hours Tab */}
+                    <TabsContent value="hours" className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+                        <BusinessHoursEditor
+                            value={formData.businessHours}
+                            onChange={hours => setFormData(prev => ({ ...prev, businessHours: hours }))}
+                            title="Your Business Hours"
+                        />
+                    </TabsContent>
+
                     {/* Basic Info Tab */}
                     <TabsContent value="basic" className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-400">
                         <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm space-y-8">
