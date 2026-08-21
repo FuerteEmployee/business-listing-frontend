@@ -258,6 +258,9 @@ export default function ProductDetail() {
     const sellerRating = Number(product.listingId?.rating) || 0;
     const sellerReviewCount = Number(product.listingId?.reviewCount) || 0;
     const sellerCity = product.listingId?.city_id?.name || '';
+    // Sellers set their brand mark as `logo`; `image` is the storefront/cover photo.
+    // Either is a real upload, so prefer the logo and fall back to the photo.
+    const sellerLogo = product.listingId?.logo || product.listingId?.image || '';
 
     return (
         <div className="min-h-screen bg-white flex flex-col">
@@ -435,11 +438,17 @@ export default function ProductDetail() {
                                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Seller Information</h4>
                                 
                                 <div className="flex items-start gap-4 mb-6">
-                                    <div className="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden shrink-0 border border-slate-100">
-                                        {product.listingId?.image ? (
-                                            <img src={product.listingId.image} alt={product.listingId.name} className="w-full h-full object-cover" />
+                                    <div className="w-16 h-16 bg-white rounded-lg overflow-hidden shrink-0 border border-slate-100">
+                                        {sellerLogo ? (
+                                            // contain, not cover — a brand mark shouldn't be cropped to fill the square
+                                            <img
+                                                src={sellerLogo}
+                                                alt={product.listingId?.name || 'Seller'}
+                                                className="w-full h-full object-contain p-1"
+                                                onError={e => { e.currentTarget.style.display = 'none'; }}
+                                            />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                            <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-100">
                                                 <ImageIcon className="w-6 h-6" />
                                             </div>
                                         )}
