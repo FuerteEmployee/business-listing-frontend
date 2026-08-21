@@ -28,11 +28,15 @@ import Header from '../components/homepage/Header';
 import Footer from '../components/homepage/Footer';
 import { getApiUrl, fetchWithAuth } from '../config/api';
 import { logAnalyticsEvent } from '../utils/tracker';
+import EnquiryModal from '../components/ui/EnquiryModal';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
 // Specs beyond this count collapse behind a "Show All" toggle.
 const SPEC_PREVIEW_COUNT = 6;
+
+// Descriptions shorter than this fit in the 4-line clamp, so no View More is offered.
+const DESCRIPTION_CLAMP_CHARS = 280;
 
 export default function ProductDetail() {
     const { slug } = useParams();
@@ -47,6 +51,7 @@ export default function ProductDetail() {
     const { isAuthenticated } = useAuth();
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [showAllSpecs, setShowAllSpecs] = useState(false);
+    const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
     const specsRef = useRef(null);
 
     useEffect(() => {
@@ -180,7 +185,7 @@ export default function ProductDetail() {
 
     const handleEnquire = () => {
         logAnalyticsEvent('enquiry', product.listingId?._id);
-        alert(`Enquiry sent for ${product?.name}! The seller will contact you shortly.`);
+        setIsEnquiryModalOpen(true);
     };
 
     if (loading) {
@@ -248,6 +253,12 @@ export default function ProductDetail() {
     }
     specificationsList = filledPairs(specificationsList);
 
+    // Ratings belong to the seller (Company), not the product. Show them only when
+    // real reviews exist — never a placeholder score.
+    const sellerRating = Number(product.listingId?.rating) || 0;
+    const sellerReviewCount = Number(product.listingId?.reviewCount) || 0;
+    const sellerCity = product.listingId?.city_id?.name || '';
+
     return (
         <div className="min-h-screen bg-white flex flex-col">
             <Header />
@@ -261,17 +272,22 @@ export default function ProductDetail() {
                                 {product.brandId?.name && `${product.brandId.name} `}{product.name}
                             </h1>
                             
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="flex items-center">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <Star 
-                                            key={star} 
-                                            className={`w-4 h-4 ${star <= Math.floor(product.listingId?.rating || 4) ? 'fill-orange-400 text-orange-400' : 'text-slate-200'}`} 
-                                        />
-                                    ))}
-                                    <span className="ml-2 text-sm text-slate-500">{product.listingId?.reviewCount || 2} Ratings</span>
+                            {/* Seller rating — only when the seller actually has reviews */}
+                            {sellerReviewCount > 0 && (
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="flex items-center">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <Star
+                                                key={star}
+                                                className={`w-4 h-4 ${star <= Math.round(sellerRating) ? 'fill-orange-400 text-orange-400' : 'text-slate-200'}`}
+                                            />
+                                        ))}
+                                        <span className="ml-2 text-sm text-slate-500">
+                                            {sellerReviewCount} {sellerReviewCount === 1 ? 'Rating' : 'Ratings'}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             <div className="flex items-center gap-2 mb-6">
                                 <span className="text-2xl font-bold text-slate-900">₹ {product.price?.toLocaleString()}</span>
@@ -393,19 +409,24 @@ export default function ProductDetail() {
                                     </div>
                                 </div>
                             )}
-                            {/* Product Description */}
-                            <section>
-                                <h3 className="text-lg font-bold text-slate-900 mb-4">Product Description</h3>
-                                <div className={`prose prose-slate max-w-none text-sm text-slate-600 leading-relaxed ${!showFullDescription && 'line-clamp-4'}`}>
-                                    {product.description || `The ${product.name} is designed to meet industrial standards, offering high performance and durability. Crafted with quality materials, it ensures long-term reliability for your operations. Perfect for heavy-duty applications...`}
-                                </div>
-                                <button 
-                                    onClick={() => setShowFullDescription(!showFullDescription)}
-                                    className="mt-3 text-blue-600 text-sm font-bold flex items-center gap-1 hover:underline"
-                                >
-                                    {showFullDescription ? 'View Less' : 'View More'}
-                                </button>
-                            </section>
+                            {/* Product Description — the seller's own text, or nothing */}
+                            {product.description && product.description.trim() && (
+                                <section>
+                                    <h3 className="text-lg font-bold text-slate-900 mb-4">Product Description</h3>
+                                    {/* pre-line keeps the seller's own line breaks and bullet layout */}
+                                    <div className={`prose prose-slate max-w-none text-sm text-slate-600 leading-relaxed whitespace-pre-line ${!showFullDescription && 'line-clamp-4'}`}>
+                                        {product.description}
+                                    </div>
+                                    {product.description.trim().length > DESCRIPTION_CLAMP_CHARS && (
+                                        <button
+                                            onClick={() => setShowFullDescription(!showFullDescription)}
+                                            className="mt-3 text-blue-600 text-sm font-bold flex items-center gap-1 hover:underline"
+                                        >
+                                            {showFullDescription ? 'View Less' : 'View More'}
+                                        </button>
+                                    )}
+                                </section>
+                            )}
                         </div>
 
                         {/* Column 3: Seller Sidebar */}
@@ -425,10 +446,12 @@ export default function ProductDetail() {
                                     </div>
                                     <div className="flex-1">
                                         <h5 className="font-bold text-slate-900 leading-tight mb-1">{product.listingId?.name}</h5>
-                                        <p className="text-xs text-slate-500 mb-2">{product.listingId?.city_id?.name || 'Mumbai'}</p>
-                                        <div className="flex items-center gap-1 bg-green-600 text-white px-1.5 py-0.5 rounded text-[10px] font-bold w-fit">
-                                            {product.listingId?.rating || 4.5} <Star className="w-3 h-3 fill-white" />
-                                        </div>
+                                        {sellerCity && <p className="text-xs text-slate-500 mb-2">{sellerCity}</p>}
+                                        {sellerReviewCount > 0 && (
+                                            <div className="flex items-center gap-1 bg-green-600 text-white px-1.5 py-0.5 rounded text-[10px] font-bold w-fit">
+                                                {sellerRating.toFixed(1)} <Star className="w-3 h-3 fill-white" />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -486,15 +509,19 @@ export default function ProductDetail() {
                                                     {p.name}
                                                 </h4>
                                                 
-                                                <div className="flex items-center gap-1 mb-3">
-                                                    {[1, 2, 3, 4, 5].map((star) => (
-                                                        <Star 
-                                                            key={star} 
-                                                            className={`w-3.5 h-3.5 ${star <= 4 ? 'fill-orange-400 text-orange-400' : 'text-slate-200'}`} 
-                                                        />
-                                                    ))}
-                                                    <span className="text-[11px] text-slate-400 ml-1 font-medium">4 Ratings</span>
-                                                </div>
+                                                {Number(p.listingId?.reviewCount) > 0 && (
+                                                    <div className="flex items-center gap-1 mb-3">
+                                                        {[1, 2, 3, 4, 5].map((star) => (
+                                                            <Star
+                                                                key={star}
+                                                                className={`w-3.5 h-3.5 ${star <= Math.round(Number(p.listingId?.rating) || 0) ? 'fill-orange-400 text-orange-400' : 'text-slate-200'}`}
+                                                            />
+                                                        ))}
+                                                        <span className="text-[11px] text-slate-400 ml-1 font-medium">
+                                                            {p.listingId.reviewCount} {Number(p.listingId.reviewCount) === 1 ? 'Rating' : 'Ratings'}
+                                                        </span>
+                                                    </div>
+                                                )}
                                                 
                                                 <p className="text-lg font-bold text-slate-900 mt-auto">₹ {p.price?.toLocaleString()}</p>
                                             </div>
@@ -553,6 +580,14 @@ export default function ProductDetail() {
                     </div>
                 </div>
             )}
+
+            <EnquiryModal
+                isOpen={isEnquiryModalOpen}
+                onClose={() => setIsEnquiryModalOpen(false)}
+                business={product.listingId}
+                source="Product Detail"
+                title={`Get Best Price — ${product.name}`}
+            />
 
             <Footer />
         </div>

@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import Alert from './Alert';
 import { logAnalyticsEvent } from '../../utils/tracker';
 
-export default function EnquiryModal({ isOpen, onClose, business, businessIds = [], businessNameMap = {}, title = "Get Best Quotes" }) {
+export default function EnquiryModal({ isOpen, onClose, business, businessIds = [], businessNameMap = {}, title = "Get Best Quotes", source }) {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -50,7 +50,7 @@ export default function EnquiryModal({ isOpen, onClose, business, businessIds = 
                 body: JSON.stringify({
                     businessIds: ids,
                     ...enquiryForm,
-                    source: business ? 'Business Detail' : 'Search Results'
+                    source: source || (business ? 'Business Detail' : 'Search Results')
                 })
             });
 
