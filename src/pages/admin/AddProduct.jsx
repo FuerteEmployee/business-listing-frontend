@@ -164,9 +164,6 @@ export default function AddProduct() {
                         setCustomWarrantyUnit('Months');
                     }
                 }
-                    }
-                }
-                setSpecifications(initialSpecs);
 
                 if (data.categoryId) {
                     const catId = data.categoryId?._id || data.categoryId;
@@ -285,8 +282,8 @@ export default function AddProduct() {
             // Filter out empty specifications
             const activeSpecs = specifications
                 .map(sec => ({
-                    title: sec.title.trim(),
-                    items: sec.items.filter(item => item.key.trim() && item.value.trim())
+                    title: (sec.title || '').trim(),
+                    items: (sec.items || []).filter(item => item.key.trim() && item.value.trim())
                 }))
                 .filter(sec => sec.title && sec.items.length > 0);
 
@@ -451,58 +448,6 @@ export default function AddProduct() {
                                 </button>
                             </div>
 
-                            {/* Product Specifications Key-Value Editor */}
-                            <div className="space-y-3">
-                                <label className="block text-sm font-semibold text-slate-700">Product Specifications</label>
-                                <p className="text-xs text-slate-500 -mt-1">
-                                    Add any technical parameters for this product — Power, Capacity, Application, Frequency, Dimensions, and so on. Leave blank if not applicable.
-                                </p>
-                                <div className="space-y-2">
-                                    {specifications.map((sp, idx) => (
-                                        <div key={idx} className="flex items-center gap-3">
-                                            <input
-                                                type="text"
-                                                value={sp.key}
-                                                onChange={e => {
-                                                    const updated = [...specifications];
-                                                    updated[idx] = { ...updated[idx], key: e.target.value };
-                                                    setSpecifications(updated);
-                                                }}
-                                                placeholder="Parameter (e.g. Power, Capacity)"
-                                                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
-                                            />
-                                            <input
-                                                type="text"
-                                                value={sp.value}
-                                                onChange={e => {
-                                                    const updated = [...specifications];
-                                                    updated[idx] = { ...updated[idx], value: e.target.value };
-                                                    setSpecifications(updated);
-                                                }}
-                                                placeholder="Value (e.g. 7.5 kW, 500 L)"
-                                                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
-                                            />
-                                            {specifications.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setSpecifications(specifications.filter((_, i) => i !== idx))}
-                                                    className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all flex-shrink-0"
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setSpecifications([...specifications, { key: '', value: '' }])}
-                                    className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 text-xs font-bold transition-colors mt-2"
-                                >
-                                    + Add New Specification
-                                </button>
-                            </div>
-
                             {/* Warranty: free-text, no default. Chips only pre-fill the field. */}
                             <div className="space-y-3">
                                 <label className="block text-sm font-semibold text-slate-700">Warranty</label>
@@ -622,7 +567,7 @@ export default function AddProduct() {
                                     <div className="flex items-center gap-3">
                                         <input
                                             type="text"
-                                            value={section.title}
+                                            value={section.title || ''}
                                             onChange={e => {
                                                 const updated = [...specifications];
                                                 updated[sIdx].title = e.target.value;
@@ -647,11 +592,11 @@ export default function AddProduct() {
                                     </div>
 
                                     <div className="space-y-3 pl-4 border-l-2 border-indigo-100">
-                                        {section.items.map((item, iIdx) => (
+                                        {(section.items || []).map((item, iIdx) => (
                                             <div key={iIdx} className="flex items-center gap-3">
                                                 <input
                                                     type="text"
-                                                    value={item.key}
+                                                    value={item.key || ''}
                                                     onChange={e => {
                                                         const updated = [...specifications];
                                                         updated[sIdx].items[iIdx].key = e.target.value;
@@ -662,7 +607,7 @@ export default function AddProduct() {
                                                 />
                                                 <input
                                                     type="text"
-                                                    value={item.value}
+                                                    value={item.value || ''}
                                                     onChange={e => {
                                                         const updated = [...specifications];
                                                         updated[sIdx].items[iIdx].value = e.target.value;
