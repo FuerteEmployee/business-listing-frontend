@@ -150,8 +150,8 @@ export default function AddProduct() {
                 }
                 setSpecifications(initialSpecs);
                 
-                // Parse Custom Warranty Number & Unit
-                if (data.warranty && !['No Warranty', '6 Months', '8 Months', '1 Year', '2 Years'].includes(data.warranty)) {
+                // Parse Warranty Number & Unit
+                if (data.warranty && data.warranty !== 'No Warranty') {
                     const match = data.warranty.match(/^(\d+)\s*(Day|Days|Month|Months|Year|Years)$/i);
                     if (match) {
                         setCustomWarrantyNumber(match[1]);
@@ -163,6 +163,9 @@ export default function AddProduct() {
                         setCustomWarrantyNumber(data.warranty);
                         setCustomWarrantyUnit('Months');
                     }
+                } else if (data.warranty === 'No Warranty') {
+                    setCustomWarrantyNumber('');
+                    setCustomWarrantyUnit('Months');
                 }
 
                 if (data.categoryId) {
@@ -218,6 +221,24 @@ export default function AddProduct() {
             } catch (err) { console.error(err); }
         } else {
             setSubCategories([]);
+        }
+    };
+
+    const handleWarrantyNumberChange = (num) => {
+        setCustomWarrantyNumber(num);
+        if (!num) {
+            setFormData(prev => ({ ...prev, warranty: '' }));
+        } else {
+            const formattedUnit = parseInt(num) === 1 ? customWarrantyUnit.replace(/s$/i, '') : customWarrantyUnit;
+            setFormData(prev => ({ ...prev, warranty: `${num} ${formattedUnit}` }));
+        }
+    };
+
+    const handleWarrantyUnitChange = (unit) => {
+        setCustomWarrantyUnit(unit);
+        if (customWarrantyNumber) {
+            const formattedUnit = parseInt(customWarrantyNumber) === 1 ? unit.replace(/s$/i, '') : unit;
+            setFormData(prev => ({ ...prev, warranty: `${customWarrantyNumber} ${formattedUnit}` }));
         }
     };
 
@@ -448,41 +469,77 @@ export default function AddProduct() {
                                 </button>
                             </div>
 
-                            {/* Warranty: free-text, no default. Chips only pre-fill the field. */}
+                            {/* Warranty: Number Input & Select Dropdown */}
                             <div className="space-y-3">
                                 <label className="block text-sm font-semibold text-slate-700">Warranty</label>
                                 <p className="text-xs text-slate-500 -mt-1">
-                                    Enter this product's warranty terms in your own words. Leave blank if no warranty applies — nothing will be shown on the product page.
+                                    Enter product's warranty duration. Choose empty or clear to specify no warranty.
                                 </p>
-                                <input
-                                    type="text"
-                                    value={formData.warranty}
-                                    onChange={e => setFormData({ ...formData, warranty: e.target.value })}
-                                    placeholder="e.g. 1 Year on motor, 6 Months on spare parts"
-                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
-                                />
+                                <div className="flex gap-4">
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={customWarrantyNumber}
+                                        onChange={e => handleWarrantyNumberChange(e.target.value)}
+                                        placeholder="Quantity (e.g. 1, 6)"
+                                        className="w-1/2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                    />
+                                    <select
+                                        value={customWarrantyUnit}
+                                        onChange={e => handleWarrantyUnitChange(e.target.value)}
+                                        className="w-1/2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                    >
+                                        <option value="Days">Days</option>
+                                        <option value="Months">Months</option>
+                                        <option value="Years">Years</option>
+                                    </select>
+                                </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {['6 Months', '1 Year', '2 Years', 'No Warranty'].map((opt) => (
-                                        <button
-                                            key={opt}
-                                            type="button"
-                                            onClick={() => setFormData({
-                                                ...formData,
-                                                warranty: formData.warranty === opt ? '' : opt
-                                            })}
-                                            className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                                                formData.warranty === opt
-                                                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100'
-                                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                                            }`}
-                                        >
-                                            {opt}
-                                        </button>
-                                    ))}
+                                    {['6 Months', '1 Year', '2 Years', 'No Warranty'].map((opt) => {
+                                        const isSelected = formData.warranty === opt;
+                                        return (
+                                            <button
+                                                key={opt}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (isSelected) {
+                                                        handleWarrantyNumberChange('');
+                                                    } else {
+                                                        if (opt === '6 Months') {
+                                                            setCustomWarrantyNumber('6');
+                                                            setCustomWarrantyUnit('Months');
+                                                            setFormData({ ...formData, warranty: '6 Months' });
+                                                        } else if (opt === '1 Year') {
+                                                            setCustomWarrantyNumber('1');
+                                                            setCustomWarrantyUnit('Years');
+                                                            setFormData({ ...formData, warranty: '1 Year' });
+                                                        } else if (opt === '2 Years') {
+                                                            setCustomWarrantyNumber('2');
+                                                            setCustomWarrantyUnit('Years');
+                                                            setFormData({ ...formData, warranty: '2 Years' });
+                                                        } else if (opt === 'No Warranty') {
+                                                            setCustomWarrantyNumber('');
+                                                            setCustomWarrantyUnit('Months');
+                                                            setFormData({ ...formData, warranty: 'No Warranty' });
+                                                        }
+                                                    }
+                                                }}
+                                                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                                                    isSelected
+                                                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100'
+                                                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                                }`}
+                                            >
+                                                {opt}
+                                            </button>
+                                        );
+                                    })}
                                     {formData.warranty && (
                                         <button
                                             type="button"
-                                            onClick={() => setFormData({ ...formData, warranty: '' })}
+                                            onClick={() => {
+                                                handleWarrantyNumberChange('');
+                                            }}
                                             className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-400 hover:text-red-500 hover:border-red-200 transition-all"
                                         >
                                             Clear

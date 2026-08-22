@@ -555,11 +555,7 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                             <Link to="/profile/saved" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 p-2.5 rounded-lg font-medium text-sm text-slate-700 hover:bg-slate-50 transition-colors">
                                                 <Heart className="w-4 h-4" /> Saved Items
                                             </Link>
-                                            {user?.role && (user.role === 'Admin' || user.role === 'Super Admin') && (
-                                                <Link to="/admin" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 p-2.5 rounded-lg font-medium text-sm text-slate-700 hover:bg-slate-50 transition-colors">
-                                                    <ShieldCheck className="w-4 h-4" /> Admin Panel
-                                                </Link>
-                                            )}
+
                                             <div className="h-px bg-slate-100 my-1 mx-2" />
                                             <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 p-2.5 rounded-lg font-medium text-sm text-red-600 hover:bg-red-50 transition-colors">
                                                 <LogOut className="w-4 h-4" /> Sign Out

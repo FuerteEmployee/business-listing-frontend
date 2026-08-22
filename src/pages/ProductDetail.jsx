@@ -328,27 +328,42 @@ export default function ProductDetail() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                         {/* Column 1: Product Image */}
                         <div className="lg:col-span-4">
-                            <div className="aspect-square bg-white rounded-xl overflow-hidden border border-slate-100 relative group">
-                                {images[activeImage] ? (
-                                    <img 
-                                        src={images[activeImage]} 
-                                        alt={product.name} 
-                                        className="w-full h-full object-contain p-4" 
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-slate-50">
-                                        <ImageIcon className="w-20 h-20 text-slate-200" />
-                                    </div>
-                                )}
+                            <div className="sticky top-24 space-y-4">
+                                {/* Main Image */}
+                                <div className="aspect-square bg-white rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center relative group">
+                                    {images[activeImage] ? (
+                                        <img 
+                                            src={images[activeImage]} 
+                                            alt={product.name} 
+                                            className="w-full h-full object-contain p-4" 
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-slate-50">
+                                            <ImageIcon className="w-20 h-20 text-slate-200" />
+                                        </div>
+                                    )}
+                                </div>
                                 
+                                {/* Thumbnails */}
                                 {images.length > 1 && (
-                                    <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                                        {images.map((_, idx) => (
-                                            <button 
+                                    <div className="flex flex-wrap gap-2.5">
+                                        {images.map((img, idx) => (
+                                            <button
                                                 key={idx}
+                                                type="button"
                                                 onClick={() => setActiveImage(idx)}
-                                                className={`w-2 h-2 rounded-full transition-all ${activeImage === idx ? 'bg-orange-600 w-4' : 'bg-slate-300'}`}
-                                            />
+                                                className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all p-1 bg-white flex items-center justify-center ${
+                                                    activeImage === idx 
+                                                        ? 'border-indigo-600 ring-2 ring-indigo-50 shadow-sm' 
+                                                        : 'border-slate-200 hover:border-slate-350'
+                                                }`}
+                                            >
+                                                <img 
+                                                    src={img} 
+                                                    alt="" 
+                                                    className="max-w-full max-h-full object-contain" 
+                                                />
+                                            </button>
                                         ))}
                                     </div>
                                 )}

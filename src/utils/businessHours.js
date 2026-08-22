@@ -53,7 +53,30 @@ export const isBusinessOpen = (businessHours) => {
     if (openTime === null || closeTime === null) return UNKNOWN;
 
     const currentTime = now.getHours() * 60 + now.getMinutes();
-    return currentTime >= openTime && currentTime < closeTime ? OPEN : CLOSED;
+    if (closeTime > openTime) {
+        return currentTime >= openTime && currentTime < closeTime ? OPEN : CLOSED;
+    } else {
+        // Spans across midnight (e.g. 10:00 PM to 02:00 AM)
+        return currentTime >= openTime || currentTime < closeTime ? OPEN : CLOSED;
+    }
+};
+
+const formatTime12h = (timeStr) => {
+    if (!timeStr) return '';
+    // Handle cases where AM/PM is already present
+    if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) {
+        return timeStr;
+    }
+    const parts = timeStr.split(':');
+    let hours = parseInt(parts[0], 10);
+    const minutes = parts[1] || '00';
+    if (Number.isNaN(hours)) return timeStr;
+    
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Convert 0 to 12
+    const strHours = String(hours).padStart(2, '0');
+    return `${strHours}:${minutes} ${ampm}`;
 };
 
 // Renders a single day's entry without inventing a timing.
@@ -61,5 +84,5 @@ export const formatDayHours = (dayHours) => {
     if (!dayHours) return 'Not specified';
     if (dayHours.closed) return 'Closed';
     if (!dayHours.open || !dayHours.close) return 'Not specified';
-    return `${dayHours.open} - ${dayHours.close}`;
+    return `${formatTime12h(dayHours.open)} - ${formatTime12h(dayHours.close)}`;
 };

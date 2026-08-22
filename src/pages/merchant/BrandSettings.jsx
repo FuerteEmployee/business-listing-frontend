@@ -7,6 +7,8 @@ import ImageUploadBox from "../../components/ui/ImageUploadBox";
 import FormInput from "../../components/ui/FormInput";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs";
 import { useAuth } from "../../context/AuthContext";
+import BusinessHoursEditor from "../../components/ui/BusinessHoursEditor";
+import { emptyBusinessHours, normalizeBusinessHours } from "../../utils/businessHours";
 
 export default function BrandSettings() {
     const navigate = useNavigate();
@@ -23,7 +25,8 @@ export default function BrandSettings() {
         secondaryColor: "#f8fafc",
         email: "",
         phone: "",
-        footerText: ""
+        footerText: "",
+        businessHours: emptyBusinessHours()
     });
     const [brandLogoFile, setBrandLogoFile] = useState(null);
     const [brandLogoPreview, setBrandLogoPreview] = useState(null);
@@ -67,7 +70,8 @@ export default function BrandSettings() {
                             secondaryColor: comp.secondaryColor || "#f8fafc",
                             email: comp.email || "",
                             phone: comp.phone || "",
-                            footerText: comp.footerText || ""
+                            footerText: comp.footerText || "",
+                            businessHours: normalizeBusinessHours(comp.businessHours)
                         });
                         setBrandLogoPreview(comp.logo || null);
                         setBrandFaviconPreview(comp.favicon || null);
@@ -618,6 +622,13 @@ export default function BrandSettings() {
                                                     value={brandFormData.footerText}
                                                     onChange={handleBrandInputChange}
                                                     placeholder="e.g. © 2026 YOUR BRAND. All Rights Reserved."
+                                                />
+                                            </div>
+
+                                            <div className="md:col-span-2 pt-6 border-t border-slate-100">
+                                                <BusinessHoursEditor
+                                                    value={brandFormData.businessHours}
+                                                    onChange={hours => setBrandFormData(prev => ({ ...prev, businessHours: hours }))}
                                                 />
                                             </div>
                                         </div>

@@ -89,10 +89,11 @@ export default function BusinessCard({ business, onEnquiryClick }) {
         .split(/[\/,]/)
         .map(num => num.trim())
         .filter(Boolean);
-    const fallbackImage = business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
+    const fallbackImage = business.logo || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
     const images = (business.images && business.images.length > 0)
         ? business.images.map(img => typeof img === 'object' ? img.url : img)
         : [business.image || fallbackImage];
+    const isLogoOnly = images.length === 1 && images[0] === business.logo;
 
     return (
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow group flex flex-col md:flex-row min-h-fit md:min-h-[260px]">
@@ -102,7 +103,7 @@ export default function BusinessCard({ business, onEnquiryClick }) {
                     <img 
                         src={images[currentImageIndex]} 
                         alt={business.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className={`w-full h-full group-hover:scale-105 transition-transform duration-500 ${isLogoOnly ? 'object-contain p-6 bg-white' : 'object-cover'}`}
                         onError={e => {
                             e.target.style.display = 'none';
                             e.target.parentElement.querySelector('.fallback-initial')?.classList.remove('hidden');

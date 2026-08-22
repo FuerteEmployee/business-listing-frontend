@@ -516,6 +516,7 @@ export default function BusinessDetail() {
                     name: business.name,
                     slug: business.slug,
                     image: business.image,
+                    logo: business.logo,
                     category: typeof business.category === 'object' ? business.category.name : business.category,
                     rating: business.rating,
                     city: business.city_id?.name || business.city?.name
@@ -685,9 +686,14 @@ export default function BusinessDetail() {
                             {/* Business Image/Gallery */}
                             <div className="w-full lg:w-[36%] aspect-[16/9] bg-slate-100 rounded-2xl overflow-hidden relative shadow-inner group">
                                 {(() => {
-                                    const displayImg = business.image || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
+                                    const displayImg = business.image || business.logo || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
+                                    const isLogoOnly = !business.image && business.logo;
                                     return displayImg ? (
-                                        <img src={displayImg} alt={business.name} className="w-full h-full object-cover" />
+                                        <img 
+                                            src={displayImg} 
+                                            alt={business.name} 
+                                            className={`w-full h-full ${isLogoOnly ? 'object-contain p-6 bg-white' : 'object-cover'}`} 
+                                        />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-orange-50">
                                             <ImageIcon className="w-20 h-20 text-orange-200" />
@@ -780,8 +786,15 @@ export default function BusinessDetail() {
                                             </span>
                                         )}
                                     </div>
-                                    <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-2 flex items-center gap-3">
-                                        {business.name}
+                                    <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-2 flex items-center gap-3 flex-wrap">
+                                        {business.logo && (
+                                            <img 
+                                                src={business.logo} 
+                                                alt={`${business.name} logo`} 
+                                                className="w-12 h-12 rounded-xl object-contain border border-slate-200 p-1 shrink-0 bg-white" 
+                                            />
+                                        )}
+                                        <span>{business.name}</span>
                                         {business.claimed && <CheckCircle2 className="w-6 h-6 text-blue-500" title="Verified Owner" />}
                                     </h1>
                                     <div className="flex flex-wrap items-center gap-4">

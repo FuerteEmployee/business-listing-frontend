@@ -91,12 +91,12 @@ export default function LatestBusinesses() {
                                 {/* Image */}
                                 <div className="relative aspect-[16/9] bg-gradient-to-br from-slate-100 to-slate-50 overflow-hidden">
                                     {(() => {
-                                        const displayImg = business.image || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
+                                        const displayImg = business.image || business.logo || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
                                         return displayImg ? (
                                             <img
                                                 src={displayImg}
                                                 alt={business.name}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                                className={`w-full h-full group-hover:scale-105 transition-transform duration-200 ${!business.image && business.logo ? 'object-contain p-4 bg-white' : 'object-cover'}`}
                                                 onError={e => {
                                                     e.target.style.display = 'none';
                                                     e.target.parentElement.querySelector('.fallback-initial')?.classList.remove('hidden');
@@ -104,7 +104,7 @@ export default function LatestBusinesses() {
                                             />
                                         ) : null;
                                     })()}
-                                    <div className={`fallback-initial ${(business.image || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null)) ? 'hidden' : ''} w-full h-full flex items-center justify-center`}>
+                                    <div className={`fallback-initial ${(business.image || business.logo || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null)) ? 'hidden' : ''} w-full h-full flex items-center justify-center`}>
                                         <span className="text-3xl font-bold text-slate-300">
                                             {business.name.charAt(0)}
                                         </span>

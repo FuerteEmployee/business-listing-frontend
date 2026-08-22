@@ -21,11 +21,26 @@ export default function MediaManager({ images = [], videos = [], logo = null, on
         if (files.length === 0) return;
 
         setIsUploading(true);
-        setUploadProgress(10);
+        setUploadProgress(0);
 
         try {
             const uploadedUrls = [];
             for (let i = 0; i < files.length; i++) {
+                const startProgress = (i / files.length) * 100;
+                const maxSimulatedProgress = ((i + 0.9) / files.length) * 100;
+                setUploadProgress(startProgress);
+
+                const progressInterval = setInterval(() => {
+                    setUploadProgress(prev => {
+                        if (prev < maxSimulatedProgress) {
+                            const diff = maxSimulatedProgress - prev;
+                            const step = Math.min(5, Math.max(0.5, diff * 0.1));
+                            return prev + step;
+                        }
+                        return prev;
+                    });
+                }, 100);
+
                 const uploadData = new FormData();
                 uploadData.append('image', files[i]); // Backend expects 'image' field
 
@@ -34,12 +49,19 @@ export default function MediaManager({ images = [], videos = [], logo = null, on
                     body: uploadData
                 });
 
+                clearInterval(progressInterval);
+
                 if (!res.ok) throw new Error("Upload failed");
 
                 const result = await res.json();
                 uploadedUrls.push(result.url);
-                setUploadProgress(10 + ((i + 1) / files.length) * 80);
+                
+                const endProgress = ((i + 1) / files.length) * 100;
+                setUploadProgress(endProgress);
             }
+
+            setUploadProgress(100);
+            await new Promise(resolve => setTimeout(resolve, 450));
 
             if (type === 'logo') {
                 setBusinessLogo(uploadedUrls[0]);
@@ -309,18 +331,15 @@ export default function MediaManager({ images = [], videos = [], logo = null, on
             {isUploading && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[9999] flex items-center justify-center p-6 text-center">
                     <div className="bg-white p-8 rounded-[3rem] shadow-2xl max-w-sm w-full">
-                        <div className="relative mb-6">
-                            {/* Radial Progress simulated */}
-                            <div className="w-24 h-24 rounded-full border-8 border-slate-100 mx-auto" />
-                            <div 
-                                className="absolute inset-0 border-8 border-indigo-600 rounded-full transition-all duration-500" 
-                                style={{ 
-                                    clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0% 100%)',
-                                    transform: `rotate(${uploadProgress * 3.6}deg)`
-                                }} 
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-lg font-black text-indigo-600">{Math.round(uploadProgress)}%</span>
+                        <div className="w-full max-w-[280px] mx-auto mb-6">
+                            <div className="border-2 border-slate-900 rounded-full p-[3px] bg-white shadow-sm">
+                                <div 
+                                    className="h-3 rounded-full bg-slate-900 transition-all duration-500 ease-out" 
+                                    style={{ width: `${Math.min(uploadProgress, 100)}%` }}
+                                />
+                            </div>
+                            <div className="mt-3 text-lg font-black text-slate-800">
+                                {Math.round(uploadProgress)}%
                             </div>
                         </div>
                         <h4 className="text-xl font-black text-slate-800 mb-2">Processing Magic...</h4>
