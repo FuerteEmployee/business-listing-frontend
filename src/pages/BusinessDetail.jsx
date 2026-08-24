@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Star, MapPin, Phone, Globe, Mail, Clock, ShieldCheck, Share2, Heart, MessageSquare, ChevronRight, Info, Image as ImageIcon, Loader2, CheckCircle2, ArrowRight, ThumbsUp, ThumbsDown, Flag, Filter, Upload, X, Camera, Maximize2 } from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Mail, Clock, ShieldCheck, Share2, Heart, Bookmark, MessageSquare, ChevronRight, Info, Image as ImageIcon, Loader2, CheckCircle2, ArrowRight, ThumbsUp, ThumbsDown, Flag, Filter, Upload, X, Camera, Maximize2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, fetchWithAuth, getApiUrl } from '../config/api';
 import { useAuth } from '../context/AuthContext';
@@ -204,9 +204,9 @@ export default function BusinessDetail() {
                 });
                 if (res.ok) {
                     setIsBookmarked(prev => !prev);
-                    toast.success(!isBookmarked ? 'Added to favorites!' : 'Removed from favorites!');
+                    toast.success(!isBookmarked ? 'Added to saved businesses!' : 'Removed from saved businesses!');
                 } else {
-                    toast.error('Failed to update favorites');
+                    toast.error('Failed to update saved businesses');
                 }
             } catch (err) {
                 console.error('Error toggling bookmark:', err);
@@ -221,7 +221,7 @@ export default function BusinessDetail() {
                 if (localBookmarks.includes(business._id)) {
                     updated = localBookmarks.filter(id => id !== business._id);
                     updatedData = bookmarksData.filter(item => item._id !== business._id);
-                    toast.success('Removed from favorites!');
+                    toast.success('Removed from saved businesses!');
                 } else {
                     updated = [...localBookmarks, business._id];
                     updatedData = [...bookmarksData, {
@@ -233,7 +233,7 @@ export default function BusinessDetail() {
                         rating: business.rating,
                         city: business.city_id?.name || business.city?.name || 'Location'
                     }];
-                    toast.success('Added to favorites!');
+                    toast.success('Added to saved businesses!');
                 }
                 localStorage.setItem('bookmarks', JSON.stringify(updated));
                 localStorage.setItem('bookmarks_data', JSON.stringify(updatedData));
@@ -705,11 +705,12 @@ export default function BusinessDetail() {
                                         onClick={handleBookmarkToggle}
                                         className={`p-2.5 rounded-full shadow-sm transition-colors ${
                                             isBookmarked 
-                                            ? 'bg-rose-500 text-white hover:bg-rose-600' 
-                                            : 'bg-white/90 backdrop-blur-sm text-slate-600 hover:text-rose-500'
+                                            ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                                            : 'bg-white/90 backdrop-blur-sm text-slate-600 hover:text-orange-500'
                                         }`}
+                                        title={isBookmarked ? "Remove from Saved Businesses" : "Save Business"}
                                     >
-                                        <Heart className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
+                                        <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
                                     </button>
                                     <div className="relative">
                                         <button 
