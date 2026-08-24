@@ -172,38 +172,6 @@ export default function EnquiryModal({ isOpen, onClose, business, businessIds = 
                             </div>
                         )}
                     </div>
-                ) : !user ? (
-                    <div className="p-8 text-center space-y-6">
-                        <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto">
-                            <Building2 className="w-8 h-8 text-orange-500" />
-                        </div>
-                        <div>
-                            <h4 className="text-xl font-black text-slate-900 mb-2">Create an Account First</h4>
-                            <p className="text-slate-500 text-sm">
-                                Please sign up or log in to send enquiries, track merchant responses, and get the best quotes.
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-3">
-                            <button 
-                                onClick={() => {
-                                    onClose();
-                                    navigate('/register', { state: { from: window.location.pathname, openEnquiry: true } });
-                                }} 
-                                className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-black text-xs transition-colors uppercase tracking-wider"
-                            >
-                                Register / Create Account
-                            </button>
-                            <button 
-                                onClick={() => {
-                                    onClose();
-                                    navigate('/login', { state: { from: window.location.pathname, openEnquiry: true } });
-                                }} 
-                                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-black text-xs transition-colors uppercase tracking-wider"
-                            >
-                                Already have an account? Log In
-                            </button>
-                        </div>
-                    </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="p-8 space-y-6">
                         {error && (
