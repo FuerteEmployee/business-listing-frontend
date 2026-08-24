@@ -119,6 +119,7 @@ export default function ProductDetail() {
                 if (res.ok) {
                     setIsBookmarked(prev => !prev);
                     toast.success(!isBookmarked ? 'Product added to favorites!' : 'Product removed from favorites!');
+                    window.dispatchEvent(new Event('bookmarksUpdated'));
                 } else {
                     toast.error('Failed to update favorites');
                 }

@@ -205,6 +205,7 @@ export default function BusinessDetail() {
                 if (res.ok) {
                     setIsBookmarked(prev => !prev);
                     toast.success(!isBookmarked ? 'Added to saved businesses!' : 'Removed from saved businesses!');
+                    window.dispatchEvent(new Event('bookmarksUpdated'));
                 } else {
                     toast.error('Failed to update saved businesses');
                 }
@@ -241,6 +242,99 @@ export default function BusinessDetail() {
                 window.dispatchEvent(new Event('bookmarksUpdated'));
             } catch (err) {
                 console.error('Error toggling local bookmark:', err);
+            }
+        }
+    };
+
+    const [savedProductIds, setSavedProductIds] = useState([]);
+
+    useEffect(() => {
+        const fetchSavedProductIds = async () => {
+            if (isAuthenticated) {
+                try {
+                    const res = await fetchWithAuth(getApiUrl('me/saved-products'));
+                    if (res.ok) {
+                        const data = await res.json();
+                        const list = data.data || [];
+                        setSavedProductIds(list.map(item => item._id));
+                    }
+                } catch (err) {
+                    console.error('Error fetching saved products:', err);
+                }
+            } else {
+                try {
+                    const localProductBookmarks = JSON.parse(localStorage.getItem('product_bookmarks') || '[]');
+                    setSavedProductIds(localProductBookmarks);
+                } catch (e) {
+                    setSavedProductIds([]);
+                }
+            }
+        };
+        fetchSavedProductIds();
+        
+        const handleBookmarksUpdated = () => {
+            fetchSavedProductIds();
+        };
+        window.addEventListener('bookmarksUpdated', handleBookmarksUpdated);
+        return () => window.removeEventListener('bookmarksUpdated', handleBookmarksUpdated);
+    }, [isAuthenticated]);
+
+    const handleProductSaveToggle = async (prod) => {
+        if (!prod?._id) return;
+
+        if (isAuthenticated) {
+            try {
+                const res = await fetchWithAuth(getApiUrl('me/saved-products/toggle'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: prod._id })
+                });
+                if (res.ok) {
+                    const isAlreadySaved = savedProductIds.includes(prod._id);
+                    if (isAlreadySaved) {
+                        setSavedProductIds(prev => prev.filter(id => id !== prod._id));
+                        toast.success('Product removed from favorites!');
+                    } else {
+                        setSavedProductIds(prev => [...prev, prod._id]);
+                        toast.success('Product added to favorites!');
+                    }
+                    window.dispatchEvent(new Event('bookmarksUpdated'));
+                } else {
+                    toast.error('Failed to update favorites');
+                }
+            } catch (err) {
+                console.error('Error toggling product save:', err);
+                toast.error('An error occurred');
+            }
+        } else {
+            try {
+                const localProductBookmarks = JSON.parse(localStorage.getItem('product_bookmarks') || '[]');
+                const localProductBookmarksData = JSON.parse(localStorage.getItem('product_bookmarks_data') || '[]');
+                let updated;
+                let updatedData;
+                if (localProductBookmarks.includes(prod._id)) {
+                    updated = localProductBookmarks.filter(id => id !== prod._id);
+                    updatedData = localProductBookmarksData.filter(item => item._id !== prod._id);
+                    toast.success('Removed from favorites!');
+                } else {
+                    updated = [...localProductBookmarks, prod._id];
+                    updatedData = [...localProductBookmarksData, {
+                        _id: prod._id,
+                        name: prod.name,
+                        slug: prod.slug,
+                        image: prod.images?.[0] || null,
+                        price: prod.price,
+                        brand: prod.brandId?.name || 'Generic',
+                        listing: business?.name || 'Seller'
+                    }];
+                    toast.success('Added to favorites!');
+                }
+                localStorage.setItem('product_bookmarks', JSON.stringify(updated));
+                localStorage.setItem('product_bookmarks_data', JSON.stringify(updatedData));
+                setSavedProductIds(updated);
+                window.dispatchEvent(new Event('bookmarksUpdated'));
+            } catch (err) {
+                console.error('Error toggling local product bookmark:', err);
             }
         }
     };
@@ -1089,6 +1183,25 @@ export default function BusinessDetail() {
                                                                         </span>
                                                                     )}
                                                                 </div>
+
+                                                                {/* Save Product Heart Button */}
+                                                                {isProduct && (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            handleProductSaveToggle(item);
+                                                                        }}
+                                                                        className={`absolute top-3 right-3 p-1.5 rounded-full shadow-sm backdrop-blur-sm transition-all duration-300 z-10 ${
+                                                                            savedProductIds.includes(item._id)
+                                                                            ? 'bg-rose-500 text-white hover:bg-rose-600'
+                                                                            : 'bg-white/90 text-slate-600 hover:text-rose-500'
+                                                                        }`}
+                                                                        title={savedProductIds.includes(item._id) ? "Remove from Favorites" : "Add to Favorites"}
+                                                                    >
+                                                                        <Heart className={`w-3.5 h-3.5 ${savedProductIds.includes(item._id) ? 'fill-current' : ''}`} />
+                                                                    </button>
+                                                                )}
                                                             </Link>
 
                                                             {/* Content */}
