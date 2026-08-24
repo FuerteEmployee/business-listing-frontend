@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { X, ArrowRight, Loader2, Building2 } from 'lucide-react';
 import { getApiUrl } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
@@ -211,6 +212,13 @@ export default function EnquiryModal({ isOpen, onClose, business, businessIds = 
                                 : <>Send Enquiry {isBulk ? `to ${chipIds.length} Businesses` : ''} <ArrowRight className="w-4 h-4" /></>
                             }
                         </button>
+                        {!user && (
+                            <div className="mt-4 flex items-center justify-center gap-4 text-xs text-slate-500 font-medium bg-slate-50 py-3 px-4 rounded-xl border border-slate-100">
+                                <span>Already a member? <Link to="/login" className="font-extrabold text-orange-600 hover:text-orange-700 transition-colors">Login</Link></span>
+                                <span className="text-slate-200">|</span>
+                                <span>New user? <Link to="/register" className="font-extrabold text-orange-600 hover:text-orange-700 transition-colors">Register</Link></span>
+                            </div>
+                        )}
                     </form>
                 )}
             </div>
