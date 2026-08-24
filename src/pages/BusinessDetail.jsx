@@ -734,10 +734,6 @@ export default function BusinessDetail() {
     };
 
     const handleEnquire = () => {
-        if (!isAuthenticated) {
-            navigate('/register', { state: { from: `/business/${slug}`, openEnquiry: true } });
-            return;
-        }
         logAnalyticsEvent('enquiry', business._id);
         toast.success(`Enquiry sent for ${business?.name}! We will get back to you soon.`);
     };
@@ -996,13 +992,7 @@ export default function BusinessDetail() {
                                             Directions
                                         </button>
                                         <button 
-                                            onClick={() => {
-                                                if (!isAuthenticated) {
-                                                    navigate('/register', { state: { from: `/business/${slug}`, openEnquiry: true } });
-                                                } else {
-                                                    setIsEnquiryModalOpen(true);
-                                                }
-                                            }}
+                                            onClick={() => setIsEnquiryModalOpen(true)}
                                             className="bg-white border-2 border-slate-200 text-slate-700 px-4 py-3.5 rounded-xl font-bold hover:border-orange-500 hover:text-orange-600 transition-all flex items-center justify-center gap-2 shadow-sm"
                                         >
                                             Enquiry

@@ -193,10 +193,6 @@ export default function ProductDetail() {
     };
 
     const handleEnquire = () => {
-        if (!isAuthenticated) {
-            navigate('/register', { state: { from: `/product/${slug}`, openEnquiry: true } });
-            return;
-        }
         logAnalyticsEvent('enquiry', product.listingId?._id);
         setIsEnquiryModalOpen(true);
     };
