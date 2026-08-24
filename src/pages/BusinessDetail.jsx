@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Star, MapPin, Phone, Globe, Mail, Clock, ShieldCheck, Share2, Heart, Bookmark, MessageSquare, ChevronRight, Info, Image as ImageIcon, Loader2, CheckCircle2, ArrowRight, ThumbsUp, ThumbsDown, Flag, Filter, Upload, X, Camera, Maximize2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, fetchWithAuth, getApiUrl } from '../config/api';
@@ -13,6 +13,7 @@ import EnquiryModal from '../components/ui/EnquiryModal';
 export default function BusinessDetail() {
     const { slug } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, isAuthenticated } = useAuth();
     const [business, setBusiness] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -191,6 +192,13 @@ export default function BusinessDetail() {
         };
         checkBookmarkStatus();
     }, [business?._id, isAuthenticated]);
+
+    useEffect(() => {
+        if (isAuthenticated && location.state?.openEnquiry) {
+            setIsEnquiryModalOpen(true);
+            window.history.replaceState({}, document.title);
+        }
+    }, [isAuthenticated, location.state]);
 
     const handleBookmarkToggle = async () => {
         if (!business?._id) return;
@@ -726,6 +734,10 @@ export default function BusinessDetail() {
     };
 
     const handleEnquire = () => {
+        if (!isAuthenticated) {
+            navigate('/register', { state: { from: `/business/${slug}`, openEnquiry: true } });
+            return;
+        }
         logAnalyticsEvent('enquiry', business._id);
         toast.success(`Enquiry sent for ${business?.name}! We will get back to you soon.`);
     };
@@ -984,7 +996,13 @@ export default function BusinessDetail() {
                                             Directions
                                         </button>
                                         <button 
-                                            onClick={() => setIsEnquiryModalOpen(true)}
+                                            onClick={() => {
+                                                if (!isAuthenticated) {
+                                                    navigate('/register', { state: { from: `/business/${slug}`, openEnquiry: true } });
+                                                } else {
+                                                    setIsEnquiryModalOpen(true);
+                                                }
+                                            }}
                                             className="bg-white border-2 border-slate-200 text-slate-700 px-4 py-3.5 rounded-xl font-bold hover:border-orange-500 hover:text-orange-600 transition-all flex items-center justify-center gap-2 shadow-sm"
                                         >
                                             Enquiry

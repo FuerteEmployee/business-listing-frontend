@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
     ChevronLeft, 
     Star, 
@@ -41,6 +41,7 @@ const DESCRIPTION_CLAMP_CHARS = 280;
 export default function ProductDetail() {
     const { slug } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [product, setProduct] = useState(null);
     const [similarProducts, setSimilarProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -105,6 +106,13 @@ export default function ProductDetail() {
         };
         checkBookmarkStatus();
     }, [product?._id, isAuthenticated]);
+
+    useEffect(() => {
+        if (isAuthenticated && location.state?.openEnquiry) {
+            setIsEnquiryModalOpen(true);
+            window.history.replaceState({}, document.title);
+        }
+    }, [isAuthenticated, location.state]);
 
     const handleBookmarkToggle = async () => {
         if (!product?._id) return;
@@ -185,6 +193,10 @@ export default function ProductDetail() {
     };
 
     const handleEnquire = () => {
+        if (!isAuthenticated) {
+            navigate('/register', { state: { from: `/product/${slug}`, openEnquiry: true } });
+            return;
+        }
         logAnalyticsEvent('enquiry', product.listingId?._id);
         setIsEnquiryModalOpen(true);
     };
