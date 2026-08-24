@@ -1,12 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_BASE_URL } from '../../config/api';
+import { toast } from 'react-hot-toast';
 
 export default function Signup() {
     const [formData, setFormData] = useState({ name: '', email: '', mobileNumber: '', password: '', confirmPassword: '' });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    
+    const [captchaCode, setCaptchaCode] = useState('');
+    const [enteredCaptcha, setEnteredCaptcha] = useState('');
+
+    const generateCaptcha = () => {
+        const num = Math.floor(100000 + Math.random() * 900000).toString();
+        setCaptchaCode(num);
+        setEnteredCaptcha('');
+    };
+
+    useEffect(() => {
+        generateCaptcha();
+    }, []);
 
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -57,6 +71,11 @@ export default function Signup() {
             return setError('Passwords do not match');
         }
 
+        if (enteredCaptcha !== captchaCode) {
+            generateCaptcha();
+            return setError('Incorrect captcha code');
+        }
+
         setIsLoading(true);
 
         try {
@@ -75,15 +94,10 @@ export default function Signup() {
             const data = await res.json();
 
             if (res.ok && data.success) {
-                // Trigger OTP send
-                await fetch(`${API_BASE_URL}/otp/send`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mobileNumber: formData.mobileNumber })
-                });
-                
                 login(data.user, data.token);
-                navigate('/verify-otp', { state: { mobileNumber: formData.mobileNumber, from: location.state?.from } });
+                toast.success('Registration successful!');
+                const redirectPath = location.state?.from || '/';
+                navigate(redirectPath);
             } else {
                 setError(data.msg || 'Registration failed. Please try again.');
             }
@@ -183,6 +197,37 @@ export default function Signup() {
                                     required
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
+                                    className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700">Security Captcha</label>
+                            <div className="mt-1 flex items-center gap-3">
+                                <div 
+                                    className="bg-slate-100 border border-slate-300 rounded-lg px-4 py-2 font-black text-lg tracking-widest select-none text-slate-700 bg-[linear-gradient(45deg,#f1f5f9_25%,transparent_25%),linear-gradient(-45deg,#f1f5f9_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#f1f5f9_75%),linear-gradient(-45deg,transparent_75%,#f1f5f9_75%)] bg-[size:10px_10px] skew-x-12 cursor-default"
+                                    style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}
+                                >
+                                    {captchaCode}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={generateCaptcha}
+                                    className="p-2 text-slate-500 hover:text-indigo-600 transition-colors flex-shrink-0"
+                                    title="Refresh Captcha"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5" />
+                                    </svg>
+                                </button>
+                                <input
+                                    name="captcha"
+                                    type="text"
+                                    required
+                                    placeholder="Enter captcha code"
+                                    value={enteredCaptcha}
+                                    onChange={(e) => setEnteredCaptcha(e.target.value)}
                                     className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 />
                             </div>
