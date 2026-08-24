@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_BASE_URL } from '../../config/api';
 
@@ -11,6 +11,7 @@ export default function Login() {
 
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,14 +41,8 @@ export default function Login() {
 
             if (res.ok && data?.success) {
                 login(data.user, data.token);
-                // Redirect based on role
-                if (data.user.role === 'Super Admin') {
-                    navigate('/admin/dashboard');
-                } else if (['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(data.user.role)) {
-                    navigate('/brand/products');
-                } else {
-                    navigate('/');
-                }
+                const redirectPath = location.state?.from || (data.user.role === 'Super Admin' ? '/admin/dashboard' : ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(data.user.role) ? '/brand/products' : '/');
+                navigate(redirectPath);
             } else {
                 const serverMessage = data?.msg || data?.error || (data && JSON.stringify(data)) || `${res.status} ${res.statusText}`;
                 setError(`Server error: ${serverMessage}`);
@@ -78,7 +73,8 @@ export default function Login() {
             const data = await res.json();
             if (res.ok && data.success) {
                 login(data.user, data.token);
-                navigate('/');
+                const redirectPath = location.state?.from || '/';
+                navigate(redirectPath);
             } else {
                 setError(data.msg || 'Google login failed');
             }
@@ -110,7 +106,7 @@ export default function Login() {
             });
 
             if (res.ok) {
-                navigate('/verify-otp', { state: { mobileNumber: formData.mobileNumber } });
+                navigate('/verify-otp', { state: { mobileNumber: formData.mobileNumber, from: location.state?.from } });
             } else {
                 const data = await res.json();
                 setError(data.msg || 'Failed to send OTP');

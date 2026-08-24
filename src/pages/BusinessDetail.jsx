@@ -384,7 +384,7 @@ export default function BusinessDetail() {
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
         if (!isAuthenticated) {
-            navigate('/login', { state: { from: `/business/${slug}` } });
+            navigate('/register', { state: { from: `/business/${slug}` } });
             return;
         }
 

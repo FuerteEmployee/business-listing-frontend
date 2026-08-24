@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_BASE_URL } from '../../config/api';
 
@@ -10,6 +10,7 @@ export default function Signup() {
 
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleGoogleLogin = async (response) => {
         setIsLoading(true);
@@ -25,7 +26,8 @@ export default function Signup() {
             const data = await res.json();
             if (res.ok && data.success) {
                 login(data.user, data.token);
-                navigate('/');
+                const redirectPath = location.state?.from || '/';
+                navigate(redirectPath);
             } else {
                 setError(data.msg || 'Google signup failed');
             }
@@ -81,7 +83,7 @@ export default function Signup() {
                 });
                 
                 login(data.user, data.token);
-                navigate('/verify-otp', { state: { mobileNumber: formData.mobileNumber } });
+                navigate('/verify-otp', { state: { mobileNumber: formData.mobileNumber, from: location.state?.from } });
             } else {
                 setError(data.msg || 'Registration failed. Please try again.');
             }

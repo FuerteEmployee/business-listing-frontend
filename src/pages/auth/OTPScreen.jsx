@@ -72,16 +72,12 @@ export default function OTPScreen() {
                 if (data.token && data.user) {
                     login(data.user, data.token);
                     alert('Login successful!');
-                    if (data.user.role === 'Super Admin') {
-                        navigate('/admin/dashboard');
-                    } else if (['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(data.user.role)) {
-                        navigate('/brand/products');
-                    } else {
-                        navigate('/');
-                    }
+                    const redirectPath = location.state?.from || (data.user.role === 'Super Admin' ? '/admin/dashboard' : ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(data.user.role) ? '/brand/products' : '/');
+                    navigate(redirectPath);
                 } else {
                     alert('Verification successful!');
-                    navigate('/');
+                    const redirectPath = location.state?.from || '/';
+                    navigate(redirectPath);
                 }
             } else {
                 setError(data.msg || 'Invalid OTP');

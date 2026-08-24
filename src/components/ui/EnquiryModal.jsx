@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { X, ArrowRight, Loader2, Building2 } from 'lucide-react';
 import { getApiUrl } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
@@ -8,6 +8,7 @@ import { logAnalyticsEvent } from '../../utils/tracker';
 
 export default function EnquiryModal({ isOpen, onClose, business, businessIds = [], businessNameMap = {}, title = "Get Best Quotes", source }) {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
@@ -143,11 +144,33 @@ export default function EnquiryModal({ isOpen, onClose, business, businessIds = 
                             {enquiryForm.email && 'A confirmation email has been sent to your inbox. '}
                             Track replies in <strong>My Enquiries</strong>.
                         </p>
-                        <div className="flex gap-3 justify-center">
-                            <button onClick={onClose} className="px-6 py-2.5 bg-orange-600 text-white rounded-xl font-bold text-sm hover:bg-orange-700 transition-colors">
-                                Done
-                            </button>
-                        </div>
+                        {!user ? (
+                            <div className="space-y-4">
+                                <p className="text-slate-500 text-xs">
+                                    Create an account to track your enquiry replies, message merchants, and receive notifications!
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                    <button 
+                                        onClick={() => {
+                                            onClose();
+                                            navigate('/register', { state: { from: window.location.pathname } });
+                                        }} 
+                                        className="px-6 py-3 bg-orange-600 text-white rounded-xl font-black text-xs hover:bg-orange-700 transition-colors uppercase tracking-wider"
+                                    >
+                                        Create Account
+                                    </button>
+                                    <button onClick={onClose} className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-black text-xs hover:bg-slate-200 transition-colors uppercase tracking-wider">
+                                        Done
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex gap-3 justify-center">
+                                <button onClick={onClose} className="px-6 py-2.5 bg-orange-600 text-white rounded-xl font-bold text-sm hover:bg-orange-700 transition-colors">
+                                    Done
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="p-8 space-y-6">
