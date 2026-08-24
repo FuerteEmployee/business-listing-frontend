@@ -71,6 +71,7 @@ const AuditLogDetailsCard = ({ log }) => {
     // 2. Resolve affected resource name (target)
     const getAffectedResource = (row) => {
         const name =
+            row.targetName ||
             row.changes?.after?.name ||
             row.changes?.before?.name ||
             row.changes?.after?.title ||
@@ -385,7 +386,9 @@ export default function AuditLogs() {
             render: (value, row) => (
                 <div className="flex flex-col">
                     <span className="text-sm font-medium text-slate-700">{row.targetType || "System"}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">{row.targetId || "N/A"}</span>
+                    <span className="text-[10px] text-indigo-600 font-semibold" title={row.targetId || "N/A"}>
+                        {row.targetName || row.targetId || "N/A"}
+                    </span>
                 </div>
             )
         },

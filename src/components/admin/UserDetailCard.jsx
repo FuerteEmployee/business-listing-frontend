@@ -6,34 +6,6 @@ import { API_BASE_URL, fetchWithAuth } from '../../config/api';
 const UserDetailCard = ({ user, stats }) => {
     if (!user) return null;
 
-    const [tempPassword, setTempPassword] = useState('');
-    const [resetLoading, setResetLoading] = useState(false);
-
-    const handleResetPassword = async () => {
-        if (!window.confirm(`Are you sure you want to force password reset for ${user.name}? This will generate a new secure temporary password.`)) {
-            return;
-        }
-
-        setResetLoading(true);
-        setTempPassword('');
-        try {
-            const res = await fetchWithAuth(`${API_BASE_URL}/admin/users/${user._id}/force-password-reset`, {
-                method: 'PUT'
-            });
-            const data = await res.json();
-            if (res.ok && data.success) {
-                setTempPassword(data.tempPassword);
-            } else {
-                alert(data.msg || 'Failed to reset password');
-            }
-        } catch (err) {
-            console.error('Password reset error:', err);
-            alert('Connection error');
-        } finally {
-            setResetLoading(false);
-        }
-    };
-
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header Profile Section */}
@@ -165,45 +137,6 @@ const UserDetailCard = ({ user, stats }) => {
                 </div>
             </div>
 
-            {/* Credentials & Security Section */}
-            <div className="space-y-4 pt-4 border-t border-slate-100">
-                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Credentials & Password Management</h4>
-                <div className="p-8 bg-slate-50 border border-slate-100 rounded-[32px] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                    <div className="space-y-2 flex-1">
-                        <h5 className="text-sm font-black text-slate-800 uppercase tracking-wider">Security Settings</h5>
-                        <p className="text-xs font-bold text-slate-400 leading-relaxed max-w-xl">
-                            Passwords are encrypted using one-way cryptographic hashes (bcrypt). Every user is assigned a common default password below. Click Reset Password to apply it.
-                        </p>
-                        <div className="mt-2 text-xs font-black text-slate-800 bg-white border border-slate-200 px-3 py-2.5 rounded-xl inline-block shadow-sm">
-                            New Password (Optional): <span className="font-mono text-indigo-600 select-all font-bold">123456789</span>
-                        </div>
-                        {tempPassword && (
-                            <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl mt-4 flex flex-col gap-2 animate-in zoom-in duration-300">
-                                <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider">Password Reset Successfully:</span>
-                                <div className="flex items-center gap-3">
-                                    <code className="px-3 py-1.5 bg-white border border-emerald-200 rounded-lg text-emerald-800 font-mono font-bold select-all">{tempPassword}</code>
-                                    <button 
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(tempPassword);
-                                            alert("Password copied to clipboard!");
-                                        }}
-                                        className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-wider transition-colors"
-                                    >
-                                        Copy
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    <button
-                        onClick={handleResetPassword}
-                        disabled={resetLoading}
-                        className="px-6 py-3.5 bg-slate-900 text-white hover:bg-slate-800 active:scale-95 disabled:opacity-50 transition-all rounded-2xl font-black text-xs uppercase tracking-wider whitespace-nowrap shadow-md"
-                    >
-                        {resetLoading ? 'Applying...' : 'Reset Password'}
-                    </button>
-                </div>
-            </div>
         </div>
     );
 };

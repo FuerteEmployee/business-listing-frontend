@@ -21,7 +21,18 @@ import {
     Files,
     User,
     Edit2,
-    Save
+    Save,
+    LogIn,
+    LogOut,
+    FilePlus,
+    Edit3,
+    PlusCircle,
+    RefreshCw,
+    Send,
+    Inbox,
+    FileCheck,
+    Activity,
+    CornerDownRight
 } from "lucide-react";
 import { API_BASE_URL, fetchWithAuth } from "../../config/api";
 import DataTable from "../../components/admin/DataTable";
@@ -38,6 +49,45 @@ import FormInput from "../../components/ui/FormInput";
 import FormSelect from "../../components/ui/FormSelect";
 import SearchableSelect from "../../components/ui/SearchableSelect";
 import toast from "react-hot-toast";
+
+const getActivityDetails = (action) => {
+    switch (action) {
+        case "USER_LOGIN":
+            return { icon: LogIn, colorClass: "bg-emerald-50 text-emerald-600 border-emerald-100", label: "Login" };
+        case "USER_LOGOUT":
+            return { icon: LogOut, colorClass: "bg-slate-50 text-slate-600 border-slate-100", label: "Logout" };
+        case "LISTING_CREATED":
+            return { icon: FilePlus, colorClass: "bg-indigo-50 text-indigo-600 border-indigo-100", label: "Listing Created" };
+        case "LISTING_EDITED":
+            return { icon: Edit3, colorClass: "bg-amber-50 text-amber-600 border-amber-100", label: "Listing Updated" };
+        case "PRODUCT_CREATED":
+            return { icon: PlusCircle, colorClass: "bg-emerald-50 text-emerald-600 border-emerald-100", label: "Product Added" };
+        case "PRODUCT_UPDATED":
+            return { icon: RefreshCw, colorClass: "bg-amber-50 text-amber-600 border-amber-100", label: "Product Updated" };
+        case "PRODUCT_DELETED":
+            return { icon: Trash2, colorClass: "bg-rose-50 text-rose-600 border-rose-100", label: "Product Deleted" };
+        case "REVIEW_CREATED":
+            return { icon: MessageSquare, colorClass: "bg-indigo-50 text-indigo-600 border-indigo-100", label: "Review Received" };
+        case "REVIEW_REPLIED":
+            return { icon: CornerDownRight, colorClass: "bg-purple-50 text-purple-600 border-purple-100", label: "Review Reply" };
+        case "LEAD_SENT":
+            return { icon: Send, colorClass: "bg-blue-50 text-blue-600 border-blue-100", label: "Enquiry Sent" };
+        case "LEAD_RECEIVED":
+            return { icon: Inbox, colorClass: "bg-emerald-50 text-emerald-600 border-emerald-100", label: "Enquiry Received" };
+        case "LEAD_REPLIED":
+            return { icon: CornerDownRight, colorClass: "bg-purple-50 text-purple-600 border-purple-100", label: "Enquiry Reply" };
+        case "CLAIM_SUBMITTED":
+            return { icon: FileCheck, colorClass: "bg-indigo-50 text-indigo-600 border-indigo-100", label: "Claim Request" };
+        case "CLAIM_STATUS_UPDATED":
+            return { icon: CheckCircle, colorClass: "bg-purple-50 text-purple-600 border-purple-100", label: "Claim Status" };
+        case "USER_PASSWORD_CHANGED":
+            return { icon: Lock, colorClass: "bg-rose-50 text-rose-600 border-rose-100", label: "Password Changed" };
+        case "USER_PROFILE_UPDATED":
+            return { icon: User, colorClass: "bg-indigo-50 text-indigo-600 border-indigo-100", label: "Profile Updated" };
+        default:
+            return { icon: Activity, colorClass: "bg-slate-50 text-slate-600 border-slate-100", label: "Interaction" };
+    }
+};
 
 export default function Users() {
     const [users, setUsers] = useState([]);
@@ -65,6 +115,8 @@ export default function Users() {
         activeTab: 'profile',
         loading: false
     });
+
+    const [activityFilter, setActivityFilter] = useState('all');
 
     // User CRUD Modal State
     const [userModal, setUserModal] = useState({
@@ -133,6 +185,7 @@ export default function Users() {
 
     const fetchUserDetail = async (userId) => {
         try {
+            setActivityFilter('all');
             setDetailModal(prev => ({ ...prev, isOpen: true, loading: true, user: null }));
             const res = await fetchWithAuth(`${API_BASE_URL}/admin/users/${userId}`);
             if (res.ok) {
@@ -566,34 +619,195 @@ export default function Users() {
                             )}
                             {detailModal.activeTab === 'activity' && (
                                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Recent Platform Interactions</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-4">
-                                            <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Feedback History</p>
-                                            {detailModal.activity?.recentReviews.length > 0 ? (
-                                                detailModal.activity.recentReviews.map((rev, i) => (
-                                                    <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                                        <div className="flex justify-between items-start mb-2">
-                                                            <p className="text-xs font-black text-slate-800">{rev.businessId?.name}</p>
-                                                            <div className="flex text-amber-500"><Badge variant="warning">{rev.rating} ★</Badge></div>
+                                    <div className="flex justify-between items-center pb-2 border-b border-slate-100 gap-4 flex-wrap">
+                                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Recent Platform Interactions</h4>
+                                        <select
+                                            value={activityFilter}
+                                            onChange={(e) => setActivityFilter(e.target.value)}
+                                            className="text-[11px] font-black text-indigo-600 bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-100 rounded-full px-3.5 py-1.5 outline-none transition-all uppercase tracking-wider cursor-pointer"
+                                        >
+                                            <option value="all">All Interactions</option>
+                                            <option value="reviews">Feedback History</option>
+                                            <option value="enquiries">Business Enquiries</option>
+                                            {detailModal.user?.role === 'Merchant' && (
+                                                <>
+                                                    <option value="responses">Enquiry Responses</option>
+                                                    <option value="products">Product Changes</option>
+                                                </>
+                                            )}
+                                        </select>
+                                    </div>
+                                    <div className={`grid grid-cols-1 ${activityFilter === 'all' ? 'md:grid-cols-2' : ''} gap-8`}>
+                                        {/* Box: Feedback History */}
+                                        {(activityFilter === 'all' || activityFilter === 'reviews') && (
+                                            <div className="space-y-3">
+                                                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest px-1">Feedback History</p>
+                                                <div className="overflow-x-auto border border-slate-100 rounded-2xl">
+                                                    <table className="w-full text-left border-collapse text-[11px] bg-white">
+                                                        <thead>
+                                                            <tr className="bg-slate-50 border-b border-slate-100">
+                                                                <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Business</th>
+                                                                <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Rating</th>
+                                                                <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Comment</th>
+                                                                <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Date</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-100">
+                                                            {detailModal.activity?.recentReviews?.length > 0 ? (
+                                                                detailModal.activity.recentReviews.map((rev, i) => (
+                                                                    <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                                                        <td className="px-3 py-2.5 font-bold text-slate-700">{rev.businessId?.name}</td>
+                                                                        <td className="px-3 py-2.5 font-black text-amber-500">{rev.rating} ★</td>
+                                                                        <td className="px-3 py-2.5 text-slate-500 max-w-[120px] truncate" title={rev.comment}>{rev.comment}</td>
+                                                                        <td className="px-3 py-2.5 text-slate-450 font-semibold">{new Date(rev.createdAt).toLocaleDateString()}</td>
+                                                                    </tr>
+                                                                ))
+                                                            ) : (
+                                                                <tr>
+                                                                    <td colSpan={4} className="px-3 py-4 text-center text-xs text-slate-400 italic bg-white">
+                                                                        No reviews recorded.
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Box: Business Enquiries */}
+                                        {(activityFilter === 'all' || activityFilter === 'enquiries') && (
+                                            <div className="space-y-3">
+                                                <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest px-1">Business Enquiries</p>
+                                                <div className="overflow-x-auto border border-slate-100 rounded-2xl">
+                                                    <table className="w-full text-left border-collapse text-[11px] bg-white">
+                                                        <thead>
+                                                            <tr className="bg-slate-50 border-b border-slate-100">
+                                                                <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Business</th>
+                                                                {detailModal.user?.role === 'Merchant' && (
+                                                                    <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Sender</th>
+                                                                )}
+                                                                <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Message</th>
+                                                                <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Date</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-100">
+                                                            {detailModal.activity?.recentEnquiries?.length > 0 ? (
+                                                                detailModal.activity.recentEnquiries.map((enq, i) => (
+                                                                    <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                                                        <td className="px-3 py-2.5 font-bold text-slate-700">{enq.businessIds[0]?.name || 'Direct Lead'}</td>
+                                                                        {detailModal.user?.role === 'Merchant' && (
+                                                                            <td className="px-3 py-2.5 font-bold text-slate-700 whitespace-nowrap">
+                                                                                <div>{enq.name}</div>
+                                                                                <div className="text-[9px] text-slate-400 font-semibold">{enq.phone}</div>
+                                                                            </td>
+                                                                        )}
+                                                                        <td className="px-3 py-2.5 text-slate-500 max-w-[150px] truncate" title={enq.message}>{enq.message}</td>
+                                                                        <td className="px-3 py-2.5 text-slate-450 font-semibold">{new Date(enq.createdAt).toLocaleDateString()}</td>
+                                                                    </tr>
+                                                                ))
+                                                            ) : (
+                                                                <tr>
+                                                                    <td colSpan={detailModal.user?.role === 'Merchant' ? 4 : 3} className="px-3 py-4 text-center text-xs text-slate-400 italic bg-white">
+                                                                        {detailModal.user?.role === 'Merchant' ? 'No enquiries received.' : 'No enquiries sent.'}
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {detailModal.user?.role === 'Merchant' && (
+                                            <>
+                                                {/* Box: Enquiry Responses */}
+                                                {(activityFilter === 'all' || activityFilter === 'responses') && (
+                                                    <div className="space-y-3">
+                                                        <p className="text-[10px] font-black text-purple-500 uppercase tracking-widest px-1">Enquiry Responses</p>
+                                                        <div className="overflow-x-auto border border-slate-100 rounded-2xl">
+                                                            <table className="w-full text-left border-collapse text-[11px] bg-white">
+                                                                <thead>
+                                                                    <tr className="bg-slate-50 border-b border-slate-100">
+                                                                        <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Business</th>
+                                                                        <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Response</th>
+                                                                        <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Date</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody className="divide-y divide-slate-100">
+                                                                    {detailModal.activity?.enquiryResponses?.length > 0 ? (
+                                                                        detailModal.activity.enquiryResponses.map((resp, i) => {
+                                                                            const respTime = new Date(resp.timestamp).toLocaleString("en-US", {
+                                                                                month: "numeric",
+                                                                                day: "numeric",
+                                                                                hour: "numeric",
+                                                                                minute: "2-digit",
+                                                                                hour12: true
+                                                                            });
+                                                                            return (
+                                                                                <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                                                                    <td className="px-3 py-2.5 font-bold text-slate-700">{resp.businessName}</td>
+                                                                                    <td className="px-3 py-2.5 text-slate-500 max-w-[150px] truncate" title={resp.message}>{resp.message}</td>
+                                                                                    <td className="px-3 py-2.5 text-slate-450 font-semibold">{respTime}</td>
+                                                                                </tr>
+                                                                            );
+                                                                        })
+                                                                    ) : (
+                                                                        <tr>
+                                                                            <td colSpan={3} className="px-3 py-4 text-center text-xs text-slate-400 italic bg-white">
+                                                                                No responses recorded.
+                                                                            </td>
+                                                                        </tr>
+                                                                    )}
+                                                                </tbody>
+                                                            </table>
                                                         </div>
-                                                        <p className="text-xs text-slate-500 line-clamp-2">{rev.comment}</p>
                                                     </div>
-                                                ))
-                                            ) : <p className="text-xs text-slate-400 italic">No reviews recorded.</p>}
-                                        </div>
-                                        <div className="space-y-4">
-                                            <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Business Enquiries</p>
-                                            {detailModal.activity?.recentEnquiries.length > 0 ? (
-                                                detailModal.activity.recentEnquiries.map((enq, i) => (
-                                                    <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                                        <p className="text-xs font-black text-slate-800 mb-1">{enq.businessIds[0]?.name || 'Direct Lead'}</p>
-                                                        <p className="text-xs text-slate-500 line-clamp-2">{enq.message}</p>
-                                                        <div className="mt-2 text-[8px] font-black text-slate-400 uppercase">{new Date(enq.createdAt).toLocaleDateString()}</div>
+                                                )}
+
+                                                {/* Box: Product Changes */}
+                                                {(activityFilter === 'all' || activityFilter === 'products') && (
+                                                    <div className="space-y-3">
+                                                        <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest px-1">Product Changes</p>
+                                                        <div className="overflow-x-auto border border-slate-100 rounded-2xl">
+                                                            <table className="w-full text-left border-collapse text-[11px] bg-white">
+                                                                <thead>
+                                                                    <tr className="bg-slate-50 border-b border-slate-100">
+                                                                        <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Change Detail</th>
+                                                                        <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Date</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody className="divide-y divide-slate-100">
+                                                                    {detailModal.activity?.productChanges?.length > 0 ? (
+                                                                        detailModal.activity.productChanges.map((change, i) => {
+                                                                            const changeTime = new Date(change.timestamp).toLocaleString("en-US", {
+                                                                                month: "numeric",
+                                                                                day: "numeric",
+                                                                                hour: "numeric",
+                                                                                minute: "2-digit",
+                                                                                hour12: true
+                                                                            });
+                                                                            return (
+                                                                                <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                                                                    <td className="px-3 py-2.5 font-bold text-slate-700 leading-normal">{change.description}</td>
+                                                                                    <td className="px-3 py-2.5 text-slate-450 font-semibold whitespace-nowrap">{changeTime}</td>
+                                                                                </tr>
+                                                                            );
+                                                                        })
+                                                                    ) : (
+                                                                        <tr>
+                                                                            <td colSpan={2} className="px-3 py-4 text-center text-xs text-slate-400 italic bg-white">
+                                                                                No changes made.
+                                                                            </td>
+                                                                        </tr>
+                                                                    )}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
                                                     </div>
-                                                ))
-                                            ) : <p className="text-xs text-slate-400 italic">No enquiries sent.</p>}
-                                        </div>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             )}
