@@ -466,7 +466,7 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                     <button
                                         onClick={() => setIsFavoritesOpen(prev => !prev)}
                                         className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors relative ${isFavoritesOpen ? 'bg-slate-100 text-rose-600' : 'text-slate-600 hover:bg-slate-50 hover:text-rose-500'}`}
-                                        title="Saved Products"
+                                        title="Liked Products"
                                     >
                                         <Heart className={`w-5 h-5 ${savedProducts.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
                                         {savedProducts.length > 0 && (
@@ -480,10 +480,10 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                         <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
                                                 <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
-                                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Saved Products
+                                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Liked Product
                                                 </h3>
                                                 <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase">
-                                                    {savedProducts.length} Saved
+                                                    {savedProducts.length} Liked
                                                 </span>
                                             </div>
                                             <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
@@ -517,8 +517,8 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center py-8 text-center">
                                                          <Heart className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
-                                                         <p className="text-xs text-slate-500 font-bold">No saved products yet</p>
-                                                         <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Save products to see them here for quick access.</p>
+                                                         <p className="text-xs text-slate-500 font-bold">No liked products yet</p>
+                                                         <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Like products to see them here for quick access.</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -527,7 +527,7 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                                 onClick={() => setIsFavoritesOpen(false)} 
                                                 className="block mt-3 pt-3 text-center text-xs font-black text-rose-600 border-t border-slate-100 hover:text-rose-700 uppercase tracking-wider"
                                             >
-                                                View All Saved Items
+                                                View All Liked Items
                                             </Link>
                                         </div>
                                     )}
@@ -636,7 +636,7 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                     <button
                                         onClick={() => setIsFavoritesOpen(prev => !prev)}
                                         className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors relative ${isFavoritesOpen ? 'bg-slate-100 text-rose-600' : 'text-slate-600 hover:bg-slate-50 hover:text-rose-500'}`}
-                                        title="Saved Products"
+                                        title="Liked Products"
                                     >
                                         <Heart className={`w-5 h-5 ${savedProducts.length > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
                                         {savedProducts.length > 0 && (
@@ -650,10 +650,10 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                         <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
                                                 <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
-                                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Saved Products
+                                                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> Liked Product
                                                 </h3>
                                                 <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase">
-                                                    {savedProducts.length} Saved
+                                                    {savedProducts.length} Liked
                                                 </span>
                                             </div>
                                             <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
@@ -687,8 +687,8 @@ export default function Header({ selectedCity, cities = [], onCityChange }) {
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center py-8 text-center">
                                                          <Heart className="w-10 h-10 text-slate-200 mb-2" strokeWidth={1} />
-                                                         <p className="text-xs text-slate-500 font-bold">No saved products yet</p>
-                                                         <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Save products to see them here for quick access.</p>
+                                                         <p className="text-xs text-slate-500 font-bold">No liked products yet</p>
+                                                         <p className="text-[10px] text-slate-400 mt-1 max-w-[200px]">Like products to see them here for quick access.</p>
                                                     </div>
                                                 )}
                                             </div>
