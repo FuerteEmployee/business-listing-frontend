@@ -59,6 +59,17 @@ const DEFAULT_BANNERS = [
 export default function HeroBanners() {
     const [banners, setBanners] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [touchStart, setTouchStart] = useState(0);
+    const [touchEnd, setTouchEnd] = useState(0);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     useEffect(() => {
         const fetchBanners = async () => {
@@ -96,6 +107,42 @@ export default function HeroBanners() {
     // to keep the UI looking premium even if admins only upload images with transparent bg.
     const FALLBACK_COLORS = ['#0a84d0', '#24458f', '#6a5ad6', '#03884e', '#ef4444', '#f59e0b'];
 
+    const mainBanner = banners[0];
+    const subBanners = banners.slice(1, 5);
+    const allBanners = [mainBanner, ...subBanners].filter(Boolean);
+
+    useEffect(() => {
+        if (!isMobile || allBanners.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % allBanners.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [isMobile, allBanners.length]);
+
+    const handleTouchStart = (e) => {
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > 50;
+        const isRightSwipe = distance < -50;
+
+        if (isLeftSwipe) {
+            setCurrentIndex((prev) => (prev + 1) % allBanners.length);
+        } else if (isRightSwipe) {
+            setCurrentIndex((prev) => (prev - 1 + allBanners.length) % allBanners.length);
+        }
+
+        setTouchStart(0);
+        setTouchEnd(0);
+    };
+
     if (loading) {
         return (
             <div className="w-full bg-white pb-10">
@@ -111,8 +158,83 @@ export default function HeroBanners() {
         );
     }
 
-    const mainBanner = banners[0];
-    const subBanners = banners.slice(1, 5);
+    if (isMobile) {
+        return (
+            <div className="w-full bg-white pb-8 px-4">
+                <div 
+                    className="relative w-full h-[240px] rounded-2xl overflow-hidden shadow-sm"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                >
+                    {/* Slides Container */}
+                    <div 
+                        className="flex h-full transition-transform duration-500 ease-in-out"
+                        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+                    >
+                        {allBanners.map((banner, index) => {
+                            const isMain = index === 0;
+                            const bgColor = banner.bgClass || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+                            
+                            return (
+                                <div 
+                                    key={banner._id || index}
+                                    className="w-full h-full flex-shrink-0 relative"
+                                    style={{ backgroundColor: isMain ? '#f1f5f9' : (bgColor.replace('bg-[', '').replace(']', '') || bgColor) }}
+                                >
+                                    <img 
+                                        src={banner.imageUrl} 
+                                        alt={banner.title || 'Banner'} 
+                                        className="absolute inset-0 w-full h-full object-cover object-right"
+                                    />
+                                    {isMain ? (
+                                        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-transparent z-[5]"></div>
+                                    ) : (
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/70 z-[5]"></div>
+                                    )}
+                                    
+                                    <div className={`relative z-10 h-full p-6 flex flex-col justify-center ${isMain ? 'max-w-[72%]' : 'max-w-[85%]'}`}>
+                                        {banner.title && (
+                                            <h2 className={`font-black leading-tight tracking-tight mb-1.5 drop-shadow-sm line-clamp-2 ${isMain ? 'text-slate-900 text-xl' : 'text-white text-lg uppercase'}`}>
+                                                {banner.title}
+                                            </h2>
+                                        )}
+                                        {banner.subtitle && (
+                                            <p className={`font-semibold text-xs mb-5 drop-shadow-sm line-clamp-2 ${isMain ? 'text-slate-700' : 'text-white/90'}`}>
+                                                {banner.subtitle}
+                                            </p>
+                                        )}
+                                        {banner.link && (
+                                            <Link 
+                                                to={banner.link} 
+                                                className={`inline-block px-4 py-2 text-white font-bold text-[10px] rounded-md shadow-sm transition-all self-start uppercase tracking-wider ${isMain ? 'bg-[#ef4444] hover:bg-red-600' : 'bg-white/20 backdrop-blur-sm hover:bg-white/40'}`}
+                                            >
+                                                {banner.buttonText || 'EXPLORE NOW'}
+                                            </Link>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Dot Indicators */}
+                    {allBanners.length > 1 && (
+                        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 z-20 flex gap-2 bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                            {allBanners.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setCurrentIndex(idx)}
+                                    className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-orange-500 scale-125' : 'bg-white/50'}`}
+                                    title={`Slide ${idx + 1}`}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full bg-white pb-10">
