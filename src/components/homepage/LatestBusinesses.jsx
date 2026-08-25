@@ -74,19 +74,19 @@ export default function LatestBusinesses() {
 
                 {/* Loading State */}
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div className="flex md:grid overflow-x-auto md:overflow-visible flex-nowrap md:grid-cols-3 lg:grid-cols-4 gap-6 pb-4 md:pb-0 no-scrollbar">
                         {[...Array(8)].map((_, idx) => (
-                            <div key={idx} className="bg-white rounded-lg h-72 animate-pulse" />
+                            <div key={idx} className="bg-white rounded-lg h-72 animate-pulse flex-shrink-0 w-[260px] md:w-auto" />
                         ))}
                     </div>
                 ) : (
                     /* Business Cards */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div className="flex md:grid overflow-x-auto md:overflow-visible flex-nowrap md:grid-cols-3 lg:grid-cols-4 gap-6 pb-4 md:pb-0 no-scrollbar">
                         {businesses.slice(0, 8).map((business) => (
                             <Link
                                 key={business._id}
                                 to={`/business/${business.slug}`}
-                                className="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 group"
+                                className="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 group flex-shrink-0 w-[260px] md:w-auto"
                             >
                                 {/* Image */}
                                 <div className="relative aspect-[16/9] bg-gradient-to-br from-slate-100 to-slate-50 overflow-hidden">
