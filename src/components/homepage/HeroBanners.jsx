@@ -117,11 +117,11 @@ export default function HeroBanners() {
     return (
         <div className="w-full bg-white pb-10">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 min-h-[220px]">
+                <div className="flex md:grid overflow-x-auto md:overflow-visible flex-nowrap md:grid-cols-2 lg:grid-cols-6 gap-4 pb-4 md:pb-0 min-h-[220px] no-scrollbar">
                     
                     {/* Large Banner (Spans 2 columns) */}
                     {mainBanner && (
-                        <div className="lg:col-span-2 relative rounded-xl overflow-hidden bg-slate-100 group min-h-[240px] shadow-sm transform transition-all duration-300 hover:shadow-md">
+                        <div className="lg:col-span-2 relative rounded-xl overflow-hidden bg-slate-100 group min-h-[240px] shadow-sm transform transition-all duration-300 hover:shadow-md flex-shrink-0 w-[280px] sm:w-[320px] md:w-auto">
                             <img 
                                 src={mainBanner.imageUrl} 
                                 alt={mainBanner.title || 'Main Banner'} 
@@ -155,7 +155,7 @@ export default function HeroBanners() {
                         const bgColor = banner.bgClass || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
                         
                         return (
-                            <Link key={banner._id || index} to={banner.link || '#'} className="relative rounded-xl overflow-hidden group min-h-[220px] shadow-sm transition-all duration-300 hover:shadow-md" style={{ backgroundColor: bgColor.replace('bg-[', '').replace(']', '') || bgColor }}>
+                            <Link key={banner._id || index} to={banner.link || '#'} className="relative rounded-xl overflow-hidden group min-h-[220px] shadow-sm transition-all duration-300 hover:shadow-md flex-shrink-0 w-[220px] sm:w-[240px] md:w-auto" style={{ backgroundColor: bgColor.replace('bg-[', '').replace(']', '') || bgColor }}>
                                 <img 
                                     src={banner.imageUrl} 
                                     alt={banner.title || 'Sub Banner'} 
