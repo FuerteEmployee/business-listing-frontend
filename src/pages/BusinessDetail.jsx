@@ -983,21 +983,21 @@ export default function BusinessDetail() {
                                             onClick={handleCall}
                                             className="bg-[#1f9d3d] hover:bg-green-700 text-white px-3 md:px-5 h-10 md:h-11 rounded-lg md:rounded-[10px] font-bold text-[13px] md:text-[15px] transition-all flex items-center justify-center gap-1.5 md:gap-2 shadow-sm active:scale-95"
                                         >
-                                            <Phone className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                                            <Phone className="w-2.5 h-2.5 md:w-4 md:h-4 text-white" strokeWidth={2.5} />
                                             Call
                                         </button>
                                         <button 
                                             onClick={handleWhatsApp}
                                             className="bg-[#1f9d3d] hover:bg-green-700 text-white px-3 md:px-5 h-10 md:h-11 rounded-lg md:rounded-[10px] font-bold text-[13px] md:text-[15px] transition-all flex items-center justify-center gap-1.5 md:gap-2 shadow-sm active:scale-95"
                                         >
-                                            <MessageCircle className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                                            <MessageCircle className="w-2.5 h-2.5 md:w-4 md:h-4 text-white" strokeWidth={2.5} />
                                             WhatsApp
                                         </button>
                                         <button 
                                             onClick={handleDirections}
                                             className="bg-[#3573e0] hover:bg-blue-700 text-white px-3 md:px-5 h-10 md:h-11 rounded-lg md:rounded-[10px] font-bold text-[13px] md:text-[15px] transition-all flex items-center justify-center gap-1.5 md:gap-2 shadow-sm active:scale-95"
                                         >
-                                            <Map className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                                            <Map className="w-2.5 h-2.5 md:w-4 md:h-4 text-white" strokeWidth={2.5} />
                                             Directions
                                         </button>
                                         <button 
