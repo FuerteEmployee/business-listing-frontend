@@ -41,7 +41,7 @@ export default function SearchBar({ selectedCity, cities = [] }) {
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
                 
                 {/* Hero Title */}
-                <div className="mb-6">
+                <div className="hidden md:block mb-6">
                     <h1 className="text-[32px] md:text-[40px] font-bold text-slate-800 tracking-tight leading-tight">
                         {(!hp.heroTaglinePrefix && !hp.heroTaglineSuffix && !displayCount) ? (
                             "Search across multiple products and services"
