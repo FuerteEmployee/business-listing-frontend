@@ -790,8 +790,7 @@ export default function BusinessDetail() {
 
     return (
         <>
-            {/* Desktop View */}
-            <div className="hidden md:flex min-h-screen bg-slate-50 flex-col w-full">
+            <div className="min-h-screen bg-slate-50 flex flex-col">
             <Header />
 
             <main className="flex-1">
@@ -982,32 +981,28 @@ export default function BusinessDetail() {
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
                                         <button 
                                             onClick={handleCall}
-                                            className="bg-green-600 text-white px-4 py-3.5 rounded-xl font-bold hover:bg-green-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-100"
+                                            className="bg-[#1f9d3d] hover:bg-green-700 text-white px-4 h-11 rounded-[10px] font-semibold text-[15px] transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
                                         >
-                                            <Phone className="w-5 h-5 text-green-200" />
+                                            <Phone className="w-4 h-4 text-white" />
                                             Call
                                         </button>
                                         <button 
-                                            onClick={() => {
-                                                logAnalyticsEvent('whatsapp', business._id);
-                                                const msg = encodeURIComponent(`Hi ${business.name}, I found your listing on Fuerte Developers and would like to inquire about your services.`);
-                                                window.open(`https://wa.me/${business.phone || '919972219375'}?text=${msg}`, '_blank');
-                                            }}
-                                            className="bg-emerald-500 text-white px-4 py-3.5 rounded-xl font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-100"
+                                            onClick={handleWhatsApp}
+                                            className="bg-[#1f9d3d] hover:bg-green-700 text-white px-4 h-11 rounded-[10px] font-semibold text-[15px] transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
                                         >
-                                            <MessageSquare className="w-5 h-5 text-emerald-100" />
+                                            <MessageCircle className="w-4 h-4 text-white" />
                                             WhatsApp
                                         </button>
                                         <button 
                                             onClick={handleDirections}
-                                            className="bg-blue-600 text-white px-4 py-3.5 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
+                                            className="bg-[#3573e0] hover:bg-blue-700 text-white px-4 h-11 rounded-[10px] font-semibold text-[15px] transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
                                         >
-                                            <MapPin className="w-5 h-5 text-blue-200" />
+                                            <Map className="w-4 h-4 text-white" />
                                             Directions
                                         </button>
                                         <button 
                                             onClick={() => setIsEnquiryModalOpen(true)}
-                                            className="bg-white border-2 border-slate-200 text-slate-700 px-4 py-3.5 rounded-xl font-bold hover:border-orange-500 hover:text-orange-600 transition-all flex items-center justify-center gap-2 shadow-sm"
+                                            className="bg-white border border-slate-200 hover:border-slate-300 text-slate-700 px-4 h-11 rounded-[10px] font-semibold text-[15px] transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
                                         >
                                             Enquiry
                                         </button>
@@ -1990,294 +1985,7 @@ export default function BusinessDetail() {
             </main>
 
             <Footer />
-        </div>
 
-        {/* Mobile View */}
-        <div className="block md:hidden min-h-screen bg-[#0e0e10] text-[#ffffff] font-sans antialiased pb-10">
-            {/* Top search bar */}
-            <div className="flex items-center gap-2 px-3 py-3.5 border-b border-[#232326] bg-[#0e0e10] sticky top-0 z-30">
-                <Link to="/" className="w-8 h-8 rounded-lg bg-[#1c2a3d] flex items-center justify-center text-[#4a90e2] flex-shrink-0">
-                    <Settings className="w-4 h-4" />
-                </Link>
-                <Link to="/search" className="flex-1 h-9 rounded-lg border border-[#2c2c30] bg-transparent flex items-center gap-2 px-3 text-[#8a8a90] text-sm">
-                    <Search className="w-4 h-4" />
-                    Find local industries
-                </Link>
-                <button onClick={() => navigate('/')} className="text-[#d5d5d8] flex-shrink-0">
-                    <Menu className="w-5 h-5" />
-                </button>
-            </div>
-
-            {/* Cover image */}
-            <div className="relative h-[220px] bg-gradient-to-r from-[#5b1a2b] via-[#3a2350] to-[#1b2a4d] flex items-center justify-center">
-                {displayImg ? (
-                    <img src={displayImg} className="w-full h-full object-cover" alt={business.name} />
-                ) : (
-                    <ImageIcon className="w-8 h-8 text-white/50" />
-                )}
-                <div className="absolute top-3 right-3 flex gap-2">
-                    <button 
-                        onClick={handleBookmarkToggle}
-                        className="w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center text-sm shadow-sm"
-                    >
-                        <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-orange-500 text-orange-500' : ''}`} />
-                    </button>
-                    <button 
-                        onClick={() => handleShare('native')}
-                        className="w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center text-sm shadow-sm"
-                    >
-                        <Share2 className="w-4 h-4" />
-                    </button>
-                </div>
-                <button 
-                    onClick={() => {
-                        if (business.photos?.length > 0) {
-                            setActivePhotoIndex(0);
-                            setIsLightboxOpen(true);
-                        }
-                    }}
-                    className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 backdrop-blur-sm"
-                >
-                    <ImageIcon className="w-3.5 h-3.5" /> See {business.photos?.length || 0} photos
-                </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-4 space-y-4">
-                <span className="inline-block text-xs text-[#6fb1ff] bg-[#16233a] px-3 py-1.5 rounded-lg font-semibold uppercase tracking-wider">
-                    {business.category_id?.name || 'Technology and software'}
-                </span>
-
-                <div className="flex items-center gap-2.5 mt-3">
-                    <div className="w-[42px] h-[42px] rounded-lg bg-[#3a1414] text-[#e06868] flex items-center justify-center text-xl font-bold flex-shrink-0 border border-red-950">
-                        {business.logo ? (
-                            <img src={business.logo} className="w-full h-full object-contain rounded-lg" alt="logo" />
-                        ) : (
-                            <Sparkles className="w-5 h-5 text-[#e06868]" />
-                        )}
-                    </div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2 text-white">
-                        {business.name}
-                        {business.verified && <CheckCircle className="w-5 h-5 text-[#4a90e2] fill-[#0e0e10]" />}
-                    </h1>
-                </div>
-
-                <div className="flex items-center gap-2.5 mt-2.5 text-xs text-slate-400">
-                    <span className="bg-[#163b1e] text-[#4ecb6a] font-bold px-2 py-1 rounded-md flex items-center gap-1">
-                        {rating.toFixed(1)} <Star className="w-3 h-3 fill-current" />
-                    </span>
-                    <span className="text-[#9a9a9e]">{reviewCount} ratings</span>
-                    <span className="text-[#4ecb6a] font-semibold">Open Now</span>
-                </div>
-
-                <div className="flex items-start gap-2 mt-3.5">
-                    <MapPin className="w-4 h-4 text-[#8a8a90] mt-0.5 flex-shrink-0" />
-                    <div>
-                        <div className="font-semibold text-[15px] text-white">{business.area_id?.name || business.address || 'Aji industrial area'}</div>
-                        <div className="text-[13px] text-[#9a9a9e] mt-0.5">{(business.city_id?.name || 'Rajkot')}, {(business.state_id?.name || 'Gujarat')}</div>
-                    </div>
-                </div>
-
-                {/* Action buttons */}
-                <div className="grid grid-cols-2 gap-2.5 mt-4.5">
-                    <button onClick={handleCall} className="h-11 rounded-lg border-0 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer bg-[#1f9d3d] text-white hover:bg-[#1b8534] active:scale-98 transition-all">
-                        <Phone className="w-4 h-4" /> Call
-                    </button>
-                    <button onClick={handleWhatsApp} className="h-11 rounded-lg border-0 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer bg-[#1f9d3d] text-white hover:bg-[#1b8534] active:scale-98 transition-all">
-                        <MessageCircle className="w-4 h-4" /> WhatsApp
-                    </button>
-                    <button onClick={handleDirections} className="h-11 rounded-lg border-0 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer bg-[#3573e0] text-white hover:bg-[#2b61c2] active:scale-98 transition-all">
-                        <Map className="w-4 h-4" /> Directions
-                    </button>
-                    <button onClick={handleEnquire} className="h-11 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer bg-transparent border border-[#3a3a3e] text-white hover:bg-white/5 transition-all">
-                        Enquiry
-                    </button>
-                </div>
-
-                {/* Tabs */}
-                <div className="flex gap-6 mt-6 overflow-x-auto pb-2.5 border-b border-[#232326] no-scrollbar">
-                    {[
-                        { id: 'overview', label: 'Overview' },
-                        { id: 'products', label: 'Products' },
-                        { id: 'reviews', label: 'Reviews' },
-                        { id: 'questions', label: 'Q and A' },
-                        { id: 'photos', label: 'Photos' }
-                    ].map((t) => (
-                        <button
-                            key={t.id}
-                            onClick={() => setActiveTab(t.id === 'questions' ? 'questions' : t.id)}
-                            className={`text-sm flex-shrink-0 pb-2 border-b-2 -mb-[12px] transition-all font-bold ${
-                                (activeTab === 'questions' ? 'questions' : activeTab) === (t.id === 'questions' ? 'questions' : t.id)
-                                ? 'text-[#4a90e2] border-[#4a90e2]' 
-                                : 'text-[#9a9a9e] border-transparent'
-                            }`}
-                        >
-                            {t.label}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Tab contents */}
-                <div className="mt-4">
-                    {activeTab === 'overview' && (
-                        <div className="space-y-4">
-                            <div className="bg-[#1a1a1d] rounded-2xl p-4 border border-[#232326]">
-                                <div className="text-base font-semibold text-white mb-2">About {business.name}</div>
-                                <div className="text-sm text-[#b0b0b4] leading-relaxed whitespace-pre-wrap break-words">
-                                    {business.description || `${business.name} is a leading provider in technology and software, known for quality and excellence in Rajkot.`}
-                                </div>
-                            </div>
-
-                            <div className="bg-[#1a1a1d] rounded-2xl p-4 border border-[#232326]">
-                                <div className="text-base font-semibold text-white mb-3">Contact information</div>
-                                <div className="flex items-center gap-2.5 text-sm py-2 border-b border-[#232326] text-[#b0b0b4]">
-                                    <Phone className="w-4 h-4 text-[#8a8a90]" /> {business.phone || '1234567890'}
-                                </div>
-                                <div className="flex items-center gap-2.5 text-sm py-2 border-b border-[#232326] text-[#6fb1ff]">
-                                    <Globe className="w-4 h-4 text-[#8a8a90]" /> 
-                                    <a href={business.website ? (business.website.startsWith('http') ? business.website : `https://${business.website}`) : '#'} target="_blank" rel="noreferrer" className="text-[#6fb1ff] no-underline">
-                                        {business.website || `www.${business.slug}.com`}
-                                    </a>
-                                </div>
-                                <div className="flex items-center gap-2.5 text-sm py-2 text-[#b0b0b4]">
-                                    <Mail className="w-4 h-4 text-[#8a8a90]" /> {business.email || `${business.slug}@gmail.com`}
-                                </div>
-                            </div>
-
-                            <div className="bg-[#1a1a1d] rounded-2xl p-4 border border-[#232326]">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <div className="text-xs text-[#8a8a90] uppercase tracking-wider mb-1">Established</div>
-                                        <div className="text-sm font-semibold text-white">{business.yearEstablished || 'N/A'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-[#8a8a90] uppercase tracking-wider mb-1">Payment</div>
-                                        <div className="text-sm font-semibold text-white">{business.paymentMethods?.join(', ') || 'N/A'}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'products' && (
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-bold text-white mb-2">Products & Services</h3>
-                            {offerings.length > 0 ? (
-                                <div className="flex overflow-x-auto flex-nowrap gap-4 pb-4 no-scrollbar">
-                                    {offerings.map((item, idx) => {
-                                        const isProduct = item.sku !== undefined;
-                                        return (
-                                            <div 
-                                                key={idx} 
-                                                className="bg-[#1a1a1d] rounded-xl border border-[#232326] overflow-hidden flex flex-col flex-shrink-0 w-[165px]"
-                                            >
-                                                <Link to={isProduct ? `/product/${item.slug}` : '#'} className="block relative aspect-[4/3] bg-slate-900 overflow-hidden">
-                                                    {item.images?.[0] ? (
-                                                        <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-slate-650">
-                                                            <ImageIcon className="w-8 h-8" />
-                                                        </div>
-                                                    )}
-                                                    <div className="absolute top-2 left-2 flex flex-col gap-1">
-                                                        <span className="px-1 py-0.2 bg-black/60 rounded text-[8px] font-black text-rose-400 uppercase border border-rose-950">
-                                                            {isProduct ? 'Trending' : 'Service'}
-                                                        </span>
-                                                    </div>
-                                                </Link>
-                                                <div className="p-2.5 flex-1 flex flex-col justify-between">
-                                                    <div>
-                                                        <span className="text-[9px] font-bold text-[#8a8a90] uppercase tracking-widest block mb-1">
-                                                            {item.brandId?.name || (isProduct ? 'HAVELLS' : 'Professional')}
-                                                        </span>
-                                                        <Link to={isProduct ? `/product/${item.slug}` : '#'}>
-                                                            <h4 className="text-xs font-bold text-white line-clamp-2 leading-tight">
-                                                                {item.name}
-                                                            </h4>
-                                                        </Link>
-                                                    </div>
-                                                    <div className="mt-3">
-                                                        {item.price && (
-                                                            <div className="mb-2">
-                                                                <span className="text-sm font-black text-white italic">₹ {item.price.toLocaleString()}</span>
-                                                            </div>
-                                                        )}
-                                                        <button 
-                                                            onClick={handleEnquire}
-                                                            className="w-full py-1.5 text-[#6fb1ff] border border-blue-900 bg-[#16233a] rounded-lg text-[11px] font-bold transition-all flex items-center justify-center"
-                                                        >
-                                                            Get Best Deal
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="py-10 text-center border-2 border-dashed border-[#232326] rounded-2xl">
-                                    <p className="text-[#8a8a90] font-medium italic">No items found in this category.</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === 'reviews' && (
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-bold text-white">User Reviews</h3>
-                            <div className="bg-[#1a1a1d] p-4 rounded-2xl border border-[#232326]">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="text-4xl font-black text-white">{rating.toFixed(1)}</div>
-                                    <div>
-                                        <div className="flex gap-0.5">
-                                            {[1, 2, 3, 4, 5].map(i => (
-                                                <Star key={i} className={`w-3.5 h-3.5 ${i <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-[#3a3a3e]'}`} />
-                                            ))}
-                                        </div>
-                                        <span className="text-xs text-[#9a9a9e] mt-1 block">{reviewCount} total ratings</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'questions' && (
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-bold text-white">Questions & Answers</h3>
-                            <div className="py-10 text-center border border-[#232326] bg-[#1a1a1d] rounded-2xl">
-                                <p className="text-[#9a9a9e] text-sm">Ask a question about this business</p>
-                                <button onClick={handleEnquire} className="mt-3 px-4 py-2 bg-[#4a90e2] text-white rounded-lg text-xs font-bold">Ask Question</button>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'photos' && (
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-bold text-white">Photos</h3>
-                            {business.photos?.length > 0 ? (
-                                <div className="grid grid-cols-2 gap-2">
-                                    {business.photos.map((p, idx) => (
-                                        <div 
-                                            key={idx} 
-                                            onClick={() => {
-                                                setActivePhotoIndex(idx);
-                                                setIsLightboxOpen(true);
-                                            }}
-                                            className="aspect-video rounded-xl bg-slate-900 overflow-hidden cursor-pointer border border-[#232326]"
-                                        >
-                                            <img src={p} className="w-full h-full object-cover" alt="gallery item" />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="py-12 text-center border border-[#232326] bg-[#1a1a1d] rounded-2xl">
-                                    <p className="text-[#8a8a90] text-sm font-medium italic">No photos available.</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
         </div>
 
         {/* Claim Modal - Ported from old version with improved UI */}
