@@ -1163,7 +1163,7 @@ export default function BusinessDetail() {
                                                     return (
                                                         <div 
                                                             key={idx} 
-                                                            className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all flex flex-col group flex-shrink-0 w-[290px] md:w-auto"
+                                                            className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all flex flex-col group flex-shrink-0 w-[165px] sm:w-[220px] md:w-auto"
                                                         >
                                                             {/* Image Container */}
                                                             <Link to={isProduct ? `/product/${item.slug}` : '#'} className="block relative aspect-[4/3] bg-slate-50 overflow-hidden">
@@ -1174,24 +1174,24 @@ export default function BusinessDetail() {
                                                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                                                                     />
                                                                 ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center text-slate-200">
-                                                                        <ImageIcon className="w-12 h-12" />
+                                                                    <div className="w-full h-full flex items-center justify-center text-slate-250">
+                                                                        <ImageIcon className="w-8 h-8 md:w-12 md:h-12" />
                                                                     </div>
                                                                 )}
                                                                 
                                                                 {/* Labels */}
-                                                                <div className="absolute top-3 left-3 flex flex-col gap-2">
+                                                                <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1 md:gap-2">
                                                                     {isProduct ? (
-                                                                        <span className="px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded text-[9px] font-black text-rose-600 uppercase tracking-tighter border border-rose-100 italic">
+                                                                        <span className="px-1 py-0.2 bg-white/90 backdrop-blur-sm rounded text-[8px] md:text-[9px] font-black text-rose-600 uppercase tracking-tighter border border-rose-100 italic">
                                                                             Trending
                                                                         </span>
                                                                     ) : (
-                                                                        <span className="px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded text-[9px] font-black text-blue-600 uppercase tracking-tighter border border-blue-100 italic">
+                                                                        <span className="px-1 py-0.2 bg-white/90 backdrop-blur-sm rounded text-[8px] md:text-[9px] font-black text-blue-600 uppercase tracking-tighter border border-blue-100 italic">
                                                                             Service
                                                                         </span>
                                                                     )}
                                                                 </div>
-
+ 
                                                                 {/* Save Product Heart Button */}
                                                                 {isProduct && (
                                                                     <button
@@ -1200,48 +1200,48 @@ export default function BusinessDetail() {
                                                                             e.stopPropagation();
                                                                             handleProductSaveToggle(item);
                                                                         }}
-                                                                        className={`absolute top-3 right-3 p-1.5 rounded-full shadow-sm backdrop-blur-sm transition-all duration-300 z-10 ${
+                                                                        className={`absolute top-2 right-2 md:top-3 md:right-3 p-1 md:p-1.5 rounded-full shadow-sm backdrop-blur-sm transition-all duration-300 z-10 ${
                                                                             savedProductIds.includes(item._id)
                                                                             ? 'bg-rose-500 text-white hover:bg-rose-600'
                                                                             : 'bg-white/90 text-slate-600 hover:text-rose-500'
                                                                         }`}
                                                                         title={savedProductIds.includes(item._id) ? "Remove from Favorites" : "Add to Favorites"}
                                                                     >
-                                                                        <Heart className={`w-3.5 h-3.5 ${savedProductIds.includes(item._id) ? 'fill-current' : ''}`} />
+                                                                        <Heart className={`w-3 h-3 md:w-3.5 md:h-3.5 ${savedProductIds.includes(item._id) ? 'fill-current' : ''}`} />
                                                                     </button>
                                                                 )}
                                                             </Link>
-
+ 
                                                             {/* Content */}
-                                                            <div className="p-4 flex-1 flex flex-col">
-                                                                <div className="mb-3">
-                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                                                            <div className="p-2.5 md:p-4 flex-1 flex flex-col">
+                                                                <div className="mb-2 md:mb-3">
+                                                                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
                                                                         {item.brandId?.name || (isProduct ? 'HAVELLS' : 'Professional')}
                                                                     </span>
                                                                     <Link to={isProduct ? `/product/${item.slug}` : '#'}>
-                                                                        <h4 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">
+                                                                        <h4 className="text-xs md:text-sm font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">
                                                                             {item.name}
                                                                         </h4>
                                                                     </Link>
                                                                 </div>
                                                                 
-                                                                <div className="flex items-center gap-4 mb-4">
-                                                                    <div className="flex items-center gap-1 bg-green-600 px-1.5 py-0.5 rounded text-white text-xs font-bold">
-                                                                        {business.rating || 0} <Star className="w-3 h-3 fill-white" />
+                                                                <div className="flex flex-wrap items-center gap-1.5 md:gap-4 mb-2 md:mb-4">
+                                                                    <div className="flex items-center gap-0.5 bg-green-600 px-1 py-0.2 rounded text-white text-[10px] md:text-xs font-bold">
+                                                                        {business.rating || 0} <Star className="w-2.5 h-2.5 fill-white" />
                                                                     </div>
-                                                                    <span className="text-xs text-slate-500 font-medium">{business.reviewCount || 0} Ratings</span>
+                                                                    <span className="text-[10px] md:text-xs text-slate-500 font-medium leading-none">{business.reviewCount || 0} Ratings</span>
                                                                 </div>
-
+ 
                                                                 <div className="mt-auto">
                                                                     {item.price && (
-                                                                        <div className="mb-4">
-                                                                            <span className="text-lg font-black text-slate-900 italic">₹ {item.price.toLocaleString()}</span>
+                                                                        <div className="mb-2 md:mb-4">
+                                                                            <span className="text-sm md:text-lg font-black text-slate-900 italic">₹ {item.price.toLocaleString()}</span>
                                                                         </div>
                                                                     )}
                                                                     
                                                                     <button 
                                                                         onClick={handleEnquire}
-                                                                        className="w-full py-2.5 text-blue-600 border border-blue-200 rounded-lg text-sm font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+                                                                        className="w-full py-1.5 md:py-2.5 text-blue-600 border border-blue-200 rounded-lg text-[11px] md:text-sm font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-1.5"
                                                                     >
                                                                         Get Best Deal
                                                                     </button>
@@ -1949,20 +1949,22 @@ export default function BusinessDetail() {
                             </div>
                             <div className="flex md:grid overflow-x-auto md:overflow-visible flex-nowrap md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-4 md:pb-0 no-scrollbar">
                                 {similarBusinesses.map(item => (
-                                    <Link key={item._id} to={`/business/${item.slug}`} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all group flex-shrink-0 w-[290px] md:w-auto">
+                                    <Link key={item._id} to={`/business/${item.slug}`} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all group flex-shrink-0 w-[165px] sm:w-[220px] md:w-auto">
                                         <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
                                             <img src={item.image || item.photos?.[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-black text-green-600 flex items-center gap-1"><Star className="w-3 h-3 fill-current" /> {item.rating}</div>
-                                        </div>
-                                        <div className="p-5">
-                                            <h4 className="font-bold text-slate-800 mb-1 group-hover:text-orange-600 transition-colors line-clamp-1">{item.name}</h4>
-                                            <div className="flex items-center gap-1.5 text-slate-400 mb-4">
-                                                <MapPin className="w-3.5 h-3.5" />
-                                                <span className="text-[10px] font-bold uppercase tracking-tight line-clamp-1">{item.address}</span>
+                                            <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded text-[8px] md:text-[10px] font-black text-green-600 flex items-center gap-0.5 md:gap-1">
+                                                <Star className="w-2.5 h-2.5 md:w-3 md:h-3 fill-current" /> {item.rating}
                                             </div>
-                                            <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                                                <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{item.reviewCount} Ratings</span>
-                                                <span className="text-orange-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1">Details <ArrowRight className="w-3 h-3" /></span>
+                                        </div>
+                                        <div className="p-2.5 md:p-5">
+                                            <h4 className="font-bold text-slate-800 text-xs md:text-sm mb-1 group-hover:text-orange-600 transition-colors line-clamp-1">{item.name}</h4>
+                                            <div className="flex items-center gap-1 text-slate-400 mb-3 md:mb-4">
+                                                <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                                                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-tight line-clamp-1">{item.address}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-slate-50">
+                                                <span className="text-[8px] md:text-[10px] font-black text-slate-300 uppercase tracking-widest">{item.reviewCount} Ratings</span>
+                                                <span className="text-orange-600 text-[8px] md:text-[10px] font-black uppercase tracking-widest flex items-center gap-0.5">Details <ArrowRight className="w-2.5 h-2.5 md:w-3 md:h-3" /></span>
                                             </div>
                                         </div>
                                     </Link>
