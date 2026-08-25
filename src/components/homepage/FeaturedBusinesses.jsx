@@ -69,19 +69,19 @@ export default function FeaturedBusinesses() {
 
                 {/* Loading State */}
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="flex md:grid overflow-x-auto md:overflow-visible flex-nowrap md:grid-cols-2 lg:grid-cols-4 gap-6 pb-4 md:pb-0 no-scrollbar">
                         {[...Array(4)].map((_, idx) => (
-                            <div key={idx} className="bg-white rounded-lg h-64 animate-pulse" />
+                            <div key={idx} className="bg-white rounded-lg h-64 animate-pulse flex-shrink-0 w-[260px] md:w-auto" />
                         ))}
                     </div>
                 ) : (
                     /* Business Cards Grid */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="flex md:grid overflow-x-auto md:overflow-visible flex-nowrap md:grid-cols-2 lg:grid-cols-4 gap-6 pb-4 md:pb-0 no-scrollbar">
                         {businesses.slice(0, 4).map((business) => (
                             <Link
                                 key={business._id}
                                 to={`/business/${business.slug}`}
-                                className="bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 group"
+                                className="bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 group flex-shrink-0 w-[260px] md:w-auto"
                             >
                                 {/* Business Image */}
                                 <div className="relative aspect-[16/9] bg-gradient-to-br from-orange-100 to-orange-50 overflow-hidden">
