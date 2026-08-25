@@ -1151,7 +1151,7 @@ export default function BusinessDetail() {
                                         selectedCategory === 'all' || 
                                         (item.subCategoryId?.name || item.categoryId?.name) === selectedCategory
                                     ).length > 0 ? (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <div className="flex md:grid overflow-x-auto md:overflow-visible flex-nowrap md:grid-cols-2 lg:grid-cols-3 gap-6 pb-4 md:pb-0 no-scrollbar">
                                             {offerings
                                                 .filter(item => 
                                                     selectedCategory === 'all' || 
@@ -1163,7 +1163,7 @@ export default function BusinessDetail() {
                                                     return (
                                                         <div 
                                                             key={idx} 
-                                                            className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all flex flex-col group"
+                                                            className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all flex flex-col group flex-shrink-0 w-[290px] md:w-auto"
                                                         >
                                                             {/* Image Container */}
                                                             <Link to={isProduct ? `/product/${item.slug}` : '#'} className="block relative aspect-[4/3] bg-slate-50 overflow-hidden">
