@@ -1947,9 +1947,9 @@ export default function BusinessDetail() {
                                 </div>
                                 <Link to={`/search?category=${business.category_id?.name || ''}`} className="text-orange-600 font-black text-sm flex items-center gap-1 hover:gap-2 transition-all">View All <ArrowRight className="w-4 h-4" /></Link>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <div className="flex md:grid overflow-x-auto md:overflow-visible flex-nowrap md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-4 md:pb-0 no-scrollbar">
                                 {similarBusinesses.map(item => (
-                                    <Link key={item._id} to={`/business/${item.slug}`} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all group">
+                                    <Link key={item._id} to={`/business/${item.slug}`} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all group flex-shrink-0 w-[290px] md:w-auto">
                                         <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
                                             <img src={item.image || item.photos?.[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                             <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-black text-green-600 flex items-center gap-1"><Star className="w-3 h-3 fill-current" /> {item.rating}</div>
