@@ -1014,20 +1014,19 @@ export default function BusinessDetail() {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm overflow-x-auto no-scrollbar">
+                <div className="sticky top-0 z-20 bg-white border-b border-slate-100 shadow-sm">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex gap-8">
+                        <div className="flex gap-2.5 py-3 overflow-x-auto no-scrollbar">
                             {tabs.map(tab => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`py-4 text-sm font-bold whitespace-nowrap border-b-2 transition-all flex items-center gap-2 ${
+                                    className={`px-4 py-2 rounded-xl text-[13px] md:text-sm font-bold whitespace-nowrap transition-all border ${
                                         activeTab === tab.id 
-                                        ? 'border-orange-600 text-orange-600' 
-                                        : 'border-transparent text-slate-500 hover:text-slate-700'
+                                        ? 'bg-slate-900 border-slate-900 text-white font-extrabold shadow-sm' 
+                                        : 'bg-slate-50/80 border-slate-200/60 text-slate-600 hover:bg-slate-100 hover:text-slate-800'
                                     }`}
                                 >
-                                    {tab.icon}
                                     {tab.label}
                                 </button>
                             ))}
