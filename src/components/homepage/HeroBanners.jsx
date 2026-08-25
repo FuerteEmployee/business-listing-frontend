@@ -176,45 +176,75 @@ export default function HeroBanners() {
                             const isMain = index === 0;
                             const bgColor = banner.bgClass || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
                             
-                            return (
-                                <div 
-                                    key={banner._id || index}
-                                    className="w-full h-full flex-shrink-0 relative"
-                                    style={{ backgroundColor: isMain ? '#f1f5f9' : (bgColor.replace('bg-[', '').replace(']', '') || bgColor) }}
-                                >
-                                    <img 
-                                        src={banner.imageUrl} 
-                                        alt={banner.title || 'Banner'} 
-                                        className="absolute inset-0 w-full h-full object-cover object-right"
-                                    />
-                                    {isMain ? (
-                                        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-transparent z-[5]"></div>
-                                    ) : (
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/70 z-[5]"></div>
-                                    )}
-                                    
-                                    <div className={`relative z-10 h-full p-6 flex flex-col justify-center ${isMain ? 'max-w-[72%]' : 'max-w-[85%]'}`}>
-                                        {banner.title && (
-                                            <h2 className={`font-black leading-tight tracking-tight mb-1.5 drop-shadow-sm line-clamp-2 ${isMain ? 'text-slate-900 text-xl' : 'text-white text-lg uppercase'}`}>
-                                                {banner.title}
-                                            </h2>
-                                        )}
-                                        {banner.subtitle && (
-                                            <p className={`font-semibold text-xs mb-5 drop-shadow-sm line-clamp-2 ${isMain ? 'text-slate-700' : 'text-white/90'}`}>
-                                                {banner.subtitle}
-                                            </p>
-                                        )}
-                                        {banner.link && (
-                                            <Link 
-                                                to={banner.link} 
-                                                className={`inline-block px-4 py-2 text-white font-bold text-[10px] rounded-md shadow-sm transition-all self-start uppercase tracking-wider ${isMain ? 'bg-[#ef4444] hover:bg-red-600' : 'bg-white/20 backdrop-blur-sm hover:bg-white/40'}`}
-                                            >
-                                                {banner.buttonText || 'EXPLORE NOW'}
-                                            </Link>
-                                        )}
+                            if (isMain) {
+                                return (
+                                    <div 
+                                        key={banner._id || index}
+                                        className="w-full h-full flex-shrink-0 relative bg-slate-100 group"
+                                    >
+                                        <img 
+                                            src={banner.imageUrl} 
+                                            alt={banner.title || 'Main Banner'} 
+                                            className="absolute inset-0 w-full h-full object-cover object-right"
+                                        />
+                                        {/* Gradient to ensure text is always completely readable on the left */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent z-[5]"></div>
+                                        
+                                        <div className="relative z-10 h-full p-6 sm:p-8 flex flex-col justify-center max-w-[80%]">
+                                            {banner.title && (
+                                                <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight tracking-tight mb-2 drop-shadow-sm">
+                                                    {banner.title}
+                                                </h2>
+                                            )}
+                                            {banner.subtitle && (
+                                                <p className="text-slate-700 font-semibold text-sm mb-4 drop-shadow-sm line-clamp-2">
+                                                    {banner.subtitle}
+                                                </p>
+                                            )}
+                                            {banner.link && (
+                                                <Link to={banner.link} className="inline-block px-5 py-2 bg-[#ef4444] text-white font-bold text-xs rounded-md shadow-sm hover:bg-red-600 transition-all self-start whitespace-nowrap uppercase tracking-wider">
+                                                    {banner.buttonText || 'EXPLORE NOW'}
+                                                </Link>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            );
+                                );
+                            } else {
+                                return (
+                                    <Link 
+                                        key={banner._id || index} 
+                                        to={banner.link || '#'} 
+                                        className="w-full h-full flex-shrink-0 relative group block" 
+                                        style={{ backgroundColor: bgColor.replace('bg-[', '').replace(']', '') || bgColor }}
+                                    >
+                                        <img 
+                                            src={banner.imageUrl} 
+                                            alt={banner.title || 'Sub Banner'} 
+                                            className="absolute inset-0 w-full h-full object-cover"
+                                        />
+                                        {/* Bottom-to-top and top-to-bottom dark gradient overlay for perfect text visibility */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/60 z-[5]"></div>
+                                        
+                                        <div className="relative z-10 p-5 h-full flex flex-col justify-between">
+                                            <div>
+                                                {banner.title && (
+                                                    <h3 className="text-base font-black text-white leading-tight uppercase line-clamp-2 drop-shadow-md tracking-wide">
+                                                        {banner.title}
+                                                    </h3>
+                                                )}
+                                                {banner.subtitle && (
+                                                    <p className="text-white/95 text-xs font-medium mt-1 line-clamp-2 drop-shadow">
+                                                        {banner.subtitle}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="mt-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-sm self-end">
+                                                <ChevronRight className="w-5 h-5 text-white" />
+                                            </div>
+                                        </div>
+                                    </Link>
+                                );
+                            }
                         })}
                     </div>
 
