@@ -37,6 +37,17 @@ export default function CategoryGrid() {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isMobile, setIsMobile] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [touchStart, setTouchStart] = useState(0);
+    const [touchEnd, setTouchEnd] = useState(0);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     useEffect(() => {
         fetchCategories();
@@ -75,6 +86,36 @@ export default function CategoryGrid() {
     // We'll show a maximum of 22 categories in the grid, or just all of them if few
     const displayCategories = categories.slice(0, 22);
 
+    const PAGE_SIZE = 8;
+    const pages = [];
+    for (let i = 0; i < displayCategories.length; i += PAGE_SIZE) {
+        pages.push(displayCategories.slice(i, i + PAGE_SIZE));
+    }
+
+    const handleTouchStart = (e) => {
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > 50;
+        const isRightSwipe = distance < -50;
+
+        if (isLeftSwipe && currentIndex < pages.length - 1) {
+            setCurrentIndex((prev) => prev + 1);
+        } else if (isRightSwipe && currentIndex > 0) {
+            setCurrentIndex((prev) => prev - 1);
+        }
+
+        setTouchStart(0);
+        setTouchEnd(0);
+    };
+
     return (
         <div className="w-full bg-white pt-6 pb-12">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -89,8 +130,72 @@ export default function CategoryGrid() {
                             </div>
                         ))}
                     </div>
+                ) : isMobile ? (
+                    /* Category Swiper Slider (Mobile: 4 columns x 2 rows per page) */
+                    <div className="relative w-full overflow-hidden pb-4">
+                        {/* Slides Container */}
+                        <div 
+                            className="flex transition-transform duration-500 ease-in-out"
+                            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                        >
+                            {pages.map((page, pageIdx) => (
+                                <div key={pageIdx} className="w-full flex-shrink-0 grid grid-cols-4 gap-x-3 gap-y-5 px-1">
+                                    {page.map((category) => {
+                                        const normalizedSlug = category.slug?.toLowerCase().replace(/-/g, ' ') || '';
+                                        const IconComponent = ICON_MAP[normalizedSlug] || ShoppingCart;
+                                        
+                                        return (
+                                            <Link
+                                                key={category._id}
+                                                to={`/search?category=${category.slug}`}
+                                                className="group flex flex-col items-center justify-start gap-2 transition-transform duration-200 cursor-pointer"
+                                                title={category.name}
+                                            >
+                                                <div className="w-[68px] h-[68px] bg-white border border-slate-200 rounded-2xl flex items-center justify-center group-hover:border-blue-500 transition-all duration-300 relative overflow-hidden">
+                                                    {category.image && (
+                                                        <img
+                                                            src={category.image}
+                                                            alt={category.name}
+                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                            onError={(e) => {
+                                                                e.target.style.display = 'none';
+                                                                e.target.parentElement.querySelector('.fallback-icon').style.display = 'flex';
+                                                            }}
+                                                        />
+                                                    )}
+                                                    <div className={`fallback-icon ${category.image ? 'hidden' : 'flex'} w-full h-full items-center justify-center text-slate-700`}>
+                                                        <IconComponent className="w-6 h-6 stroke-[1.5]" />
+                                                    </div>
+                                                </div>
+                                                <h3 className="text-[11px] font-medium text-slate-700 text-center leading-tight max-w-full line-clamp-2">
+                                                    {category.name}
+                                                </h3>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Pagination Dots */}
+                        {pages.length > 1 && (
+                            <div className="flex justify-center gap-1.5 mt-5">
+                                {pages.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setCurrentIndex(idx)}
+                                        className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-blue-600 scale-125' : 'bg-slate-300'}`}
+                                        title={`Page ${idx + 1}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 ) : (
-                    /* Category Grid */
+                    /* Category Grid (Desktop) */
                     <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 xl:grid-cols-[repeat(11,minmax(0,1fr))] gap-x-4 gap-y-6">
                         {displayCategories.map((category) => {
                             const normalizedSlug = category.slug?.toLowerCase().replace(/-/g, ' ') || '';
