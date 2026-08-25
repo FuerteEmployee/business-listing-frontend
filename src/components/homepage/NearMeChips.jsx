@@ -74,7 +74,7 @@ export default function NearMeChips({ selectedCity }) {
                         );
                     })}
                     
-                    <button onClick={() => navigate('/categories')} className="flex-none flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-slate-600 font-bold text-[13px] transition-colors">
+                    <button onClick={() => navigate('/categories')} className="flex-none flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-slate-600 font-bold text-[13px] transition-colors order-first md:order-last">
                         View More <ChevronRight className="w-4 h-4" />
                     </button>
                 </div>
