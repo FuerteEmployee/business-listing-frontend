@@ -733,6 +733,17 @@ export default function BusinessDetail() {
         }
     };
 
+    const handleWhatsApp = () => {
+        if (business?.phone) {
+            logAnalyticsEvent('whatsapp', business._id);
+            const number = phoneNumbers[0] || business.phone;
+            const cleanNumber = number.replace(/\D/g, '');
+            const targetNumber = cleanNumber.startsWith('91') ? cleanNumber : '91' + cleanNumber;
+            const msg = encodeURIComponent(`Hi ${business.name}, I found your listing on Fuerte Developers and would like to inquire about your services.`);
+            window.open(`https://wa.me/${targetNumber}?text=${msg}`, '_blank');
+        }
+    };
+
     const handleEnquire = () => {
         logAnalyticsEvent('enquiry', business._id);
         toast.success(`Enquiry sent for ${business?.name}! We will get back to you soon.`);
