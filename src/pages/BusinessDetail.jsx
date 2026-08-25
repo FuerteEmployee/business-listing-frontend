@@ -887,31 +887,31 @@ export default function BusinessDetail() {
                             {/* Basic Info */}
                             <div className="flex-1 space-y-6">
                                 <div>
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <span className="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider rounded-full border border-blue-100">
+                                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                        <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm md:text-[10px] font-bold uppercase tracking-wider rounded-full border border-blue-100">
                                             {typeof business.category === 'object' && business.category !== null ? business.category.name : (business.category || 'Business')}
                                         </span>
                                         {business.verified && (
-                                            <span className="flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-emerald-100">
+                                            <span className="flex items-center gap-1 text-sm md:text-[10px] bg-emerald-50 text-emerald-700 font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-emerald-100">
                                                 <ShieldCheck className="w-3.5 h-3.5" /> Verified
                                             </span>
                                         )}
                                         {business.isFeatured && (
-                                            <span className="px-3 py-1 bg-orange-50 text-orange-700 text-[10px] font-bold uppercase tracking-wider rounded-full border border-orange-100">
+                                            <span className="px-3 py-1 bg-orange-50 text-orange-700 text-sm md:text-[10px] font-bold uppercase tracking-wider rounded-full border border-orange-100">
                                                 Sponsored
                                             </span>
                                         )}
                                     </div>
-                                    <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-2 flex items-center gap-3 flex-wrap">
+                                    <h1 className="text-[22px] md:text-4xl font-extrabold text-slate-900 leading-tight mb-2 flex items-center gap-3 flex-wrap">
                                         {business.logo && (
                                             <img 
                                                 src={business.logo} 
                                                 alt={`${business.name} logo`} 
-                                                className="w-12 h-12 rounded-xl object-contain border border-slate-200 p-1 shrink-0 bg-white" 
+                                                className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-contain border border-slate-200 p-1 shrink-0 bg-white" 
                                             />
                                         )}
                                         <span>{business.name}</span>
-                                        {business.claimed && <CheckCircle2 className="w-6 h-6 text-blue-500" title="Verified Owner" />}
+                                        {business.claimed && <CheckCircle2 className="w-5 md:w-6 h-5 md:h-6 text-blue-500" title="Verified Owner" />}
                                     </h1>
                                     <div className="flex flex-wrap items-center gap-4">
                                         <div className="flex items-center gap-1 bg-green-600 px-2 py-0.5 rounded text-white text-sm font-bold">
@@ -970,7 +970,7 @@ export default function BusinessDetail() {
                                         </div>
                                         <div className="text-slate-600">
                                             <p className="font-semibold text-slate-900 text-sm">{business.address}</p>
-                                            <p className="text-xs mt-0.5">
+                                            <p className="text-sm md:text-xs mt-0.5">
                                                 {business.area_id?.name && `${business.area_id.name}, `}
                                                 {business.city_id?.name && `${business.city_id.name}, `}
                                                 {business.state_id?.name}
