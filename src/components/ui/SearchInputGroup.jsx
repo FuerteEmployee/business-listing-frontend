@@ -173,26 +173,26 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
     const isHeader = variant === 'header';
 
     return (
-        <div className={`w-full flex flex-col md:flex-row shadow-[0px_2px_15px_rgba(0,0,0,0.06)] border border-slate-300 rounded-lg bg-white focus-within:border-slate-400 focus-within:shadow-[0px_4px_20px_rgba(0,0,0,0.1)] transition-all ${isHeader ? 'h-[44px]' : 'h-[56px]'}`}>
+        <div className={`w-full flex flex-row shadow-[0px_2px_15px_rgba(0,0,0,0.06)] border border-slate-300 rounded-lg bg-white focus-within:border-slate-400 focus-within:shadow-[0px_4px_20px_rgba(0,0,0,0.1)] transition-all ${isHeader ? 'h-[44px]' : 'h-[50px] md:h-[56px]'}`}>
             {/* Location Box */}
-            <div className={`relative flex-none ${isHeader ? 'md:w-[220px]' : 'md:w-[280px]'} h-full bg-slate-50 border-b md:border-b-0 md:border-r border-slate-300 rounded-l-lg`} ref={dropdownRef}>
+            <div className={`relative flex-none ${isHeader ? 'w-[105px] md:w-[220px]' : 'w-[125px] md:w-[280px]'} h-full bg-slate-50 border-r border-slate-300 rounded-l-lg`} ref={dropdownRef}>
                 <button
                     type="button"
                     onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
-                    className="w-full h-full flex items-center px-3 hover:bg-slate-100 transition-colors"
+                    className="w-full h-full flex items-center px-2 md:px-3 hover:bg-slate-100 transition-colors"
                 >
                     {detectingLocation ? (
-                        <Loader2 className={`text-slate-500 animate-spin mr-2 ${isHeader ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
+                        <Loader2 className={`text-slate-500 animate-spin mr-1 md:mr-2 ${isHeader ? 'w-3.5 h-3.5' : 'w-4 h-4 md:w-[18px] md:h-[18px]'}`} />
                     ) : (
-                        <LocateFixed className={`text-blue-500 mr-2 ${isHeader ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
+                        <LocateFixed className={`text-blue-500 mr-1 md:mr-2 ${isHeader ? 'w-3.5 h-3.5' : 'w-4 h-4 md:w-[18px] md:h-[18px]'}`} />
                     )}
-                    <span className={`text-slate-700 font-medium truncate flex-1 text-left ${isHeader ? 'text-[13px]' : 'text-[15px]'}`}>
-                        {detectingLocation ? 'Detecting...' : displayLocationString}
+                    <span className={`text-slate-700 font-bold md:font-medium truncate flex-1 text-left ${isHeader ? 'text-[11px] md:text-[13px]' : 'text-xs md:text-[15px]'}`}>
+                        {detectingLocation ? '...' : displayLocationString}
                     </span>
                 </button>
 
                 {isLocationDropdownOpen && (
-                    <div className="absolute top-full left-0 w-[340px] mt-1 bg-white border border-slate-200 rounded-lg shadow-2xl z-50 overflow-hidden">
+                    <div className="absolute top-full left-0 w-[280px] sm:w-[340px] mt-1 bg-white border border-slate-200 rounded-lg shadow-2xl z-50 overflow-hidden">
                         {/* Detect Location */}
                         <div className="px-4 py-3 border-b border-slate-100">
                             <button
@@ -251,7 +251,7 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
                             setShowSuggestions(false);
                         }, 200);
                     }}
-                    className={`w-full h-full pl-4 ${isHeader ? 'pr-24 text-[13px]' : 'pr-32 text-[15px]'} text-slate-900 placeholder-slate-400 border-none focus:ring-0 outline-none bg-transparent font-medium`}
+                    className={`w-full h-full pl-2 md:pl-4 ${isHeader ? 'pr-16 md:pr-24 text-xs md:text-[13px]' : 'pr-20 md:pr-32 text-xs md:text-[15px]'} text-slate-900 placeholder-slate-400 border-none focus:ring-0 outline-none bg-transparent font-semibold md:font-medium`}
                 />
                 
                 {isListening && (
@@ -266,26 +266,26 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
                     </div>
                 )}
 
-                <div className="absolute right-1.5 flex items-center gap-1.5 z-20">
+                <div className="absolute right-1.5 flex items-center gap-1 md:gap-1.5 z-20">
                     <button
                         onClick={startVoiceSearch}
-                        className={`p-1.5 transition-all duration-300 rounded-full ${isListening ? 'bg-orange-100 text-orange-600 shadow-inner scale-110' : 'text-blue-500 hover:bg-slate-100 hover:text-blue-600'}`}
+                        className={`p-1 md:p-1.5 transition-all duration-300 rounded-full ${isListening ? 'bg-orange-100 text-orange-600 shadow-inner scale-110' : 'text-blue-500 hover:bg-slate-100 hover:text-blue-600'}`}
                         title={isListening ? "Stop Voice Search" : "Voice Search"}
                     >
                         {isListening ? (
                             <div className="relative flex items-center justify-center">
-                                <Mic className={`${isHeader ? 'w-[18px] h-[18px]' : 'w-[22px] h-[22px]'}`} />
+                                <Mic className={`${isHeader ? 'w-[16px] h-[16px] md:w-[18px] md:h-[18px]' : 'w-4 h-4 md:w-[22px] md:h-[22px]'}`} />
                                 <span className="absolute w-[150%] h-[150%] rounded-full border-2 border-orange-500/50 animate-ping"></span>
                             </div>
                         ) : (
-                            <Mic className={`${isHeader ? 'w-[18px] h-[18px]' : 'w-[22px] h-[22px]'}`} />
+                            <Mic className={`${isHeader ? 'w-[16px] h-[16px] md:w-[18px] md:h-[18px]' : 'w-4 h-4 md:w-[22px] md:h-[22px]'}`} />
                         )}
                     </button>
                     <button
                         onClick={handleSearch}
-                        className={`bg-[#ff5722] hover:bg-[#e64a19] text-white rounded shadow flex items-center justify-center transition-colors ${isHeader ? 'w-8 h-8' : 'w-10 h-10'}`}
+                        className={`bg-[#ff5722] hover:bg-[#e64a19] text-white rounded shadow flex items-center justify-center transition-colors ${isHeader ? 'w-7 h-7 md:w-8 md:h-8' : 'w-8 h-8 md:w-10 md:h-10'}`}
                     >
-                        <Search className={`${isHeader ? 'w-4 h-4' : 'w-5 h-5'}`} />
+                        <Search className={`${isHeader ? 'w-3.5 h-3.5 md:w-4 md:h-4' : 'w-4 h-4 md:w-5 md:h-5'}`} />
                     </button>
                 </div>
 
