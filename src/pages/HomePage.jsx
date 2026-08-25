@@ -12,7 +12,6 @@ import FreeListingCTA from '../components/homepage/FreeListingCTA';
 import ReviewsSection from '../components/homepage/ReviewsSection';
 import Footer from '../components/homepage/Footer';
 import NearMeChips from '../components/homepage/NearMeChips';
-import RecentlyViewed from '../components/homepage/RecentlyViewed';
 import { getApiUrl, apiGet } from '../config/api';
 import { getDeviceLocation, findNearestCity } from '../utils/geolocation';
 import { useTheme } from '../context/ThemeContext';
@@ -104,8 +103,7 @@ export default function HomePage() {
                 />
             )}
             
-            {/* Recently Viewed */}
-            {hp.showRecentlyViewed !== false && <RecentlyViewed />}
+
 
             {/* Banners */}
             {hp.showBanners !== false && <HeroBanners />}
