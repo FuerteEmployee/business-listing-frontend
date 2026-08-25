@@ -796,8 +796,8 @@ export default function BusinessDetail() {
             <main className="flex-1">
                 {/* Hero Section */}
                 <div className="bg-white border-b border-slate-200">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
-                        <div className="flex flex-col lg:flex-row gap-10">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-10">
+                        <div className="flex flex-col lg:flex-row gap-5 lg:gap-10">
                             {/* Business Image/Gallery */}
                             <div className="w-full lg:w-[36%] aspect-[16/9] bg-slate-100 rounded-2xl overflow-hidden relative shadow-inner group">
                                 {(() => {
@@ -885,7 +885,7 @@ export default function BusinessDetail() {
                             </div>
 
                             {/* Basic Info */}
-                            <div className="flex-1 space-y-6">
+                            <div className="flex-1 space-y-4 md:space-y-6">
                                 <div>
                                     <div className="flex items-center gap-3 mb-2 flex-wrap">
                                         <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm md:text-[10px] font-bold uppercase tracking-wider rounded-full border border-blue-100">
@@ -1036,26 +1036,26 @@ export default function BusinessDetail() {
                 </div>
 
                 {/* Content Sections */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="flex flex-col lg:flex-row gap-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+                    <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
                         {/* Left Column: Tab Content */}
                         {/* min-w-0: a flex item's intrinsic min-width defaults to its content's
                             width, which overrides child break-words for a long unbroken string -
                             without this the About text pushes the column wide instead of wrapping */}
-                        <div className="lg:col-span-2 flex-1 min-w-0 space-y-8">
+                        <div className="lg:col-span-2 flex-1 min-w-0 space-y-4 md:space-y-8">
                             
                             {activeTab === 'overview' && (
                                 <>
-                                    <section className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
-                                        <h3 className="text-xl font-bold text-slate-900 mb-6">About {business.name}</h3>
+                                    <section className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                                        <h3 className="text-xl font-bold text-slate-900 mb-4 md:mb-6">About {business.name}</h3>
                                         <p className="text-slate-600 leading-relaxed whitespace-pre-wrap break-words text-sm md:text-base">
                                             {business.description || `${business.name} is a leading provider in ${typeof business.category === 'object' ? business.category.name : (business.category || 'their industry')}, known for quality and excellence in ${business.city_id?.name || 'their region'}.`}
                                         </p>
                                     </section>
 
-                                    <section className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
-                                        <h3 className="text-xl font-bold text-slate-900 mb-6">Quick Information</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+                                    <section className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                                        <h3 className="text-xl font-bold text-slate-900 mb-4 md:mb-6">Quick Information</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-y-6 gap-x-12">
                                             {[
                                                 { label: 'Year of Establishment', value: business.yearEstablished || 'N/A' },
                                                 { label: 'Payment Methods', value: business.paymentMethods ? business.paymentMethods.join(', ') : 'N/A' },
@@ -1270,8 +1270,8 @@ export default function BusinessDetail() {
 
                             {activeTab === 'reviews' && (
                                 <section className="space-y-8">
-                                    <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                                        <h3 className="text-xl font-bold text-slate-900 mb-8">User Reviews & Ratings</h3>
+                                    <div className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                                        <h3 className="text-xl font-bold text-slate-900 mb-4 md:mb-8">User Reviews & Ratings</h3>
                                         <div className="flex flex-col md:flex-row gap-12 items-center border-b border-slate-100 pb-12 mb-10">
                                             <div className="text-center px-8 border-r border-slate-100">
                                                 <div className="text-7xl font-black text-slate-900 tracking-tighter leading-none">{business.rating || 0}</div>
@@ -1678,10 +1678,10 @@ export default function BusinessDetail() {
 
                             {activeTab === 'questions' && (
                                 <section className="space-y-8">
-                                    <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                                        <h3 className="text-xl font-bold text-slate-900 mb-8">Questions & Answers</h3>
+                                    <div className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                                        <h3 className="text-xl font-bold text-slate-900 mb-4 md:mb-8">Questions & Answers</h3>
                                         
-                                        <div className="mb-10 p-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl border border-blue-100 shadow-sm relative overflow-hidden">
+                                        <div className="mb-6 md:mb-10 p-4 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl border border-blue-100 shadow-sm relative overflow-hidden">
                                             <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 blur-3xl rounded-full" />
                                             <h4 className="text-base font-black text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-2">
                                                 <MessageSquare className="w-5 h-5 text-blue-600" />
@@ -1755,8 +1755,8 @@ export default function BusinessDetail() {
 
                             {activeTab === 'photos' && (
                                 <section className="space-y-8">
-                                    <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                                        <h3 className="text-xl font-bold text-slate-900 mb-8">Photos & Videos</h3>
+                                    <div className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                                        <h3 className="text-xl font-bold text-slate-900 mb-4 md:mb-8">Photos & Videos</h3>
                                         {business.photos?.length > 0 ? (
                                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                                 {business.photos.map((photo, idx) => (
@@ -1786,8 +1786,8 @@ export default function BusinessDetail() {
 
                             {activeTab === 'review-photos' && (
                                 <section className="space-y-8">
-                                    <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                                        <h3 className="text-xl font-bold text-slate-900 mb-8 italic">Experience Gallery <span className="text-slate-400 font-medium not-italic">({reviews.filter(r => r.images?.length > 0).reduce((acc, r) => acc + r.images.length, 0)} Photos)</span></h3>
+                                    <div className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                                        <h3 className="text-xl font-bold text-slate-900 mb-4 md:mb-8 italic">Experience Gallery <span className="text-slate-400 font-medium not-italic">({reviews.filter(r => r.images?.length > 0).reduce((acc, r) => acc + r.images.length, 0)} Photos)</span></h3>
                                         
                                         {reviews.some(r => r.images?.length > 0) ? (
                                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -1833,10 +1833,10 @@ export default function BusinessDetail() {
                         </div>
 
                         {/* Right Column: Sidebar */}
-                        <div className="lg:w-96 space-y-6 flex-shrink-0">
-                            <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                <h3 className="text-lg font-bold text-slate-900 mb-5">Contact Information</h3>
-                                <div className="space-y-5">
+                        <div className="lg:w-96 space-y-4 md:space-y-6 flex-shrink-0">
+                            <section className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                <h3 className="text-lg font-bold text-slate-900 mb-4 md:mb-5">Contact Information</h3>
+                                <div className="space-y-4 md:space-y-5">
                                     <div className="flex items-center gap-4 group">
                                         <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
                                             <Phone className="w-5 h-5" />
@@ -1868,8 +1868,8 @@ export default function BusinessDetail() {
                             </section>
                             
                             {business.claimed && (
-                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-                                    <div className="flex items-center gap-4 mb-4">
+                                <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                                    <div className="flex items-center gap-4 mb-3 md:mb-4">
                                         <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600">
                                             <ShieldCheck className="w-7 h-7" />
                                         </div>
@@ -1890,10 +1890,10 @@ export default function BusinessDetail() {
                             )}
 
                             {!business.claimed && (
-                                <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-8 rounded-2xl text-white shadow-xl relative overflow-hidden group">
+                                <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-4 md:p-8 rounded-2xl text-white shadow-xl relative overflow-hidden group">
                                     <div className="relative z-10">
                                         <h4 className="text-xl font-bold mb-2">Claim Business</h4>
-                                        <p className="text-indigo-100 text-xs mb-6 opacity-80 leading-relaxed italic">Is this your business? Claim it now to update information and respond to customer reviews.</p>
+                                        <p className="text-indigo-100 text-xs mb-4 md:mb-6 opacity-80 leading-relaxed italic">Is this your business? Claim it now to update information and respond to customer reviews.</p>
                                         
                                         {claimSuccess || business.isClaimPending ? (
                                             <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex items-center gap-3">
@@ -1936,7 +1936,7 @@ export default function BusinessDetail() {
 
                             <button 
                                 onClick={() => setIsReportModalOpen(true)}
-                                className="w-full py-4 text-rose-500 font-bold text-sm bg-white border border-rose-100 rounded-2xl hover:bg-rose-50 transition-colors flex items-center justify-center gap-2"
+                                className="w-full py-3 text-rose-500 font-bold text-sm bg-white border border-rose-100 rounded-2xl hover:bg-rose-50 transition-colors flex items-center justify-center gap-2"
                             >
                                 <Info className="w-4 h-4" />
                                 Report Listing
@@ -1947,16 +1947,16 @@ export default function BusinessDetail() {
 
                 {/* Similar Businesses Section */}
                 {similarBusinesses.length > 0 && (
-                    <div className="bg-slate-50 border-t border-slate-200 py-16">
+                    <div className="bg-slate-50 border-t border-slate-200 py-8 md:py-16">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="flex justify-between items-end mb-10">
+                            <div className="flex justify-between items-end mb-6 md:mb-10">
                                 <div>
                                     <h3 className="text-2xl font-black text-slate-900 mb-2 italic">Similar Discoveries</h3>
                                     <p className="text-slate-500 text-sm font-medium">Explore other popular {business.category_id?.name || 'businesses'} in {business.city_id?.name || 'this area'}.</p>
                                 </div>
                                 <Link to={`/search?category=${business.category_id?.name || ''}`} className="text-orange-600 font-black text-sm flex items-center gap-1 hover:gap-2 transition-all">View All <ArrowRight className="w-4 h-4" /></Link>
                             </div>
-                            <div className="flex md:grid overflow-x-auto md:overflow-visible flex-nowrap md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-4 md:pb-0 no-scrollbar">
+                            <div className="flex md:grid overflow-x-auto md:overflow-visible flex-nowrap md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 pb-4 md:pb-0 no-scrollbar">
                                 {similarBusinesses.map(item => (
                                     <Link key={item._id} to={`/business/${item.slug}`} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all group flex-shrink-0 w-[165px] sm:w-[220px] md:w-auto">
                                         <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
