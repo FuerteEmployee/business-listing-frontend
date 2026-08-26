@@ -422,29 +422,31 @@ export default function AddProduct() {
                                 <label className="block text-sm font-semibold text-slate-700">Product Highlights</label>
                                 <div className="space-y-2">
                                     {highlights.map((hl, idx) => (
-                                        <div key={idx} className="flex items-center gap-3">
-                                            <input 
-                                                type="text"
-                                                value={hl.key}
-                                                onChange={e => {
-                                                    const updated = [...highlights];
-                                                    updated[idx].key = e.target.value;
-                                                    setHighlights(updated);
-                                                }}
-                                                placeholder="Label (e.g. Brand, Material)"
-                                                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
-                                            />
-                                            <input 
-                                                type="text"
-                                                value={hl.value}
-                                                onChange={e => {
-                                                    const updated = [...highlights];
-                                                    updated[idx].value = e.target.value;
-                                                    setHighlights(updated);
-                                                }}
-                                                placeholder="Value (e.g. Samsung, Steel)"
-                                                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
-                                            />
+                                        <div key={idx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pb-3 sm:pb-0 border-b border-slate-100 sm:border-none">
+                                            <div className="flex flex-col sm:flex-row gap-3 flex-1">
+                                                <input 
+                                                    type="text"
+                                                    value={hl.key}
+                                                    onChange={e => {
+                                                        const updated = [...highlights];
+                                                        updated[idx].key = e.target.value;
+                                                        setHighlights(updated);
+                                                    }}
+                                                    placeholder="Label (e.g. Brand, Material)"
+                                                    className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                                />
+                                                <input 
+                                                    type="text"
+                                                    value={hl.value}
+                                                    onChange={e => {
+                                                        const updated = [...highlights];
+                                                        updated[idx].value = e.target.value;
+                                                        setHighlights(updated);
+                                                    }}
+                                                    placeholder="Value (e.g. Samsung, Steel)"
+                                                    className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                                />
+                                            </div>
                                             {highlights.length > 1 && (
                                                 <button
                                                     type="button"
@@ -452,7 +454,7 @@ export default function AddProduct() {
                                                         const updated = highlights.filter((_, i) => i !== idx);
                                                         setHighlights(updated);
                                                     }}
-                                                    className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all flex-shrink-0"
+                                                    className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all flex-shrink-0 self-end sm:self-auto"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
                                                 </button>
@@ -650,29 +652,31 @@ export default function AddProduct() {
 
                                     <div className="space-y-3 pl-4 border-l-2 border-indigo-100">
                                         {(section.items || []).map((item, iIdx) => (
-                                            <div key={iIdx} className="flex items-center gap-3">
-                                                <input
-                                                    type="text"
-                                                    value={item.key || ''}
-                                                    onChange={e => {
-                                                        const updated = [...specifications];
-                                                        updated[sIdx].items[iIdx].key = e.target.value;
-                                                        setSpecifications(updated);
-                                                    }}
-                                                    placeholder="Specification Key (e.g. Width, Display Size)"
-                                                    className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    value={item.value || ''}
-                                                    onChange={e => {
-                                                        const updated = [...specifications];
-                                                        updated[sIdx].items[iIdx].value = e.target.value;
-                                                        setSpecifications(updated);
-                                                    }}
-                                                    placeholder="Specification Value (e.g. 71.5 mm, 16.0 cm)"
-                                                    className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
-                                                />
+                                            <div key={iIdx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pb-3 sm:pb-0 border-b border-slate-100 sm:border-none">
+                                                <div className="flex flex-col sm:flex-row gap-3 flex-1">
+                                                    <input
+                                                        type="text"
+                                                        value={item.key || ''}
+                                                        onChange={e => {
+                                                            const updated = [...specifications];
+                                                            updated[sIdx].items[iIdx].key = e.target.value;
+                                                            setSpecifications(updated);
+                                                        }}
+                                                        placeholder="Key (e.g. Width)"
+                                                        className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={item.value || ''}
+                                                        onChange={e => {
+                                                            const updated = [...specifications];
+                                                            updated[sIdx].items[iIdx].value = e.target.value;
+                                                            setSpecifications(updated);
+                                                        }}
+                                                        placeholder="Value (e.g. 71.5 mm)"
+                                                        className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
+                                                    />
+                                                </div>
                                                 {section.items.length > 1 && (
                                                     <button
                                                         type="button"
@@ -681,7 +685,7 @@ export default function AddProduct() {
                                                             updated[sIdx].items = section.items.filter((_, i) => i !== iIdx);
                                                             setSpecifications(updated);
                                                         }}
-                                                        className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                        className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all flex-shrink-0 self-end sm:self-auto"
                                                         title="Delete Key-Value Pair"
                                                     >
                                                         <Trash2 className="w-4 h-4" />

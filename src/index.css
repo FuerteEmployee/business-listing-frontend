@@ -35,6 +35,28 @@
     -moz-osx-font-smoothing: grayscale;
     @apply bg-slate-50 text-slate-900;
   }
+
+  /* Global typography overrides */
+  h1 {
+    font-size: 30px !important;
+  }
+
+  p {
+    font-size: 14px !important;
+  }
+
+  button {
+    font-size: 14px !important;
+  }
+
+  @media (max-width: 640px) {
+    .tab-button-compact {
+      font-size: 10px !important;
+      padding-left: 0.6rem !important;
+      padding-right: 0.6rem !important;
+      letter-spacing: 0.05em !important;
+    }
+  }
 }
 
 ::-webkit-scrollbar {

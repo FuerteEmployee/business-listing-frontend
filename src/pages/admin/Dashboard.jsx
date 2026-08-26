@@ -316,14 +316,14 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 <div className="xl:col-span-2 bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm">
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between mb-8">
                         <div>
                             <h3 className="text-xl font-black text-slate-800">Platform Momentum</h3>
-                            <div className="flex items-center gap-4 mt-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-1">
                                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
                                     Growth & Revenue Trends
                                 </p>
-                                <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-lg">
+                                <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-lg self-start">
                                     {['7D', '30D', '90D'].map((range) => (
                                         <button
                                             key={range}
@@ -340,7 +340,7 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg text-[10px] font-black text-slate-500 uppercase">
                                 <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
                                 Listings

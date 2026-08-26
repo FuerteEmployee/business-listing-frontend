@@ -581,21 +581,21 @@ export default function LeadsAdmin() {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3 self-end md:self-auto">
+                        <div className="flex items-center gap-3 w-full md:w-auto">
                             <button 
                                 onClick={fetchLeads}
-                                className={`p-3 rounded-2xl border border-slate-100 transition-all ${loading ? 'bg-slate-100 text-indigo-400' : 'bg-slate-50 hover:bg-slate-100 text-slate-500'}`}
+                                className={`p-3 rounded-2xl border border-slate-100 transition-all !hidden sm:!inline-block ${loading ? 'bg-slate-100 text-indigo-400' : 'bg-slate-50 hover:bg-slate-100 text-slate-500'}`}
                                 title="Refresh"
                                 disabled={loading}
                             >
                                 <Zap className={`w-4 h-4 ${loading ? 'animate-pulse' : ''}`} />
                             </button>
-                            <div className="h-10 w-px bg-slate-100 mx-2"></div>
+                            <div className="h-10 w-px bg-slate-100 mx-2 !hidden sm:!block"></div>
                             <Button 
                                 variant="primary" 
                                 leftIcon={Plus} 
                                 onClick={() => setIsAddModalOpen(true)}
-                                className="shadow-lg shadow-indigo-100"
+                                className="shadow-lg shadow-indigo-100 w-full md:w-auto"
                             >
                                 Add Lead
                             </Button>

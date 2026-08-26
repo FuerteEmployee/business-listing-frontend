@@ -64,40 +64,39 @@ export default function ClaimRequests() {
         req.businessEmail?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
-                <p className="text-slate-500 font-medium italic">Loading claim requests...</p>
-            </div>
-        );
-    }
-
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in duration-500">
             <AdminHeader 
                 title="Claim Requests"
                 subtitle="Review and manage business ownership claims"
                 actions={
                     <div className="relative w-full md:w-80">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                         <input 
                             type="text" 
                             placeholder="Search by business or name..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm outline-none"
                         />
                     </div>
                 }
             />
 
-            <div className="grid grid-cols-1 gap-6">
-                {filteredRequests.length === 0 ? (
-                    <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center">
-                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Info className="w-8 h-8 text-slate-300" />
-                        </div>
+            {loading ? (
+                <div className="bg-white border border-slate-200 rounded-3xl p-16 text-center shadow-sm flex flex-col items-center justify-center min-h-[300px]">
+                    <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
+                        <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-500">Loading claim requests...</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-6">
+                    {filteredRequests.length === 0 ? (
+                        <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center">
+                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Info className="w-8 h-8 text-slate-300" />
+                            </div>
                         <p className="text-slate-500 font-medium">No claim requests found.</p>
                     </div>
                 ) : (
@@ -216,6 +215,7 @@ export default function ClaimRequests() {
                     ))
                 )}
             </div>
+            )}
 
             {/* Status Update Modal */}
             <Modal

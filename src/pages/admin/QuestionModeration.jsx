@@ -141,11 +141,11 @@ export default function QuestionModeration() {
             </div>
 
             {/* Filters and Search Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
+            <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-1.5 w-full md:w-auto">
                     <button 
                         onClick={() => setFilterStatus("all")}
-                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
+                        className={`flex-1 sm:flex-initial px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border text-center tab-button-compact ${
                             filterStatus === "all"
                             ? "bg-slate-900 text-white border-slate-900"
                             : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
@@ -155,7 +155,7 @@ export default function QuestionModeration() {
                     </button>
                     <button 
                         onClick={() => setFilterStatus("unanswered")}
-                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
+                        className={`flex-1 sm:flex-initial px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border text-center tab-button-compact ${
                             filterStatus === "unanswered"
                             ? "bg-slate-900 text-white border-slate-900"
                             : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
@@ -165,7 +165,7 @@ export default function QuestionModeration() {
                     </button>
                     <button 
                         onClick={() => setFilterStatus("answered")}
-                        className={`px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
+                        className={`flex-1 sm:flex-initial px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border text-center tab-button-compact ${
                             filterStatus === "answered"
                             ? "bg-slate-900 text-white border-slate-900"
                             : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
@@ -176,11 +176,11 @@ export default function QuestionModeration() {
                 </div>
 
                 <div className="relative w-full md:w-80">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                     <input 
                         type="text" 
                         placeholder="Search target listings/users..." 
-                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-all shadow-sm"
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-400 transition-all shadow-inner outline-none"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />

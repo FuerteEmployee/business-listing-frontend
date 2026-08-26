@@ -487,7 +487,7 @@ export default function Listings() {
                 title="Business Listings"
                 subtitle="Moderate and manage business presence across the platform"
                 actions={
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-3 w-full lg:w-auto lg:flex-row lg:items-center">
                         <input 
                             type="file" 
                             ref={fileInputRef} 
@@ -495,25 +495,63 @@ export default function Listings() {
                             accept=".csv, .xlsx, .xls"
                             className="hidden"
                         />
-                        <Button variant="primary" leftIcon={Building2} onClick={() => navigate('/admin/listings/create')}>Create Listing</Button>
-                        <Button
-                            variant="outline"
-                            leftIcon={Upload}
-                            onClick={() => fileInputRef.current?.click()}
-                            isLoading={importLoading}
+                        <Button 
+                            variant="primary" 
+                            leftIcon={Building2} 
+                            onClick={() => navigate('/admin/listings/create')}
+                            className="w-full lg:w-auto"
                         >
-                            Import CSV
+                            Create Listing
                         </Button>
-                        <Button variant="outline" leftIcon={FileSpreadsheet} onClick={downloadImportTemplate}>Download Template</Button>
-                        <Button variant="ghost" leftIcon={Info} onClick={() => setFormatModalOpen(true)}>Format</Button>
-                        <Button variant="outline" leftIcon={Download} onClick={handleExportCSV}>Export CSV</Button>
+                        
+                        <div className="grid grid-cols-2 gap-2 w-full lg:flex lg:w-auto lg:items-center lg:gap-3">
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                leftIcon={Download} 
+                                onClick={handleExportCSV}
+                                className="w-full lg:w-auto"
+                            >
+                                Export CSV
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fileInputRef.current?.click()}
+                                isLoading={importLoading}
+                                leftIcon={Upload}
+                                className="w-full lg:w-auto"
+                            >
+                                Import CSV
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm"
+                                leftIcon={FileSpreadsheet} 
+                                onClick={downloadImportTemplate}
+                                className="w-full lg:w-auto text-ellipsis overflow-hidden whitespace-nowrap"
+                            >
+                                Template
+                            </Button>
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                leftIcon={Info} 
+                                onClick={() => setFormatModalOpen(true)}
+                                className="w-full lg:w-auto"
+                            >
+                                Format
+                            </Button>
+                        </div>
                         {selectedListings.length > 0 && (
-                            <div className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-2xl animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-2xl animate-in fade-in slide-in-from-right-4 duration-300 w-full lg:w-auto justify-between lg:justify-start">
                                 <span className="text-xs font-bold uppercase tracking-widest mr-2">{selectedListings.length} Selected</span>
-                                <div className="h-4 w-[1px] bg-slate-700 mr-2"></div>
-                                <Button variant="ghost" className="h-8 px-2 text-emerald-400 hover:text-emerald-300" onClick={() => handleBulkAction('approve')}>Approve</Button>
-                                <Button variant="ghost" className="h-8 px-2 text-rose-400 hover:text-rose-300" onClick={() => handleBulkAction('reject')}>Reject</Button>
-                                <Button variant="ghost" className="h-8 px-2 text-slate-400 hover:text-white" onClick={() => handleBulkAction('delete')}>Delete</Button>
+                                <div className="h-4 w-[1px] bg-slate-700 mr-2 hidden lg:block"></div>
+                                <div className="flex gap-2">
+                                    <Button variant="ghost" className="h-8 px-2 text-emerald-400 hover:text-emerald-300" onClick={() => handleBulkAction('approve')}>Approve</Button>
+                                    <Button variant="ghost" className="h-8 px-2 text-rose-400 hover:text-rose-300" onClick={() => handleBulkAction('reject')}>Reject</Button>
+                                    <Button variant="ghost" className="h-8 px-2 text-slate-400 hover:text-white" onClick={() => handleBulkAction('delete')}>Delete</Button>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -562,8 +600,8 @@ export default function Listings() {
                     />
                 </div>
                 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                    <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-slate-50">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                          <div className="flex items-center gap-2">
                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">From</span>
                              <input type="date" value={filters.dateStart} onChange={e => setFilters(prev => ({ ...prev, dateStart: e.target.value }))} className="text-xs font-semibold text-slate-600 bg-slate-50 border-none rounded-lg p-1 focus:ring-0" />
@@ -574,7 +612,7 @@ export default function Listings() {
                          </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
                         <Button variant="outline" size="sm" onClick={() => setFilters({ search: "", status: "", category: "", city: "", plan: "", dateStart: "", dateEnd: "" })}>Reset</Button>
                         <Button variant="primary" size="sm" onClick={() => fetchListings(1)}>Apply Filters</Button>
                     </div>

@@ -299,7 +299,7 @@ export default function AdminUserManager() {
 
             {/* Filter Section */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-4 items-end">
-                <div className="flex-1 min-w-[300px]">
+                <div className="w-full sm:flex-1 sm:min-w-[250px]">
                     <FormInput 
                         label="Identity Search"
                         placeholder="Search by name or email..."
@@ -322,7 +322,7 @@ export default function AdminUserManager() {
                 </div>
                 <Button 
                     variant="outline" 
-                    className="h-[46px] w-[46px]"
+                    className="h-[46px] w-[46px] !hidden sm:!inline-flex"
                     size="icon"
                     onClick={() => setFilters({ search: '', role: '', status: '' })}
                 >

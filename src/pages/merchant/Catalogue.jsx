@@ -259,17 +259,17 @@ export default function Catalogue() {
                     </h1>
                     <p className="text-slate-500 font-medium mt-1">Organize and manage your service offerings across your brands.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <select 
                         value={selectedCompany}
                         onChange={(e) => setSelectedCompany(e.target.value)}
-                        className="bg-white border border-slate-200 rounded-2xl px-6 py-4 font-bold text-sm shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all"
+                        className="bg-white border border-slate-200 rounded-2xl px-6 py-4 font-bold text-sm shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all w-full sm:w-auto"
                     >
                         {companies.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
                     </select>
                     <button 
                         onClick={() => { setEditingService(null); setIsAddModalOpen(true); }}
-                        className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all active:scale-95 flex items-center gap-2"
+                        className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
                     >
                         <Plus className="w-4 h-4" />
                         Add Service

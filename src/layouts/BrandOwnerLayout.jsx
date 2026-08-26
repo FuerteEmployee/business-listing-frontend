@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
     LayoutDashboard, FolderTree, Building2, LogOut, MapPin,
     Package, Wrench, Megaphone, BarChart3, CreditCard, LifeBuoy, Star,
-    AlertTriangle, X, Bell, UserCircle, Settings, History
+    AlertTriangle, X, Bell, UserCircle, Settings, History, Menu
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
@@ -17,7 +17,13 @@ export default function BrandOwnerLayout() {
     const { hiddenFeatures = [] } = useConfig();
     const { settings } = useTheme();
     const navigate = useNavigate();
+    const location = useLocation();
     const [subWarning, setSubWarning] = useState(null);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+    useEffect(() => {
+        setIsMobileOpen(false);
+    }, [location.pathname]);
 
     useEffect(() => {
         const checkSubscription = async () => {
@@ -81,14 +87,32 @@ export default function BrandOwnerLayout() {
 
     return (
         <div className="flex h-screen bg-slate-50 overflow-hidden">
+            {/* Mobile Sidebar Backdrop */}
+            {isMobileOpen && (
+                <div 
+                    className="fixed inset-0 bg-slate-900/40 z-40 md:hidden"
+                    onClick={() => setIsMobileOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className="w-64 bg-white border-r border-slate-200 flex flex-col hidden md:flex">
-                <div className="h-16 flex items-center px-6 border-b border-slate-200">
+            <aside className={`
+                fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out
+                md:static md:translate-x-0
+                ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+            `}>
+                <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200">
                     <Logo 
                         settings={settings} 
                         className="h-8" 
                         imgClassName="max-w-[180px] object-contain"
                     />
+                    <button 
+                        onClick={() => setIsMobileOpen(false)}
+                        className="p-1.5 text-slate-500 rounded-lg hover:bg-slate-100 md:hidden"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto py-4">
@@ -126,6 +150,12 @@ export default function BrandOwnerLayout() {
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Top Header */}
                 <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10">
+                    <button 
+                        onClick={() => setIsMobileOpen(true)}
+                        className="p-2 -ml-2 text-slate-600 rounded-lg hover:bg-slate-100 md:hidden"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
                     <h1 className="text-xl font-semibold text-slate-800 hidden md:block">Brand Management</h1>
                     <div className="flex items-center gap-4 ml-auto">
                         <NotificationBell />

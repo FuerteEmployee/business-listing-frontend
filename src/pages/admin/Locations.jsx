@@ -23,8 +23,8 @@ export default function Locations() {
             />
 
             {/* Navigation Tabs */}
-            <div className="border-b border-slate-200">
-                <nav className="-mb-px flex space-x-8">
+            <div className="border-b border-slate-200 overflow-x-auto custom-scrollbar">
+                <nav className="-mb-px flex space-x-8 min-w-max pb-1">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}

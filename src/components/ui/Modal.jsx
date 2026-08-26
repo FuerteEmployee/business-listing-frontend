@@ -62,19 +62,19 @@ export const Modal = ({
                 aria-labelledby="modal-title"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-8 border-b border-slate-50">
-                    <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between p-8 border-b border-slate-50 gap-4">
+                    <div className="flex items-center gap-4 flex-1 min-w-0 pr-8">
                         {Icon && (
-                            <div className="p-3 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-100">
+                            <div className="p-3 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-100 shrink-0">
                                 <Icon className="w-6 h-6 text-white" />
                             </div>
                         )}
-                        <div>
-                            <h3 id="modal-title" className="text-2xl font-black text-slate-800 tracking-tight leading-none">
+                        <div className="min-w-0">
+                            <h3 id="modal-title" className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight leading-snug truncate sm:whitespace-normal">
                                 {title}
                             </h3>
                             {subtitle && (
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 leading-none">
+                                <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1.5 leading-tight truncate sm:whitespace-normal">
                                     {subtitle}
                                 </p>
                             )}
@@ -83,7 +83,7 @@ export const Modal = ({
                     {showClose && (
                         <button 
                             onClick={onClose}
-                            className="p-2.5 bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-2xl transition-all active:scale-95 absolute right-8 top-8"
+                            className="p-2.5 bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-2xl transition-all active:scale-95 shrink-0"
                             aria-label="Close modal"
                         >
                             <X className="w-5 h-5" />

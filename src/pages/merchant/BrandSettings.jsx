@@ -373,14 +373,14 @@ export default function BrandSettings() {
 
             <Tabs defaultValue="profile">
                 {/* Unified Tab Selector */}
-                <TabsList className="bg-white/50 p-1.5 rounded-2xl border border-slate-200 shadow-sm max-w-fit mb-8 mb:mx-auto lg:mx-0">
-                    <TabsTrigger value="profile" className="rounded-xl px-6 py-2.5 flex items-center gap-2">
+                <TabsList className="bg-white/50 p-1.5 rounded-2xl border border-slate-200 shadow-sm max-w-full overflow-x-auto flex flex-nowrap whitespace-nowrap no-scrollbar mb-8 justify-start items-center gap-1.5">
+                    <TabsTrigger value="profile" className="rounded-xl px-6 py-2.5 flex items-center gap-2 flex-shrink-0">
                         <User className="w-4 h-4" /> Owner Profile
                     </TabsTrigger>
-                    <TabsTrigger value="brand" className="rounded-xl px-6 py-2.5 flex items-center gap-2">
+                    <TabsTrigger value="brand" className="rounded-xl px-6 py-2.5 flex items-center gap-2 flex-shrink-0">
                         <Palette className="w-4 h-4" /> Brand Customization
                     </TabsTrigger>
-                    <TabsTrigger value="sessions" className="rounded-xl px-6 py-2.5 flex items-center gap-2">
+                    <TabsTrigger value="sessions" className="rounded-xl px-6 py-2.5 flex items-center gap-2 flex-shrink-0">
                         <Shield className="w-4 h-4" /> Active Sessions
                     </TabsTrigger>
                 </TabsList>

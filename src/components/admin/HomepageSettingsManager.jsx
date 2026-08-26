@@ -367,27 +367,29 @@ export default function HomepageSettingsManager({ settings, onSave }) {
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Toolbar */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100 overflow-x-auto no-scrollbar max-w-full">
-                    {[
-                        { id: 'layout', label: 'Section Visibility', icon: Layout },
-                        { id: 'search', label: 'Search & Tagline', icon: Search },
-                        { id: 'discovery', label: 'Discovery Chips', icon: Zap },
-                        { id: 'sliders', label: 'Hero Banners', icon: ImageIcon },
-                        { id: 'footer', label: 'Footer Content', icon: Layout },
-                    ].map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setSubTab(tab.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-                                subTab === tab.id 
-                                ? 'bg-white text-indigo-600 shadow-sm border border-slate-100' 
-                                : 'text-slate-400 hover:text-slate-600'
-                            }`}
-                        >
-                            <tab.icon className="w-3.5 h-3.5" />
-                            {tab.label}
-                        </button>
-                    ))}
+                <div className="bg-slate-50 p-1 rounded-xl border border-slate-100 overflow-x-auto no-scrollbar max-w-full">
+                    <div className="flex min-w-max">
+                        {[
+                            { id: 'layout', label: 'Section Visibility', icon: Layout },
+                            { id: 'search', label: 'Search & Tagline', icon: Search },
+                            { id: 'discovery', label: 'Discovery Chips', icon: Zap },
+                            { id: 'sliders', label: 'Hero Banners', icon: ImageIcon },
+                            { id: 'footer', label: 'Footer Content', icon: Layout },
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setSubTab(tab.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                                    subTab === tab.id 
+                                    ? 'bg-white text-indigo-600 shadow-sm border border-slate-100' 
+                                    : 'text-slate-400 hover:text-slate-600'
+                                }`}
+                            >
+                                <tab.icon className="w-3.5 h-3.5" />
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
                 
                 <Button 
@@ -458,7 +460,7 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                 {subTab === 'search' && (
                     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500 max-w-3xl">
                         {/* Hero Tagline Section */}
-                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+                        <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
                             <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
                                 <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                                     <Search className="w-5 h-5" />
@@ -503,9 +505,9 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                                 )}
                             </div>
                             
-                            <div className="pt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
+                            <div className="pt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 overflow-hidden">
                                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">Live Preview:</div>
-                                <h1 className="text-xl font-bold text-slate-800 truncate">
+                                <h1 className="text-base sm:text-xl font-bold text-slate-800 truncate">
                                     {localSettings.heroTaglinePrefix}
                                     <span className="text-blue-600 mx-1">{localSettings.countSource === 'dynamic' ? 'Loading...' : localSettings.fixedCount || 'N/A'}</span>
                                     {localSettings.heroTaglineSuffix}
@@ -514,7 +516,7 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                         </div>
 
                         {/* Search Input Customization */}
-                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+                        <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
                             <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
                                 <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600">
                                     <Layout className="w-5 h-5" />
@@ -584,8 +586,8 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                 {/* 3. DISCOVERY CHIPS */}
                 {subTab === 'discovery' && (
                     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 max-w-4xl">
-                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-                            <div className="flex items-center justify-between border-b border-slate-50 pb-6">
+                        <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-50 pb-6">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 text-xl">
                                         <Zap className="w-5 h-5 transition-transform group-hover:scale-125" />
@@ -600,6 +602,7 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                                     icon={Plus} 
                                     onClick={() => openChipModal()}
                                     size="sm"
+                                    className="w-full sm:w-auto"
                                 >
                                     Initialize Chip
                                 </Button>
@@ -662,7 +665,7 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                 {subTab === 'footer' && (
                     <div className="space-y-6 max-w-4xl animate-in slide-in-from-bottom-4 duration-500">
                         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                            <div className="flex justify-between items-center mb-6">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
                                 <div>
                                     <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-1">Footer Sections</h3>
                                     <p className="text-xs text-slate-500">Manage the navigation columns displayed in the footer.</p>
@@ -672,6 +675,7 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                                     size="sm" 
                                     icon={Plus}
                                     onClick={addFooterSection}
+                                    className="w-full sm:w-auto"
                                 >
                                     Add Section
                                 </Button>
@@ -710,16 +714,21 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                                         
                                         <div className="space-y-2">
                                             {section.links?.map((link, idx) => (
-                                                <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-100 hover:border-slate-200 transition-colors group">
-                                                    <span className="text-xs font-bold text-slate-500">{link.label}</span>
-                                                    <span className="text-xs text-slate-400">→ {link.url}</span>
-                                                    <div className="ml-auto flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div key={idx} className="flex items-center justify-between gap-2 p-2 bg-white rounded-lg border border-slate-100 hover:border-slate-200 transition-colors group min-w-0">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0 flex-1">
+                                                        <span className="text-xs font-bold text-slate-500 shrink-0">{link.label}</span>
+                                                        <span className="text-xs text-slate-400 hidden sm:inline">→</span>
+                                                        <span className="text-[10px] sm:text-xs text-slate-400 truncate max-w-[170px] sm:max-w-[280px] block" title={link.url}>
+                                                            {link.url}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex gap-1 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                                         <button 
                                                             onClick={() => openFooterEditModal(section.id, idx)}
-                                                            className="p-1 text-indigo-600 hover:bg-indigo-50 rounded"
+                                                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg"
                                                             title="Edit link"
                                                         >
-                                                            <Edit2 className="w-3 h-3" />
+                                                            <Edit2 className="w-3.5 h-3.5" />
                                                         </button>
                                                         <button 
                                                             onClick={() => {
@@ -728,10 +737,10 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                                                                 newSections[sectionIdx].links = newSections[sectionIdx].links.filter((l, i) => i !== idx);
                                                                 setLocalSettings(prev => ({ ...prev, footerSections: newSections }));
                                                             }}
-                                                            className="p-1 text-rose-500 hover:bg-rose-50 rounded"
+                                                            className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg"
                                                             title="Delete link"
                                                         >
-                                                            <Trash2 className="w-3 h-3" />
+                                                            <Trash2 className="w-3.5 h-3.5" />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -843,9 +852,9 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                 subtitle="Specify category mapping and visual aesthetic"
                 icon={Zap}
                 footer={
-                    <div className="flex justify-end gap-3 w-full">
-                        <Button variant="ghost" onClick={() => setIsChipModalOpen(false)}>Cancel Protocol</Button>
-                        <Button variant="primary" onClick={saveChip} icon={CheckCircle}>Confirm Chip</Button>
+                    <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 w-full">
+                        <Button variant="ghost" onClick={() => setIsChipModalOpen(false)} className="w-full sm:w-auto">Cancel Protocol</Button>
+                        <Button variant="primary" onClick={saveChip} icon={CheckCircle} className="w-full sm:w-auto">Confirm Chip</Button>
                     </div>
                 }
             >
@@ -926,9 +935,9 @@ export default function HomepageSettingsManager({ settings, onSave }) {
                 subtitle={editingLinkIdx !== null ? "Update the link label and URL" : "Update the section header"}
                 icon={Edit2}
                 footer={
-                    <div className="flex justify-end gap-3 w-full">
-                        <Button variant="ghost" onClick={() => setIsFooterEditOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={saveFooterEdit} icon={CheckCircle}>Save Changes</Button>
+                    <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 w-full">
+                        <Button variant="ghost" onClick={() => setIsFooterEditOpen(false)} className="w-full sm:w-auto">Cancel</Button>
+                        <Button variant="primary" onClick={saveFooterEdit} icon={CheckCircle} className="w-full sm:w-auto">Save Changes</Button>
                     </div>
                 }
             >

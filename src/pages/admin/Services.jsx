@@ -164,42 +164,43 @@ export default function Services() {
             <AdminHeader 
                 title={isBrandOwner ? 'Service Catalog' : 'Global Service Offerings'}
                 subtitle={isBrandOwner ? `Manage your ${services.length} service offerings, availability, and pricing models.` : `Monitoring ${services.length} service offerings across all registered platform entities.`}
-                actions={
-                    <Button 
-                        variant="primary"
-                        leftIcon={Plus}
-                        onClick={() => navigate(`${basePath}/services/add`)}
-                    >
-                        New Service
-                    </Button>
-                }
             />
 
             {/* Filter Hub */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="relative w-full md:w-96">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+                <div className="relative w-full lg:w-96">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                     <input
                         type="text"
                         placeholder="Search service name or listing..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400 transition-all shadow-inner"
+                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-400 transition-all shadow-inner outline-none"
                     />
                 </div>
-                <div className="flex items-center gap-3 self-end md:self-auto">
-                    <button 
-                        onClick={fetchServices}
-                        className={`p-3 rounded-2xl border border-slate-100 transition-all ${loading ? 'bg-slate-100 text-indigo-400' : 'bg-slate-50 hover:bg-slate-100 text-slate-500'}`}
-                        title="Refresh"
-                        disabled={loading}
+                <div className="flex flex-wrap items-center justify-between gap-4 w-full lg:w-auto">
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={fetchServices}
+                            className={`p-3 rounded-2xl border border-slate-100 transition-all !hidden sm:!inline-block ${loading ? 'bg-slate-100 text-indigo-400' : 'bg-slate-50 hover:bg-slate-100 text-slate-500'}`}
+                            title="Refresh"
+                            disabled={loading}
+                        >
+                            <Zap className={`w-4 h-4 ${loading ? 'animate-pulse' : ''}`} />
+                        </button>
+                        <div className="h-10 w-px bg-slate-100 mx-2 !hidden sm:!block"></div>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Sync status: Optimal
+                        </p>
+                    </div>
+                    <Button 
+                        variant="primary"
+                        leftIcon={Plus}
+                        onClick={() => navigate(`${basePath}/services/add`)}
+                        className="flex-1 sm:flex-initial"
                     >
-                        <Zap className={`w-4 h-4 ${loading ? 'animate-pulse' : ''}`} />
-                    </button>
-                    <div className="h-10 w-px bg-slate-100 mx-2"></div>
-                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                        Sync status: Optimal
-                    </p>
+                        New Service
+                    </Button>
                 </div>
             </div>
 
