@@ -1959,7 +1959,21 @@ export default function BusinessDetail() {
                                 {similarBusinesses.map(item => (
                                     <Link key={item._id} to={`/business/${item.slug}`} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all group flex-shrink-0 w-[165px] sm:w-[220px] md:w-auto">
                                         <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
-                                            <img src={item.image || item.photos?.[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                            {(() => {
+                                                const displayImg = item.coverPhotoUrl || item.photos?.[0] || item.logo || null;
+                                                const isLogoOnly = !item.coverPhotoUrl && !item.photos?.[0] && item.logo;
+                                                return displayImg ? (
+                                                    <img 
+                                                        src={displayImg} 
+                                                        alt={item.name}
+                                                        className={`w-full h-full group-hover:scale-105 transition-transform duration-500 ${isLogoOnly ? 'object-contain p-4 bg-white' : 'object-cover'}`} 
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-orange-50">
+                                                        <ImageIcon className="w-10 h-10 text-orange-200" />
+                                                    </div>
+                                                );
+                                            })()}
                                             <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded text-[8px] md:text-[10px] font-black text-green-600 flex items-center gap-0.5 md:gap-1">
                                                 <Star className="w-2.5 h-2.5 md:w-3 md:h-3 fill-current" /> {item.rating}
                                             </div>
