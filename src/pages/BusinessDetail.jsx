@@ -801,8 +801,8 @@ export default function BusinessDetail() {
                             {/* Business Image/Gallery */}
                             <div className="w-full lg:w-[36%] aspect-[16/9] bg-slate-100 rounded-2xl overflow-hidden relative shadow-inner group">
                                 {(() => {
-                                    const displayImg = business.image || business.logo || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
-                                    const isLogoOnly = !business.image && business.logo;
+                                    const displayImg = business.coverPhotoUrl || business.photos?.[0] || business.galleryPhotos?.[0] || business.logo || null;
+                                    const isLogoOnly = !business.coverPhotoUrl && !business.photos?.[0] && !business.galleryPhotos?.[0] && business.logo;
                                     return displayImg ? (
                                         <img 
                                             src={displayImg} 

@@ -45,6 +45,7 @@ export default function ProfileEditor() {
         tags: [],
         image: null,
         logo: null,
+        coverPhotoUrl: null,
         images: [],
         videos: [],
         serviceRadius: 0,
@@ -89,7 +90,8 @@ export default function ProfileEditor() {
                         languages: Array.isArray(company.languages) ? company.languages : [],
                         paymentMethods: Array.isArray(company.paymentMethods) ? company.paymentMethods : [],
                         tags: Array.isArray(company.tags) ? company.tags : [],
-                        businessHours: normalizeBusinessHours(company.businessHours)
+                        businessHours: normalizeBusinessHours(company.businessHours),
+                        coverPhotoUrl: company.coverPhotoUrl || null
                     });
                     setImagePreview(company.image || null);
                 } else {
@@ -452,6 +454,7 @@ export default function ProfileEditor() {
                             images={formData.images} 
                             videos={formData.videos} 
                             logo={formData.logo}
+                            coverPhotoUrl={formData.coverPhotoUrl}
                             onUpdate={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
                         />
                     </TabsContent>

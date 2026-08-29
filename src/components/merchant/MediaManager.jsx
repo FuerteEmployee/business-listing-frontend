@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Upload, X, Star, MoveLeft, MoveRight, Video, Trash2, CheckCircle, Clock, AlertCircle, Plus, Image as ImageIcon } from "lucide-react";
 import { API_BASE_URL, fetchWithAuth } from "../../config/api";
 
-export default function MediaManager({ images = [], videos = [], logo = null, onUpdate }) {
+export default function MediaManager({ images = [], videos = [], logo = null, coverPhotoUrl = null, onUpdate }) {
     const [gallery, setGallery] = useState(images);
     const [videoList, setVideoList] = useState(videos);
     const [businessLogo, setBusinessLogo] = useState(logo);
+    const [coverPhoto, setCoverPhoto] = useState(coverPhotoUrl);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [videoInput, setVideoInput] = useState("");
@@ -14,7 +15,8 @@ export default function MediaManager({ images = [], videos = [], logo = null, on
         setGallery(images || []);
         setVideoList(videos || []);
         setBusinessLogo(logo);
-    }, [images, videos, logo]);
+        setCoverPhoto(coverPhotoUrl);
+    }, [images, videos, logo, coverPhotoUrl]);
 
     const handleFileUpload = async (e, type = 'gallery') => {
         const files = Array.from(e.target.files);
@@ -66,6 +68,9 @@ export default function MediaManager({ images = [], videos = [], logo = null, on
             if (type === 'logo') {
                 setBusinessLogo(uploadedUrls[0]);
                 onUpdate({ logo: uploadedUrls[0] });
+            } else if (type === 'cover') {
+                setCoverPhoto(uploadedUrls[0]);
+                onUpdate({ coverPhotoUrl: uploadedUrls[0] });
             } else {
                 const newImages = [
                     ...gallery,
@@ -182,6 +187,37 @@ export default function MediaManager({ images = [], videos = [], logo = null, on
                                 className="text-[10px] font-black uppercase text-rose-500 hover:text-rose-600 bg-rose-50 px-3 py-1.5 rounded-full transition-colors"
                             >
                                 Remove Logo
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Cover Photo Section */}
+            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden relative group">
+                <div className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="relative">
+                        <div className="w-56 aspect-[16/9] rounded-2xl border-4 border-indigo-50 overflow-hidden bg-slate-100 flex items-center justify-center shadow-inner">
+                            {coverPhoto ? (
+                                <img src={coverPhoto} alt="Cover Photo" className="w-full h-full object-cover" />
+                            ) : (
+                                <Plus className="w-10 h-10 text-slate-300" />
+                            )}
+                        </div>
+                        <label className="absolute bottom-0 right-0 p-2 bg-indigo-600 rounded-full text-white shadow-lg cursor-pointer hover:bg-indigo-700 transition-transform hover:scale-110 active:scale-95">
+                            <Plus className="w-4 h-4" />
+                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'cover')} />
+                        </label>
+                    </div>
+                    <div className="flex-1 text-center md:text-left">
+                        <h3 className="text-lg font-bold text-slate-800 mb-1">Cover Photo</h3>
+                        <p className="text-sm text-slate-500 mb-4">This is the main photo shown at the top of your business listing page. Recommended size: 1200x675px (16:9).</p>
+                        {coverPhoto && (
+                            <button 
+                                onClick={() => { setCoverPhoto(null); onUpdate({ coverPhotoUrl: null }); }}
+                                className="text-[10px] font-black uppercase text-rose-500 hover:text-rose-600 bg-rose-50 px-3 py-1.5 rounded-full transition-colors"
+                            >
+                                REMOVE COVER PHOTO
                             </button>
                         )}
                     </div>
