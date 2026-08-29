@@ -1960,8 +1960,8 @@ export default function BusinessDetail() {
                                     <Link key={item._id} to={`/business/${item.slug}`} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all group flex-shrink-0 w-[165px] sm:w-[220px] md:w-auto">
                                         <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
                                             {(() => {
-                                                const displayImg = item.coverPhotoUrl || item.photos?.[0] || item.logo || null;
-                                                const isLogoOnly = !item.coverPhotoUrl && !item.photos?.[0] && item.logo;
+                                                const displayImg = item.coverPhotoUrl || item.photos?.[0] || (item.images?.[0] ? (typeof item.images[0] === 'object' ? item.images[0].url : item.images[0]) : null) || item.logo || null;
+                                                const isLogoOnly = !item.coverPhotoUrl && !item.photos?.[0] && !item.images?.[0] && item.logo;
                                                 return displayImg ? (
                                                     <img 
                                                         src={displayImg} 
