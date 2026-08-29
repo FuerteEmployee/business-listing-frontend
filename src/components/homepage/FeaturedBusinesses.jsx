@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getApiUrl, apiGet } from '../../config/api';
 import SectionError from '../ui/SectionError';
-import { Star, MapPin, ArrowRight } from 'lucide-react';
+import { Star, MapPin, ArrowRight, Image as ImageIcon } from 'lucide-react';
 
 export default function FeaturedBusinesses() {
     const [businesses, setBusinesses] = useState([]);
@@ -86,12 +86,13 @@ export default function FeaturedBusinesses() {
                                 {/* Business Image */}
                                 <div className="relative aspect-[16/9] bg-gradient-to-br from-orange-100 to-orange-50 overflow-hidden">
                                     {(() => {
-                                        const displayImg = business.image || business.logo || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
+                                        const displayImg = business.coverPhotoUrl || business.photos?.[0] || business.galleryPhotos?.[0] || business.logo || null;
+                                        const isLogoOnly = !business.coverPhotoUrl && !business.photos?.[0] && !business.galleryPhotos?.[0] && business.logo;
                                         return displayImg ? (
                                             <img
                                                 src={displayImg}
                                                 alt={business.name}
-                                                className={`w-full h-full group-hover:scale-105 transition-transform duration-200 ${!business.image && business.logo ? 'object-contain p-4 bg-white' : 'object-cover'}`}
+                                                className={`w-full h-full group-hover:scale-105 transition-transform duration-200 ${isLogoOnly ? 'object-contain p-4 bg-white' : 'object-cover'}`}
                                                 onError={e => {
                                                     e.target.style.display = 'none';
                                                     e.target.parentElement.querySelector('.fallback-initial')?.classList.remove('hidden');
@@ -99,10 +100,8 @@ export default function FeaturedBusinesses() {
                                             />
                                         ) : null;
                                     })()}
-                                    <div className={`fallback-initial ${(business.image || business.logo || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null)) ? 'hidden' : ''} w-full h-full flex items-center justify-center`}>
-                                        <span className="text-2xl font-bold text-orange-400">
-                                            {business.name.charAt(0)}
-                                        </span>
+                                    <div className={`fallback-initial ${(business.coverPhotoUrl || business.photos?.[0] || business.galleryPhotos?.[0] || business.logo) ? 'hidden' : ''} w-full h-full flex items-center justify-center bg-orange-50`}>
+                                        <ImageIcon className="w-10 h-10 text-orange-200" />
                                     </div>
                                 </div>
 

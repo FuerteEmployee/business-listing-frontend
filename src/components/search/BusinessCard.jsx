@@ -1,4 +1,4 @@
-import { Star, MapPin, Phone, MessageSquare, ChevronLeft, ChevronRight, ShieldCheck, Wifi, Search, Bookmark, Tag, X, Heart } from 'lucide-react';
+import { Star, MapPin, Phone, MessageSquare, ChevronLeft, ChevronRight, ShieldCheck, Wifi, Search, Bookmark, Tag, X, Heart, Image as ImageIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../ui/badge';
@@ -89,11 +89,21 @@ export default function BusinessCard({ business, onEnquiryClick }) {
         .split(/[\/,]/)
         .map(num => num.trim())
         .filter(Boolean);
-    const fallbackImage = business.logo || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
-    const images = (business.images && business.images.length > 0)
-        ? business.images.map(img => typeof img === 'object' ? img.url : img)
-        : [business.image || fallbackImage];
-    const isLogoOnly = images.length === 1 && images[0] === business.logo;
+    const uploadedPhotos = [];
+    if (business.coverPhotoUrl) {
+        uploadedPhotos.push(business.coverPhotoUrl);
+    }
+    if (business.photos && business.photos.length > 0) {
+        uploadedPhotos.push(...business.photos);
+    } else if (business.images && business.images.length > 0) {
+        uploadedPhotos.push(...business.images.map(img => typeof img === 'object' ? img.url : img));
+    }
+
+    const images = uploadedPhotos.length > 0 
+        ? uploadedPhotos 
+        : (business.logo ? [business.logo] : []);
+
+    const isLogoOnly = uploadedPhotos.length === 0 && !!business.logo;
 
     return (
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow group flex flex-col md:flex-row min-h-fit md:min-h-[260px]">
@@ -111,7 +121,7 @@ export default function BusinessCard({ business, onEnquiryClick }) {
                     />
                 ) : null}
                 <div className={`fallback-initial ${images[currentImageIndex] ? 'hidden' : ''} w-full h-full flex items-center justify-center bg-orange-50`}>
-                    <span className="text-4xl font-bold text-orange-200">{business.name?.charAt(0)}</span>
+                    <ImageIcon className="w-12 h-12 text-orange-200" />
                 </div>
                 
                 {/* Image Navigation Overlay */}
