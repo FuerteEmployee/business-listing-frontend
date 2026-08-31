@@ -1,16 +1,26 @@
-import { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, CheckCircle, XCircle, Globe, MapPin, Settings, Star, Trash, Save } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, Search, Edit2, Trash2, CheckCircle, XCircle, Globe, MapPin, Settings, Star, Trash, Save, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getApiUrl } from '../../../config/api';
 import FormInput from '../../../components/ui/FormInput';
 import FormSelect from '../../../components/ui/FormSelect';
 import Modal from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/button';
 
+const PAGE_SIZE = 50;
+
 export default function CitiesAdmin() {
     const [cities, setCities] = useState([]);
     const [states, setStates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Search, the state filter and paging are all resolved server-side: this table
+    // backs ~7.9k cities, and the previous "fetch every row then filter in the
+    // browser" approach shipped the whole collection with two levels of populate.
+    const [stateFilter, setStateFilter] = useState('');
+    const [page, setPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [pages, setPages] = useState(1);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -29,26 +39,56 @@ export default function CitiesAdmin() {
     const [boundaryJSON, setBoundaryJSON] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // The state list is small (36 for India) and drives both the filter and the modal,
+    // so it loads once rather than on every page change.
     useEffect(() => {
-        fetchData();
+        const controller = new AbortController();
+        const token = localStorage.getItem('token');
+        fetch(getApiUrl('/locations/admin/states?limit=200'), {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal
+        })
+            .then(r => r.json())
+            .then(res => setStates(Array.isArray(res.data) ? res.data : []))
+            .catch(err => { if (err.name !== 'AbortError') console.error('Error fetching states:', err); });
+        return () => controller.abort();
     }, []);
 
-    const fetchData = async () => {
+    const fetchCities = useCallback(async (signal) => {
         try {
+            setLoading(true);
             const token = localStorage.getItem('token');
-            const headers = { Authorization: `Bearer ${token}` };
-            const [citiesRes, statesRes] = await Promise.all([
-                fetch(getApiUrl('/locations/admin/cities'), { headers }).then(r => r.json()),
-                fetch(getApiUrl('/locations/admin/states'), { headers }).then(r => r.json())
-            ]);
-            setCities(citiesRes.data);
-            setStates(statesRes.data);
-            setLoading(false);
+            const qs = new URLSearchParams({ page, limit: PAGE_SIZE });
+            if (searchTerm.trim()) qs.set('search', searchTerm.trim());
+            if (stateFilter) qs.set('state_id', stateFilter);
+
+            const res = await fetch(getApiUrl(`/locations/admin/cities?${qs}`), {
+                headers: { Authorization: `Bearer ${token}` },
+                signal
+            });
+            const data = await res.json();
+            if (signal?.aborted) return;
+            setCities(Array.isArray(data.data) ? data.data : []);
+            setTotal(data.total ?? 0);
+            setPages(data.pages ?? 1);
         } catch (error) {
-            console.error('Error fetching data:', error);
-            setLoading(false);
+            if (error.name !== 'AbortError') console.error('Error fetching cities:', error);
+        } finally {
+            if (!signal?.aborted) setLoading(false);
         }
-    };
+    }, [page, searchTerm, stateFilter]);
+
+    // Debounced so typing in the search box does not fire a request per keystroke.
+    useEffect(() => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => fetchCities(controller.signal), searchTerm ? 300 : 0);
+        return () => { clearTimeout(timer); controller.abort(); };
+    }, [fetchCities, searchTerm]);
+
+    // Any filter change invalidates the current page number.
+    useEffect(() => { setPage(1); }, [searchTerm, stateFilter]);
+
+    const refresh = () => fetchCities();
 
     const handleOpenModal = (city = null) => {
         if (city) {
@@ -127,7 +167,7 @@ export default function CitiesAdmin() {
                 alert(data.msg || 'Error saving city');
                 return;
             }
-            fetchData();
+            refresh();
             handleCloseModal();
         } catch (error) {
             alert('Error saving city');
@@ -150,7 +190,7 @@ export default function CitiesAdmin() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.ok) {
-                fetchData();
+                refresh();
                 setIsDeleteModalOpen(false);
                 setCityToDelete(null);
             }
@@ -159,31 +199,42 @@ export default function CitiesAdmin() {
         }
     };
 
-    const filteredCities = cities.filter(c =>
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c.state_id?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c.state_id?.country_id?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
-    ).sort((a,b) => (b.isPopular - a.isPopular) || (a.order - b.order));
-
-    if (loading) return <div className="p-8 text-center text-slate-500">Loading cities...</div>;
+    // Search, filtering, sorting and paging all happen on the server now, so the rows
+    // arrive ready to render. Note the page is no longer blanked while loading - with a
+    // debounced search that would flash on every keystroke.
+    const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+    const rangeEnd = Math.min(page * PAGE_SIZE, total);
 
     return (
         <div>
             {/* Toolbar */}
-            <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="relative max-w-md w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Search cities, states, or countries..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-                    />
+            <div className="p-4 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 w-full lg:max-w-2xl">
+                    <div className="relative w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search cities, states, or countries..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                        />
+                        {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500 animate-spin" />}
+                    </div>
+                    <select
+                        value={stateFilter}
+                        onChange={(e) => setStateFilter(e.target.value)}
+                        className="sm:w-56 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    >
+                        <option value="">All States</option>
+                        {states.map(s => (
+                            <option key={s._id} value={s._id}>{s.name}</option>
+                        ))}
+                    </select>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shrink-0"
                 >
                     <Plus className="w-4 h-4" />
                     Add City
@@ -203,7 +254,7 @@ export default function CitiesAdmin() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                        {filteredCities.map((city) => (
+                        {cities.map((city) => (
                             <tr key={city._id} className="hover:bg-slate-50/50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
@@ -240,7 +291,7 @@ export default function CitiesAdmin() {
                                 </td>
                             </tr>
                         ))}
-                        {filteredCities.length === 0 && (
+                        {cities.length === 0 && !loading && (
                             <tr>
                                 <td colSpan="5" className="px-6 py-8 text-center text-slate-500 content-center">
                                     No cities found matching your search.
@@ -249,6 +300,38 @@ export default function CitiesAdmin() {
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Server-side pager */}
+            <div className="p-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p className="text-xs text-slate-500 font-medium">
+                    {total === 0
+                        ? 'No cities'
+                        : `Showing ${rangeStart}–${rangeEnd} of ${total.toLocaleString()} cities`}
+                </p>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page <= 1 || loading}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                        Previous
+                    </button>
+                    <span className="text-xs text-slate-500 font-medium px-2">
+                        Page {page} of {pages}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => setPage(p => Math.min(pages, p + 1))}
+                        disabled={page >= pages || loading}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Next
+                        <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                </div>
             </div>
 
             {/* Advanced Multi-step Modal */}

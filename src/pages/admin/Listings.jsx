@@ -18,10 +18,33 @@ import { Spinner, Skeleton } from "../../components/ui/Loading";
 import Alert from "../../components/ui/Alert";
 import FormInput from "../../components/ui/FormInput";
 import FormSelect from "../../components/ui/FormSelect";
+import AsyncSelect from "../../components/ui/AsyncSelect";
 import { FormTextarea } from "../../components/ui/FormTextarea";
 
 // Custom/Legacy UI
 import StatusBadge from "../../components/admin/StatusBadge";
+
+const CITY_PAGE_SIZE = 50;
+
+// The city filter pages through the server rather than holding all ~7.9k rows.
+const fetchCityPage = async (search, page, signal) => {
+    const qs = new URLSearchParams({ page, limit: CITY_PAGE_SIZE });
+    if (search) qs.set('search', search);
+    const res = await fetchWithAuth(`${API_BASE_URL}/locations/cities?${qs}`, { signal });
+    const data = await res.json();
+    if (!data.success || !Array.isArray(data.data)) return { options: [], hasMore: false, total: 0 };
+    return {
+        options: data.data.map(c => ({ value: c._id, label: c.name })),
+        hasMore: Boolean(data.hasMore),
+        total: data.total ?? data.data.length
+    };
+};
+
+const resolveCityLabel = async (id, signal) => {
+    const res = await fetchWithAuth(`${API_BASE_URL}/locations/cities?ids=${id}&limit=1`, { signal });
+    const data = await res.json();
+    return data?.data?.[0]?.name || '';
+};
 
 export default function Listings() {
     const navigate = useNavigate();
@@ -60,7 +83,6 @@ export default function Listings() {
 
     const [actionLoading, setActionLoading] = useState(false);
     const [categories, setCategories] = useState([]);
-    const [cities, setCities] = useState([]);
     const [plans, setPlans] = useState([]);
 
     // Spreadsheet Import State and Handlers
@@ -175,19 +197,17 @@ export default function Listings() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [cRes, ciRes, pRes] = await Promise.all([
+                // Cities are no longer preloaded here - the city filter searches the
+                // server as you type, so this page no longer pulls a city list it can
+                // only ever show a fraction of.
+                const [cRes, pRes] = await Promise.all([
                     fetchWithAuth(`${API_BASE_URL}/categories`),
-                    fetchWithAuth(`${API_BASE_URL}/locations/cities`),
                     fetchWithAuth(`${API_BASE_URL}/plans`)
                 ]);
 
                 if (cRes.ok) {
                     const data = await cRes.json();
                     setCategories(data.categories || data || []);
-                }
-                if (ciRes.ok) {
-                    const data = await ciRes.json();
-                    setCities(data.data || data.cities || (Array.isArray(data) ? data : []));
                 }
                 if (pRes.ok) {
                     const data = await pRes.json();
@@ -590,13 +610,17 @@ export default function Listings() {
                         value={filters.category}
                         onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
                     />
-                    <FormSelect
-                        options={[
-                            { label: "All Cities", value: "" },
-                            ...(Array.isArray(cities) ? cities : []).map(c => ({ label: c.name, value: c._id }))
-                        ]}
+                    {/* Server-searched: there are ~7.9k cities, so this filter cannot
+                        hold the full list the way the category filter does. */}
+                    <AsyncSelect
+                        name="city"
                         value={filters.city}
                         onChange={(e) => setFilters(prev => ({ ...prev, city: e.target.value }))}
+                        fetchPage={fetchCityPage}
+                        resolveLabel={resolveCityLabel}
+                        placeholder="All Cities"
+                        searchPlaceholder="Type a city name..."
+                        emptyMessage="No cities found"
                     />
                 </div>
                 

@@ -123,26 +123,29 @@ export default function LocationSelector({
                     const cityName = addr.city || addr.town || addr.village || addr.suburb || addr.municipality;
                     const areaName = addr.suburb || addr.neighbourhood || addr.road;
 
-                    // Fetch IDs from our API matching these names
-                    const countriesRes = await fetch(getApiUrl('/locations/countries'));
-                    const countriesData = await countriesRes.json();
-                    const country = countriesData.data.find(c => c.name.toLowerCase() === countryName.toLowerCase());
+                    // Resolve our own ids for those names. The location endpoints are
+                    // paginated, so each lookup passes `search` and lets the server do
+                    // the narrowing - matching client-side over a full list stopped
+                    // being possible once Cities grew past a single page.
+                    const lookupByName = async (path, name, params = {}) => {
+                        if (!name) return null;
+                        const qs = new URLSearchParams({ ...params, search: name, limit: 25 });
+                        const res = await fetch(getApiUrl(`${path}?${qs}`));
+                        const data = await res.json();
+                        if (!data.success || !Array.isArray(data.data)) return null;
+                        return data.data.find(d => d.name.toLowerCase() === name.toLowerCase()) || null;
+                    };
 
+                    const country = await lookupByName('/locations/countries', countryName);
                     let countryId = country?._id || '';
                     let stateId = '';
                     let cityId = '';
 
                     if (countryId) {
-                        const statesRes = await fetch(getApiUrl(`/locations/states?country_id=${countryId}`));
-                        const statesData = await statesRes.json();
-                        const state = statesData.data.find(s => s.name.toLowerCase() === stateName.toLowerCase());
-
+                        const state = await lookupByName('/locations/states', stateName, { country_id: countryId });
                         if (state) {
                             stateId = state._id;
-                            const citiesRes = await fetch(getApiUrl(`/locations/cities?state_id=${stateId}`));
-                            const citiesData = await citiesRes.json();
-                            const city = citiesData.data.find(c => c.name.toLowerCase() === cityName.toLowerCase());
-
+                            const city = await lookupByName('/locations/cities', cityName, { state_id: stateId });
                             if (city) {
                                 cityId = city._id;
                             }

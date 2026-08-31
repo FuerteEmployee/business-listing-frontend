@@ -28,7 +28,7 @@ export default function StatesAdmin() {
             const token = localStorage.getItem('token');
             const headers = { Authorization: `Bearer ${token}` };
             const [statesRes, countriesRes] = await Promise.all([
-                fetch(getApiUrl('/locations/admin/states'), { headers }).then(r => r.json()),
+                fetch(getApiUrl('/locations/admin/states?limit=200'), { headers }).then(r => r.json()),
                 fetch(getApiUrl('/locations/admin/countries'), { headers }).then(r => r.json())
             ]);
             setStates(statesRes.data);
