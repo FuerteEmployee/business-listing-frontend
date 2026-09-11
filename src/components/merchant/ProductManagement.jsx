@@ -291,7 +291,7 @@ const ProductManagement = () => {
                                             {product.sku}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            ₹{product.price}
+                                            {product.price ? `₹${Number(product.price).toLocaleString()}` : <span className="text-gray-400 italic">Not set</span>}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {product.stock}

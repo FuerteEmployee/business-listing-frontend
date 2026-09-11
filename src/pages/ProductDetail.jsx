@@ -302,16 +302,20 @@ export default function ProductDetail() {
                             )}
 
                              <div className="flex items-center gap-3 mb-6">
-                                {product.discountPrice && Number(product.discountPrice) < Number(product.price) ? (
-                                    <>
-                                        <span className="text-3xl font-black text-slate-900">₹ {Number(product.discountPrice).toLocaleString()}</span>
-                                        <span className="text-lg text-slate-400 line-through font-medium">₹ {Number(product.price).toLocaleString()}</span>
-                                        <span className="bg-rose-100 text-rose-700 text-xs font-black px-2 py-1 rounded-lg border border-rose-200">
-                                            ↓{Math.round(((Number(product.price) - Number(product.discountPrice)) / Number(product.price)) * 100)}%
-                                        </span>
-                                    </>
+                                {product.price ? (
+                                    product.discountPrice && Number(product.discountPrice) < Number(product.price) ? (
+                                        <>
+                                            <span className="text-3xl font-black text-slate-900">₹ {Number(product.discountPrice).toLocaleString()}</span>
+                                            <span className="text-lg text-slate-400 line-through font-medium">₹ {Number(product.price).toLocaleString()}</span>
+                                            <span className="bg-rose-100 text-rose-700 text-xs font-black px-2 py-1 rounded-lg border border-rose-200">
+                                                ↓{Math.round(((Number(product.price) - Number(product.discountPrice)) / Number(product.price)) * 100)}%
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <span className="text-2xl font-bold text-slate-900">₹ {Number(product.price).toLocaleString()}</span>
+                                    )
                                 ) : (
-                                    <span className="text-2xl font-bold text-slate-900">₹ {product.price?.toLocaleString()}</span>
+                                    <span className="text-lg font-semibold text-slate-500">Price on request</span>
                                 )}
                                 <div className="group relative">
                                     <Info className="w-4 h-4 text-slate-300 cursor-help" />
@@ -603,7 +607,9 @@ export default function ProductDetail() {
                                                     </div>
                                                 )}
                                                 
-                                                <p className="text-lg font-bold text-slate-900 mt-auto">₹ {p.price?.toLocaleString()}</p>
+                                                <p className="text-lg font-bold text-slate-900 mt-auto">
+                                                    {p.price ? `₹ ${Number(p.price).toLocaleString()}` : 'Price on request'}
+                                                </p>
                                             </div>
                                         </Link>
                                     ))}

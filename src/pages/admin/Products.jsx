@@ -121,8 +121,8 @@ export default function Products() {
             label: 'Pricing',
             sortable: true,
             render: (price) => (
-                <div className="font-black text-indigo-600">
-                    ₹{Number(price).toLocaleString()}
+                <div className={price ? "font-black text-indigo-600" : "text-slate-400 italic text-xs"}>
+                    {price ? `₹${Number(price).toLocaleString()}` : 'Not set'}
                 </div>
             )
         },

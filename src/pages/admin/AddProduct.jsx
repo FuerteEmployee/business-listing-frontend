@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CheckCircle2, XCircle, ArrowLeft, Upload, X, Trash2 } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowLeft, Upload, X, Trash2, Check } from 'lucide-react';
 import { getApiUrl, fetchWithAuth } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 import FormInput from '../../components/ui/FormInput';
@@ -45,6 +45,7 @@ export default function AddProduct() {
     ]);
     const [customWarrantyNumber, setCustomWarrantyNumber] = useState('');
     const [customWarrantyUnit, setCustomWarrantyUnit] = useState('Months');
+    const [hasPrice, setHasPrice] = useState(false);
 
     // Image State
     const [existingImageUrls, setExistingImageUrls] = useState([]);
@@ -98,6 +99,7 @@ export default function AddProduct() {
                     metaTitle: data.metaTitle || '',
                     metaDescription: data.metaDescription || ''
                 });
+                setHasPrice(data.price !== undefined && data.price !== null);
                 let initialHighlights = [{ key: '', value: '' }];
                 if (data.highlights) {
                     try {
@@ -247,7 +249,7 @@ export default function AddProduct() {
         if (!formData.name.trim()) newErrors.name = 'Product name is required';
         if (!formData.listingId) newErrors.listingId = 'Parent business listing is required';
         if (!formData.categoryId) newErrors.categoryId = 'Category is required';
-        if (!formData.price || Number(formData.price) <= 0) newErrors.price = 'Price must be greater than 0';
+        if (hasPrice && (!formData.price || Number(formData.price) <= 0)) newErrors.price = 'Price must be greater than 0';
         if (!formData.sku.trim()) newErrors.sku = 'SKU is required';
         if (existingImageUrls.length === 0 && newImages.length === 0) newErrors.images = 'At least 1 product image is required';
         
@@ -314,8 +316,8 @@ export default function AddProduct() {
                 specifications: activeSpecs,
                 status: submitStatus,
                 images: uploadedImageUrls,
-                price: Number(formData.price),
-                discountPrice: formData.discountPrice ? Number(formData.discountPrice) : null,
+                price: hasPrice && formData.price ? Number(formData.price) : null,
+                discountPrice: hasPrice && formData.discountPrice ? Number(formData.discountPrice) : null,
                 stock: Number(formData.stock)
             };
 
@@ -717,21 +719,46 @@ export default function AddProduct() {
                             <h2 className="font-semibold text-slate-800">Pricing</h2>
                         </div>
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormInput 
-                                label="Base Price"
-                                type="number"
-                                value={formData.price}
-                                onChange={e => setFormData({...formData, price: e.target.value})}
-                                required
-                                error={errors.price}
-                                placeholder="0.00"
-                            />
-                            <FormInput 
+                            <div className="w-full">
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <label className="text-sm font-medium text-slate-700 flex items-center gap-2 cursor-pointer select-none">
+                                        <input
+                                            type="checkbox"
+                                            checked={hasPrice}
+                                            onChange={(e) => {
+                                                const checked = e.target.checked;
+                                                setHasPrice(checked);
+                                                if (!checked) {
+                                                    setFormData(prev => ({ ...prev, price: '', discountPrice: '' }));
+                                                    setErrors(prev => ({ ...prev, price: undefined }));
+                                                }
+                                            }}
+                                            className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+                                        />
+                                        <span>Base Price</span>
+                                        {hasPrice && <span className="text-rose-500 font-bold">*</span>}
+                                    </label>
+                                    <span className="text-xs text-slate-400 font-medium">
+                                        {hasPrice ? 'Active' : 'Optional (Disabled)'}
+                                    </span>
+                                </div>
+                                <FormInput
+                                    type="number"
+                                    value={formData.price}
+                                    onChange={e => setFormData({...formData, price: e.target.value})}
+                                    required={hasPrice}
+                                    disabled={!hasPrice}
+                                    error={errors.price}
+                                    placeholder={hasPrice ? "Enter base price (e.g. 999)" : "Check box to enable price"}
+                                />
+                            </div>
+                            <FormInput
                                 label="Discount Price"
                                 type="number"
                                 value={formData.discountPrice}
                                 onChange={e => setFormData({...formData, discountPrice: e.target.value})}
-                                placeholder="0.00"
+                                disabled={!hasPrice}
+                                placeholder={hasPrice ? "Enter discount price" : "Check box to enable price"}
                             />
                         </div>
                     </div>
