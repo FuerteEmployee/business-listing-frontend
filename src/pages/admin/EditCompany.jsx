@@ -38,6 +38,7 @@ export default function EditCompany() {
         status: "Pending", claimed: false, verified: false, 
         verificationStatus: "Not Verified", isFeatured: false, 
         manualRank: 0, image: null, owner: "",
+        yearEstablished: "", gstPan: "", gstNumber: "",
         businessHours: emptyBusinessHours()
     };
     
@@ -91,6 +92,9 @@ export default function EditCompany() {
                         manualRank: company.manualRank || 0,
                         image: company.image || null,
                         owner: company.owner?._id || company.owner || "",
+                        yearEstablished: company.yearEstablished !== undefined && company.yearEstablished !== null ? String(company.yearEstablished) : "",
+                        gstPan: company.gstPan || company.gstNumber || "",
+                        gstNumber: company.gstNumber || company.gstPan || "",
                         businessHours: normalizeBusinessHours(company.businessHours)
                     });
                     setImagePreview(company.image || null);
@@ -263,6 +267,25 @@ export default function EditCompany() {
                             placeholder="Tell customers about this business..."
                             className="h-40"
                         />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormInput 
+                                label="Year of Establishment"
+                                name="yearEstablished"
+                                type="text"
+                                value={formData.yearEstablished}
+                                onChange={handleInputChange}
+                                placeholder="e.g. 2010"
+                            />
+                            <FormInput 
+                                label="GST Number"
+                                name="gstPan"
+                                type="text"
+                                value={formData.gstPan}
+                                onChange={handleInputChange}
+                                placeholder="e.g. 24AAAAA0000A1Z5"
+                            />
+                        </div>
                     </div>
 
                     <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">

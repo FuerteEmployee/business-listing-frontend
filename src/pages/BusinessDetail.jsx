@@ -1058,7 +1058,7 @@ export default function BusinessDetail() {
                                             {[
                                                 { label: 'Year of Establishment', value: business.yearEstablished || 'N/A' },
                                                 { label: 'Payment Methods', value: business.paymentMethods ? business.paymentMethods.join(', ') : 'N/A' },
-                                                { label: 'GST Number', value: business.gstNumber || 'N/A' },
+                                                { label: 'GST Number', value: business.gstPan || business.gstNumber || 'N/A' },
                                                 { label: 'Business Type', value: business.businessType ? business.businessType.join(', ') : 'N/A' },
                                                 { 
                                                     label: 'Timings', 

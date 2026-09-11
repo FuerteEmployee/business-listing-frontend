@@ -39,7 +39,7 @@ export default function ProfileEditor() {
         country_id: "", state_id: "", city_id: "", area_id: "",
         address: "", latitude: null, longitude: null,
         phone: "", email: "", website: "", bookingUrl: "",
-        yearEstablished: "", employeeCount: "",
+        yearEstablished: "", employeeCount: "", gstPan: "", gstNumber: "",
         languages: [], paymentMethods: [],
         socialLinks: { facebook: "", instagram: "", twitter: "", linkedin: "", youtube: "" },
         tags: [],
@@ -86,6 +86,9 @@ export default function ProfileEditor() {
                         state_id: company.state_id?._id || company.state_id || "",
                         city_id: company.city_id?._id || company.city_id || "",
                         area_id: company.area_id?._id || company.area_id || "",
+                        gstPan: company.gstPan || company.gstNumber || "",
+                        gstNumber: company.gstNumber || company.gstPan || "",
+                        yearEstablished: company.yearEstablished !== undefined && company.yearEstablished !== null ? String(company.yearEstablished) : "",
                         socialLinks: { ...defaultFormState.socialLinks, ...(company.socialLinks || {}) },
                         languages: Array.isArray(company.languages) ? company.languages : [],
                         paymentMethods: Array.isArray(company.paymentMethods) ? company.paymentMethods : [],
@@ -122,7 +125,12 @@ export default function ProfileEditor() {
         }
 
         const finalValue = type === 'checkbox' ? checked : value;
-        setFormData(prev => ({ ...prev, [name]: finalValue }));
+        setFormData(prev => {
+            const updated = { ...prev, [name]: finalValue };
+            if (name === 'gstPan') updated.gstNumber = finalValue;
+            if (name === 'gstNumber') updated.gstPan = finalValue;
+            return updated;
+        });
     };
 
     const handleArrayToggle = (field, value) => {
@@ -320,7 +328,8 @@ export default function ProfileEditor() {
                                 <div className="md:col-span-2">
                                     <FormTextarea label="Business Description" name="description" value={formData.description} onChange={handleInputChange} className="min-h-[160px]" placeholder="Describe your business, services, and history..." />
                                 </div>
-                                <FormInput label="Year Established" name="yearEstablished" type="number" value={formData.yearEstablished} onChange={handleInputChange} placeholder="e.g. 2010" />
+                                <FormInput label="Year of Establishment" name="yearEstablished" type="text" value={formData.yearEstablished} onChange={handleInputChange} placeholder="e.g. 2010" />
+                                <FormInput label="GST Number" name="gstPan" type="text" value={formData.gstPan} onChange={handleInputChange} placeholder="e.g. 24AAAAA0000A1Z5" />
                                 <FormInput label="Number of Employees" name="employeeCount" type="number" value={formData.employeeCount} onChange={handleInputChange} placeholder="e.g. 50" />
                             </div>
                         </div>
