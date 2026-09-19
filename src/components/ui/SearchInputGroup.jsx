@@ -11,7 +11,6 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
     const [searchQuery, setSearchQuery] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [isInputFocused, setIsInputFocused] = useState(false);
     const [detectingLocation, setDetectingLocation] = useState(false);
 
     // Custom Dropdown State
@@ -19,6 +18,10 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
     const [displayLocationString, setDisplayLocationString] = useState('Select City');
     const [activeCityId, setActiveCityId] = useState('');
     const dropdownRef = useRef(null);
+    const searchBoxRef = useRef(null);
+    // Picking a suggestion writes its text into searchQuery, which would otherwise
+    // retrigger the debounce below and reopen the dropdown after we navigate away.
+    const suppressSuggestionsRef = useRef(false);
 
     const navigate = useNavigate();
 
@@ -33,6 +36,9 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsLocationDropdownOpen(false);
+            }
+            if (searchBoxRef.current && !searchBoxRef.current.contains(event.target)) {
+                setShowSuggestions(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -116,6 +122,10 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
 
     useEffect(() => {
         const timer = setTimeout(async () => {
+            if (suppressSuggestionsRef.current) {
+                suppressSuggestionsRef.current = false;
+                return;
+            }
             if (searchQuery.length > 1) {
                 try {
                     const res = await fetch(`${getApiUrl('companies')}/autocomplete?q=${encodeURIComponent(searchQuery)}`);
@@ -233,24 +243,14 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
             </div>
 
             {/* Search Box */}
-            <div className="relative flex-1 h-full bg-white flex items-center rounded-r-lg">
+            <div ref={searchBoxRef} className="relative flex-1 h-full bg-white flex items-center rounded-r-lg">
                 <input
                     type="text"
                     placeholder={isListening ? "Listening..." : (hp.searchPlaceholder || "Search for Spa & Salons")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    onFocus={() => {
-                        setIsInputFocused(true);
-                        setShowSuggestions(true);
-                    }}
-                    onBlur={() => {
-                        // Delay to allow clicking suggestions
-                        setTimeout(() => {
-                            setIsInputFocused(false);
-                            setShowSuggestions(false);
-                        }, 200);
-                    }}
+                    onFocus={() => setShowSuggestions(true)}
                     className={`w-full h-full pl-2 md:pl-4 ${isHeader ? 'pr-16 md:pr-24 text-xs md:text-[13px]' : 'pr-20 md:pr-32 text-xs md:text-[15px]'} text-slate-900 placeholder-slate-400 border-none focus:ring-0 outline-none bg-transparent font-semibold md:font-medium`}
                 />
                 
@@ -291,14 +291,19 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
 
                 {/* Suggestions Dropdown */}
                 {showSuggestions && (
-                    <div className="absolute top-full left-0 right-0 mt-3 bg-white border border-slate-200 rounded-lg shadow-2xl z-50 overflow-hidden max-h-80 overflow-y-auto">
+                    <div
+                        onMouseDown={(e) => e.preventDefault()}
+                        className="absolute top-full left-0 right-0 mt-3 bg-white border border-slate-200 rounded-lg shadow-2xl z-50 overflow-hidden max-h-80 overflow-y-auto"
+                    >
                         {searchQuery.length > 0 ? (
                             suggestions.map((suggestion, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => {
                                         const text = typeof suggestion === 'string' ? suggestion : suggestion.text;
+                                        suppressSuggestionsRef.current = true;
                                         setSearchQuery(text);
+                                        setShowSuggestions(false);
                                         if (suggestion.type === 'Business' && suggestion.slug) {
                                             navigate(`/business/${suggestion.slug}`);
                                         } else if (suggestion.type === 'Category' && suggestion.slug) {
@@ -334,7 +339,9 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
                                     <button
                                         key={idx}
                                         onClick={() => {
+                                            suppressSuggestionsRef.current = true;
                                             setSearchQuery(term);
+                                            setShowSuggestions(false);
                                             handleQuickSearch(term);
                                         }}
                                         className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 group transition-colors"

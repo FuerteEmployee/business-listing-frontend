@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Star, MapPin, Phone, Globe, Mail, Clock, ShieldCheck, Share2, Heart, Bookmark, MessageSquare, ChevronRight, Info, Image as ImageIcon, Loader2, CheckCircle2, ArrowRight, ThumbsUp, ThumbsDown, Flag, Filter, Upload, X, Camera, Maximize2, Search, Settings, Menu, MessageCircle, Map, CheckCircle } from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Mail, Clock, ShieldCheck, Share2, Heart, Bookmark, MessageSquare, ChevronRight, Info, Image as ImageIcon, Loader2, CheckCircle2, ArrowRight, ThumbsUp, ThumbsDown, Flag, Filter, Upload, X, Camera, Maximize2, Search, Settings, Menu, MessageCircle, Map, CheckCircle, Instagram, Facebook, Twitter, Linkedin, Youtube, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, fetchWithAuth, getApiUrl } from '../config/api';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +9,41 @@ import Footer from '../components/homepage/Footer';
 import { logAnalyticsEvent } from '../utils/tracker';
 import { isBusinessOpen, formatDayHours } from '../utils/businessHours';
 import EnquiryModal from '../components/ui/EnquiryModal';
+
+// Contact fields are free text: merchants type "www.example.com", "@handle" or a full
+// URL interchangeably, so normalise before using any of them as an href.
+const toExternalUrl = (value) => {
+    const raw = (value || '').trim();
+    if (!raw) return null;
+    if (/^https?:\/\//i.test(raw)) return raw;
+    return `https://${raw.replace(/^\/+/, '')}`;
+};
+
+const stripProtocol = (value) =>
+    (value || '').trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+
+const SOCIAL_PLATFORMS = [
+    { key: 'instagram', label: 'Instagram', Icon: Instagram, base: 'https://instagram.com/', className: 'bg-pink-50 text-pink-600 hover:bg-pink-600 hover:text-white' },
+    { key: 'facebook', label: 'Facebook', Icon: Facebook, base: 'https://facebook.com/', className: 'bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white' },
+    { key: 'twitter', label: 'X / Twitter', Icon: Twitter, base: 'https://x.com/', className: 'bg-slate-100 text-slate-800 hover:bg-slate-900 hover:text-white' },
+    { key: 'linkedin', label: 'LinkedIn', Icon: Linkedin, base: 'https://linkedin.com/company/', className: 'bg-sky-50 text-sky-700 hover:bg-sky-700 hover:text-white' },
+    { key: 'youtube', label: 'YouTube', Icon: Youtube, base: 'https://youtube.com/', className: 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white' },
+];
+
+// A bare "@handle" gets the platform's base URL prepended; anything containing a
+// slash or a leading www. is already a full link the merchant pasted in.
+const getSocialLinks = (socialLinks) => {
+    if (!socialLinks) return [];
+    return SOCIAL_PLATFORMS
+        .map((platform) => {
+            const raw = (socialLinks[platform.key] || '').trim();
+            if (!raw) return null;
+            const isUrl = /^https?:\/\//i.test(raw) || raw.includes('/') || /^www\./i.test(raw);
+            const url = isUrl ? toExternalUrl(raw) : `${platform.base}${raw.replace(/^@/, '')}`;
+            return { ...platform, url };
+        })
+        .filter(Boolean);
+};
 
 export default function BusinessDetail() {
     const { slug } = useParams();
@@ -787,6 +822,9 @@ export default function BusinessDetail() {
     const reviewCount = business.reviewCount || 0;
     const offerings = [...(business.products || []), ...(business.services || [])];
     const displayImg = business.image || business.logo || business.category_id?.image || (business.category && typeof business.category === 'object' ? business.category.image : null);
+    const websiteUrl = toExternalUrl(business.website);
+    const bookingUrl = toExternalUrl(business.bookingUrl);
+    const socialProfiles = getSocialLinks(business.socialLinks);
 
     return (
         <>
@@ -1836,35 +1874,76 @@ export default function BusinessDetail() {
                             <section className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
                                 <h3 className="text-lg font-bold text-slate-900 mb-4 md:mb-5">Contact Information</h3>
                                 <div className="space-y-4 md:space-y-5">
-                                    <div className="flex items-center gap-4 group">
-                                        <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                                            <Phone className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Phone</span>
-                                            <span className="text-sm font-bold text-slate-700">{business.phone || '09972219375'}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4 group">
-                                        <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                            <Globe className="w-5 h-5" />
-                                        </div>
-                                        <div className="flex-1 overflow-hidden">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Website</span>
-                                            <span className="text-sm font-bold text-slate-700 truncate block">www.{business.slug}.com</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4 group">
-                                        <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-colors">
-                                            <Mail className="w-5 h-5" />
-                                        </div>
-                                        <div className="flex-1 overflow-hidden">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Email</span>
-                                            <span className="text-sm font-bold text-slate-700 truncate block">{business.email || `info@${business.slug}.com`}</span>
-                                        </div>
-                                    </div>
+                                    {business.phone && (
+                                        <a href={`tel:${business.phone}`} className="flex items-center gap-4 group">
+                                            <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors flex-shrink-0">
+                                                <Phone className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex-1 overflow-hidden">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Phone</span>
+                                                <span className="text-sm font-bold text-slate-700 truncate block group-hover:text-orange-600 transition-colors">{business.phone}</span>
+                                            </div>
+                                        </a>
+                                    )}
+                                    {websiteUrl && (
+                                        <a href={websiteUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group">
+                                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors flex-shrink-0">
+                                                <Globe className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex-1 overflow-hidden">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Website</span>
+                                                <span className="text-sm font-bold text-slate-700 truncate block group-hover:text-blue-600 transition-colors">{stripProtocol(business.website)}</span>
+                                            </div>
+                                        </a>
+                                    )}
+                                    {business.email && (
+                                        <a href={`mailto:${business.email}`} className="flex items-center gap-4 group">
+                                            <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-colors flex-shrink-0">
+                                                <Mail className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex-1 overflow-hidden">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Email</span>
+                                                <span className="text-sm font-bold text-slate-700 truncate block group-hover:text-rose-600 transition-colors">{business.email}</span>
+                                            </div>
+                                        </a>
+                                    )}
+                                    {bookingUrl && (
+                                        <a href={bookingUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group">
+                                            <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors flex-shrink-0">
+                                                <LinkIcon className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex-1 overflow-hidden">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Booking / Menu</span>
+                                                <span className="text-sm font-bold text-slate-700 truncate block group-hover:text-emerald-600 transition-colors">{stripProtocol(business.bookingUrl)}</span>
+                                            </div>
+                                        </a>
+                                    )}
+                                    {!business.phone && !websiteUrl && !business.email && !bookingUrl && (
+                                        <p className="text-sm text-slate-400 italic">No contact details have been added yet.</p>
+                                    )}
                                 </div>
                             </section>
+
+                            {socialProfiles.length > 0 && (
+                                <section className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                    <h3 className="text-lg font-bold text-slate-900 mb-4 md:mb-5">Social Presence</h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        {socialProfiles.map((platform) => (
+                                            <a
+                                                key={platform.key}
+                                                href={platform.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={platform.label}
+                                                aria-label={platform.label}
+                                                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${platform.className}`}
+                                            >
+                                                <platform.Icon className="w-5 h-5" />
+                                            </a>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
                             
                             {business.claimed && (
                                 <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
