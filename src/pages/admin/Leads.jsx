@@ -169,21 +169,30 @@ export default function LeadsAdmin() {
     const handleExportCSV = () => {
         if (leads.length === 0) return;
         
-        const headers = ["Date", "Name", "Phone", "Category", "Type", "Status", "Priority", "Assigned To"];
+        const headers = ["Date", "Name", "Phone", "Email", "Listing", "Enquirer", "Source", "Category", "Type", "Status", "Priority", "Assigned To", "Message"];
         const rows = leads.map(lead => [
             new Date(lead.createdAt).toLocaleDateString(),
             lead.name,
             lead.phone,
+            lead.email || '',
+            lead.business?.name || '',
+            lead.userId ? `${lead.userId.name}${lead.userId.email ? ` <${lead.userId.email}>` : ''}` : 'Guest',
+            lead.source || '',
             lead.category,
             lead.type,
             lead.status,
             lead.priority,
-            Object.is(lead.assignedToName, undefined) ? 'Unassigned' : lead.assignedToName
+            Object.is(lead.assignedToName, undefined) ? 'Unassigned' : lead.assignedToName,
+            lead.message || ''
         ]);
+
+        // A quote inside a field has to be doubled, or one message containing a " breaks
+        // every column after it for that row.
+        const escapeCell = (cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`;
 
         const csvContent = [
             headers.join(","),
-            ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+            ...rows.map(row => row.map(escapeCell).join(","))
         ].join("\n");
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -424,6 +433,53 @@ export default function LeadsAdmin() {
                         </div>
                     </div>
                 </div>
+            )
+        },
+        {
+            key: 'business',
+            label: 'Listing',
+            sortable: false,
+            // The API has always populated `business`; it was simply never rendered, so
+            // there was no way to tell which listing an enquiry came from.
+            render: (business) => (
+                business ? (
+                    <a
+                        href={`/business/${business.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 max-w-[200px]"
+                    >
+                        <Building2 className="w-3.5 h-3.5 flex-shrink-0 text-indigo-400" />
+                        <span className="truncate group-hover:underline">{business.name}</span>
+                        <ExternalLink className="w-3 h-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </a>
+                ) : (
+                    <span className="text-xs font-semibold text-slate-300">—</span>
+                )
+            )
+        },
+        {
+            key: 'userId',
+            label: 'Enquirer',
+            sortable: false,
+            // Signed-in submitters are linked to their account. Guests have none, so the
+            // name/phone typed into the form is all that identifies them.
+            render: (submitter) => (
+                submitter ? (
+                    <div className="flex items-center gap-2 max-w-[200px]">
+                        <User className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
+                        <div className="min-w-0">
+                            <div className="text-xs font-bold text-slate-700 truncate">{submitter.name}</div>
+                            {submitter.email && (
+                                <div className="text-[10px] text-slate-400 font-medium truncate">{submitter.email}</div>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
+                        Guest
+                    </span>
+                )
             )
         },
         {
@@ -928,9 +984,43 @@ export default function LeadsAdmin() {
                                     {selectedLead && new Date(selectedLead.createdAt).toLocaleString()}
                                 </span>
                             </div>
-                            <p className="text-sm font-bold text-slate-800">Requirement Assigned</p>
-                            <p className="text-sm text-slate-500 mt-1">
-                                Prospect established interest for "{selectedLead?.category}" portfolio via {selectedLead?.source} interface.
+                            {/* This used to read: Prospect established interest for "<category>"
+                                portfolio via <source> interface. Two problems: it quoted the legacy
+                                free-text `category`, which on imported listings holds junk such as a
+                                stray business name, making it look like the business enquired about;
+                                and it asserted "interest" even for leads that are nothing of the sort
+                                (an owner posting their own catalogue to their own listing). The facts
+                                are now stated plainly instead of narrated. */}
+                            <p className="text-sm font-bold text-slate-800">Enquiry Received</p>
+                            <p className="text-xs text-slate-500 mt-2">
+                                Category: <span className="font-semibold text-slate-750">{selectedLead?.category || '—'}</span>
+                                <span className="mx-2 text-slate-300">·</span>
+                                Source: <span className="font-semibold text-slate-750">{selectedLead?.source || '—'}</span>
+                            </p>
+                            {selectedLead?.business && (
+                                <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+                                    <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+                                    Listing:{' '}
+                                    <a
+                                        href={`/business/${selectedLead.business.slug}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="font-semibold text-indigo-600 hover:underline"
+                                    >
+                                        {selectedLead.business.name}
+                                    </a>
+                                </p>
+                            )}
+                            {/* Distinct from the name typed into the form: this is the signed-in
+                                account, which guests do not have. */}
+                            <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+                                <User className="w-3.5 h-3.5 text-indigo-400" />
+                                Submitted by:{' '}
+                                <span className="font-semibold text-slate-750">
+                                    {selectedLead?.userId
+                                        ? `${selectedLead.userId.name}${selectedLead.userId.email ? ` (${selectedLead.userId.email})` : ''}`
+                                        : 'Guest — not signed in'}
+                                </span>
                             </p>
                             {selectedLead?.email && (
                                 <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">

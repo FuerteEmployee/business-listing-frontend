@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_BASE_URL, fetchWithAuth } from '../../config/api';
 import { 
@@ -247,6 +247,47 @@ export default function LeadDetail() {
                                     <Calendar className="w-3 h-3" /> Date
                                 </p>
                                 <p className="text-slate-900 font-bold mt-2">{new Date(lead.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            {/* Which listing the enquiry was sent from. The API has always populated
+                                `business`, it was simply never rendered, so a merchant had no way to
+                                tell which of their listings a lead belonged to. */}
+                            <div>
+                                <p className="text-xs font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                                    <MapPin className="w-3 h-3" /> Listing
+                                </p>
+                                {lead.business ? (
+                                    <Link
+                                        to={`/business/${lead.business.slug}`}
+                                        className="text-blue-600 font-bold mt-2 block hover:underline break-words"
+                                    >
+                                        {lead.business.name}
+                                    </Link>
+                                ) : (
+                                    <p className="text-slate-900 font-bold mt-2">—</p>
+                                )}
+                            </div>
+                            <div>
+                                <p className="text-xs font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                                    <TrendingUp className="w-3 h-3" /> Source
+                                </p>
+                                <p className="text-slate-900 font-bold mt-2">{lead.source || "—"}</p>
+                            </div>
+                            {/* Guests can submit without an account, so this is intentionally
+                                distinct from the name typed into the form. */}
+                            <div>
+                                <p className="text-xs font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                                    <User className="w-3 h-3" /> Submitted By
+                                </p>
+                                {lead.userId ? (
+                                    <p className="text-slate-900 font-bold mt-2 break-words">
+                                        {lead.userId.name}
+                                        {lead.userId.email && (
+                                            <span className="block text-xs font-medium text-slate-500 mt-0.5">{lead.userId.email}</span>
+                                        )}
+                                    </p>
+                                ) : (
+                                    <p className="text-slate-500 font-medium mt-2 text-sm">Guest — not signed in</p>
+                                )}
                             </div>
                         </div>
 

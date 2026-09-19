@@ -210,6 +210,7 @@ export default function MerchantLeads() {
                         <thead className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] bg-slate-50/50 border-b border-slate-100">
                             <tr>
                                 <th className="px-8 py-6">Customer</th>
+                                <th className="px-8 py-6">Listing</th>
                                 <th className="px-8 py-6">Status</th>
                                 <th className="px-8 py-6">Interest</th>
                                 <th className="px-8 py-6">Priority</th>
@@ -219,7 +220,7 @@ export default function MerchantLeads() {
                         <tbody className="divide-y divide-slate-50">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="5" className="px-8 py-20 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">
+                                    <td colSpan="6" className="px-8 py-20 text-center text-slate-400 font-bold uppercase tracking-widest animate-pulse">
                                         Fetching secure leads...
                                     </td>
                                 </tr>
@@ -238,6 +239,16 @@ export default function MerchantLeads() {
                                     <td className="px-8 py-6">
                                         <div className="font-bold text-slate-800">{lead.name}</div>
                                         <div className="text-xs text-slate-400 font-medium mt-1">{lead.phone}</div>
+                                    </td>
+                                    {/* Plain text rather than a link: the whole row already navigates
+                                        to the lead, and a nested link would fight that click. */}
+                                    <td className="px-8 py-6">
+                                        <div className="font-bold text-slate-700 break-words max-w-[220px]">
+                                            {lead.business?.name || <span className="text-slate-300 font-medium">—</span>}
+                                        </div>
+                                        {lead.source && (
+                                            <div className="text-xs text-slate-400 font-medium mt-1">{lead.source}</div>
+                                        )}
                                     </td>
                                     <td className="px-8 py-6">
                                         <FormSelect 
