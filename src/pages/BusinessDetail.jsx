@@ -951,6 +951,13 @@ export default function BusinessDetail() {
                                         <span>{business.name}</span>
                                         {business.claimed && <CheckCircle2 className="w-5 md:w-6 h-5 md:h-6 text-blue-500" title="Verified Owner" />}
                                     </h1>
+                                    {/* Tagline sits directly under the name, matching where the merchant
+                                        editor pairs "Tagline / Catchphrase" with "Business Name". */}
+                                    {business.tagline && (
+                                        <p className="text-sm md:text-lg text-slate-600 font-medium mb-3 break-words">
+                                            {business.tagline}
+                                        </p>
+                                    )}
                                     <div className="flex flex-wrap items-center gap-4">
                                         <div className="flex items-center gap-1 bg-green-600 px-2 py-0.5 rounded text-white text-sm font-bold">
                                             {rating} <Star className="w-4 h-4 fill-white" />
@@ -1083,21 +1090,28 @@ export default function BusinessDetail() {
                             
                             {activeTab === 'overview' && (
                                 <>
-                                    <section className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
-                                        <h3 className="text-xl font-bold text-slate-900 mb-4 md:mb-6">About {business.name}</h3>
-                                        <p className="text-slate-600 leading-relaxed whitespace-pre-wrap break-words text-sm md:text-base">
-                                            {business.description || `${business.name} is a leading provider in ${typeof business.category === 'object' ? business.category.name : (business.category || 'their industry')}, known for quality and excellence in ${business.city_id?.name || 'their region'}.`}
-                                        </p>
-                                    </section>
+                                    {/* Only the merchant's own description renders here. It used to fall back to a
+                                        generated "leading provider in <category>" sentence, which read as real copy
+                                        the business never wrote. */}
+                                    {business.description && (
+                                        <section className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                                            <h3 className="text-xl font-bold text-slate-900 mb-4 md:mb-6">About {business.name}</h3>
+                                            <p className="text-slate-600 leading-relaxed whitespace-pre-wrap break-words text-sm md:text-base">
+                                                {business.description}
+                                            </p>
+                                        </section>
+                                    )}
 
                                     <section className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
                                         <h3 className="text-xl font-bold text-slate-900 mb-4 md:mb-6">Quick Information</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-y-6 gap-x-12">
                                             {[
-                                                { label: 'Year of Establishment', value: business.yearEstablished || 'N/A' },
-                                                { label: 'Payment Methods', value: business.paymentMethods ? business.paymentMethods.join(', ') : 'N/A' },
-                                                { label: 'GST Number', value: business.gstPan || business.gstNumber || 'N/A' },
-                                                { label: 'Business Type', value: business.businessType ? business.businessType.join(', ') : 'N/A' },
+                                                business.yearEstablished && { label: 'Year of Establishment', value: business.yearEstablished },
+                                                business.paymentMethods?.length && { label: 'Payment Methods', value: business.paymentMethods.join(', ') },
+                                                (business.gstPan || business.gstNumber) && { label: 'GST Number', value: business.gstPan || business.gstNumber },
+                                                business.languages?.length && { label: 'Languages Spoken', value: business.languages.join(', ') },
+                                                business.employeeCount && { label: 'Number of Employees', value: business.employeeCount },
+                                                business.serviceRadius && { label: 'Service Radius', value: `${business.serviceRadius} km` },
                                                 { 
                                                     label: 'Timings', 
                                                     value: (
@@ -1142,8 +1156,7 @@ export default function BusinessDetail() {
                                                         </div>
                                                     )
                                                 },
-                                                { label: 'Website', value: `www.${business.slug}.com` },
-                                            ].map((info, idx) => (
+                                            ].filter(Boolean).map((info, idx) => (
                                                 <div key={idx} className="flex flex-col gap-1 border-b border-slate-50 pb-3">
                                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">{info.label}</span>
                                                     <span className="text-sm font-semibold text-slate-700">{info.value}</span>
