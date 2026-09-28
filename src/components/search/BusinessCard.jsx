@@ -5,12 +5,14 @@ import { Badge } from '../ui/badge';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl, fetchWithAuth } from '../../config/api';
 import { toast } from 'react-hot-toast';
+import BrochureDownloadButton from '../ui/BrochureDownloadButton';
 
 export default function BusinessCard({ business, onEnquiryClick }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [showPhoneModal, setShowPhoneModal] = useState(false);
     const { isAuthenticated } = useAuth();
     const [isBookmarked, setIsBookmarked] = useState(false);
+    const brochures = (business.brochures || []).filter(b => b?._id && b?.url);
 
     useEffect(() => {
         const checkBookmark = async () => {
@@ -239,6 +241,21 @@ export default function BusinessCard({ business, onEnquiryClick }) {
                     >
                         Get Best Deal
                     </button>
+                    {brochures.length === 1 && (
+                        <BrochureDownloadButton
+                            compact
+                            className="sm:col-span-2 lg:col-span-3"
+                            href={getApiUrl(`companies/${business._id}/brochures/${brochures[0]._id}/download`)}
+                        />
+                    )}
+                    {brochures.length > 1 && (
+                        <BrochureDownloadButton
+                            compact
+                            className="sm:col-span-2 lg:col-span-3"
+                            to={`/business/${business.slug}#brochures`}
+                            title={`Download Brochures (${brochures.length})`}
+                        />
+                    )}
                 </div>
             </div>
 

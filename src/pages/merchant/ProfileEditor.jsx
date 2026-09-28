@@ -9,6 +9,7 @@ import {
     Briefcase, Link as LinkIcon, Image as ImageIcon, Video
 } from "lucide-react";
 import MediaManager from "../../components/merchant/MediaManager";
+import BrochureManager from "../../components/merchant/BrochureManager";
 import { API_BASE_URL, fetchWithAuth, getApiUrl } from "../../config/api";
 import ImageUploadBox from "../../components/ui/ImageUploadBox";
 import LocationSelector from "../../components/location/LocationSelector";
@@ -48,6 +49,7 @@ export default function ProfileEditor() {
         coverPhotoUrl: null,
         images: [],
         videos: [],
+        brochures: [],
         serviceRadius: 0,
         serviceArea: { type: 'Polygon', coordinates: [] },
         businessHours: emptyBusinessHours()
@@ -93,6 +95,7 @@ export default function ProfileEditor() {
                         languages: Array.isArray(company.languages) ? company.languages : [],
                         paymentMethods: Array.isArray(company.paymentMethods) ? company.paymentMethods : [],
                         tags: Array.isArray(company.tags) ? company.tags : [],
+                        brochures: Array.isArray(company.brochures) ? company.brochures : [],
                         businessHours: normalizeBusinessHours(company.businessHours),
                         coverPhotoUrl: company.coverPhotoUrl || null
                     });
@@ -297,7 +300,7 @@ export default function ProfileEditor() {
                     <TabsTrigger value="basic" className="rounded-xl px-6 py-2.5">Basic Info</TabsTrigger>
                     <TabsTrigger value="categories" className="rounded-xl px-6 py-2.5">Category & Tags</TabsTrigger>
                     <TabsTrigger value="location" className="rounded-xl px-6 py-2.5">Location & Area</TabsTrigger>
-                    <TabsTrigger value="media" className="rounded-xl px-6 py-2.5">Media & Gallery</TabsTrigger>
+                    <TabsTrigger value="media" className="rounded-xl px-6 py-2.5">Media & Brochures</TabsTrigger>
                     <TabsTrigger value="contact" className="rounded-xl px-6 py-2.5">Contact & Social</TabsTrigger>
                     <TabsTrigger value="hours" className="rounded-xl px-6 py-2.5">Business Hours</TabsTrigger>
                     <TabsTrigger value="features" className="rounded-xl px-6 py-2.5">Additional Details</TabsTrigger>
@@ -464,6 +467,11 @@ export default function ProfileEditor() {
                             videos={formData.videos} 
                             logo={formData.logo}
                             coverPhotoUrl={formData.coverPhotoUrl}
+                            onUpdate={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
+                        />
+                        <BrochureManager
+                            companyId={id}
+                            brochures={formData.brochures}
                             onUpdate={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
                         />
                     </TabsContent>

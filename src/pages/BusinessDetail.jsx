@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Star, MapPin, Phone, Globe, Mail, Clock, ShieldCheck, Share2, Heart, Bookmark, MessageSquare, ChevronRight, Info, Image as ImageIcon, Loader2, CheckCircle2, ArrowRight, ThumbsUp, ThumbsDown, Flag, Filter, Upload, X, Camera, Maximize2, Search, Settings, Menu, MessageCircle, Map, CheckCircle, Instagram, Facebook, Twitter, Linkedin, Youtube, Link as LinkIcon } from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Mail, Clock, ShieldCheck, Share2, Heart, Bookmark, MessageSquare, ChevronRight, Info, Image as ImageIcon, Loader2, CheckCircle2, ArrowRight, ThumbsUp, ThumbsDown, Flag, Filter, Upload, X, Camera, Maximize2, Search, Settings, Menu, MessageCircle, Map, CheckCircle, Instagram, Facebook, Twitter, Linkedin, Youtube, Link as LinkIcon, Download, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, fetchWithAuth, getApiUrl } from '../config/api';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +9,8 @@ import Footer from '../components/homepage/Footer';
 import { logAnalyticsEvent } from '../utils/tracker';
 import { isBusinessOpen, formatDayHours } from '../utils/businessHours';
 import EnquiryModal from '../components/ui/EnquiryModal';
+import { formatFileSize } from '../utils/fileSize';
+import BrochureDownloadButton from '../components/ui/BrochureDownloadButton';
 
 // Contact fields are free text: merchants type "www.example.com", "@handle" or a full
 // URL interchangeably, so normalise before using any of them as an href.
@@ -779,6 +781,22 @@ export default function BusinessDetail() {
         }
     };
 
+    // Downloads go through the API so the file is served as an attachment with its real name
+    // (a plain Cloudinary link would open inline) and each download is logged for analytics.
+    const brochures = (business?.brochures || []).filter(b => b?._id && b?.url);
+    const getBrochureDownloadUrl = (brochure) =>
+        `${API_BASE_URL}/companies/${business._id}/brochures/${brochure._id}/download`;
+    const scrollToBrochures = () => {
+        setActiveTab('overview');
+        setTimeout(() => document.getElementById('brochures')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    };
+
+    // Search cards link to /business/:slug#brochures when a listing has several brochures
+    useEffect(() => {
+        if (!loading && location.hash === '#brochures' && brochures.length > 0) scrollToBrochures();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loading, location.hash, brochures.length]);
+
     const handleEnquire = () => {
         logAnalyticsEvent('enquiry', business._id);
         toast.success(`Enquiry sent for ${business?.name}! We will get back to you soon.`);
@@ -1052,6 +1070,15 @@ export default function BusinessDetail() {
                                             Enquiry
                                         </button>
                                     </div>
+                                    {brochures.length === 1 && (
+                                        <BrochureDownloadButton href={getBrochureDownloadUrl(brochures[0])} />
+                                    )}
+                                    {brochures.length > 1 && (
+                                        <BrochureDownloadButton
+                                            onClick={scrollToBrochures}
+                                            title={`Download Brochures (${brochures.length})`}
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -1099,6 +1126,34 @@ export default function BusinessDetail() {
                                             <p className="text-slate-600 leading-relaxed whitespace-pre-wrap break-words text-sm md:text-base">
                                                 {business.description}
                                             </p>
+                                        </section>
+                                    )}
+
+                                    {brochures.length > 0 && (
+                                        <section id="brochures" className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-sm scroll-mt-24">
+                                            <h3 className="text-xl font-bold text-slate-900 mb-4 md:mb-6">Brochures</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                {brochures.map(brochure => (
+                                                    <a
+                                                        key={brochure._id}
+                                                        href={getBrochureDownloadUrl(brochure)}
+                                                        className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-orange-300 hover:bg-orange-50/40 transition-colors group"
+                                                    >
+                                                        <div className="w-11 h-11 bg-rose-50 rounded-lg flex items-center justify-center shrink-0">
+                                                            <FileText className="w-5 h-5 text-rose-500" />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="font-semibold text-slate-900 text-sm truncate">{brochure.name || 'Brochure'}</p>
+                                                            <p className="text-xs text-slate-500 mt-0.5">
+                                                                PDF{brochure.size ? ` · ${formatFileSize(brochure.size)}` : ''}
+                                                            </p>
+                                                        </div>
+                                                        <span className="flex items-center gap-1.5 text-sm font-bold text-orange-600 group-hover:text-orange-700 shrink-0">
+                                                            <Download className="w-4 h-4" /> Download
+                                                        </span>
+                                                    </a>
+                                                ))}
+                                            </div>
                                         </section>
                                     )}
 
