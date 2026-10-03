@@ -121,7 +121,9 @@ export default function AddProduct() {
                     if (isNested) {
                         initialSpecs = data.specifications.map(sec => ({
                             title: sec.title || '',
-                            items: (sec.items || []).map(item => ({ key: item.key || '', value: item.value || '' }))
+                            items: Array.isArray(sec.items) && sec.items.length > 0
+                                ? sec.items.map(item => ({ key: item.key || '', value: item.value || '' }))
+                                : [{ key: '', value: '' }]
                         }));
                     } else {
                         initialSpecs = [{
@@ -306,9 +308,14 @@ export default function AddProduct() {
             const activeSpecs = specifications
                 .map(sec => ({
                     title: (sec.title || '').trim(),
-                    items: (sec.items || []).filter(item => item.key.trim() && item.value.trim())
+                    items: (sec.items || [])
+                        .filter(item => item.key.trim() || item.value.trim())
+                        .map(item => ({
+                            key: item.key.trim(),
+                            value: item.value.trim()
+                        }))
                 }))
-                .filter(sec => sec.title && sec.items.length > 0);
+                .filter(sec => sec.title || sec.items.length > 0);
 
             const payload = {
                 ...formData,
