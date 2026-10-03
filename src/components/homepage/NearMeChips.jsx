@@ -50,7 +50,7 @@ export default function NearMeChips({ selectedCity }) {
     if (!chips || chips.length === 0) return null;
 
     return (
-        <div className="w-full bg-white pb-8 -mt-2">
+        <div className="w-full bg-gradient-to-b from-white to-slate-50 pb-8 -mt-2">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">

@@ -43,7 +43,7 @@ export default function HomePage() {
     useEffect(() => {
         if (cities.length > 0 && userLocation && !selectedCity?.isManuallySelected) {
             const nearest = findNearestCity(userLocation.latitude, userLocation.longitude, cities);
-            if (nearest) {
+            if (nearest) {
                 setSelectedCity(nearest);
             }
         }
@@ -67,7 +67,7 @@ export default function HomePage() {
     const detectUserLocation = async () => {
         try {
             const location = await getDeviceLocation();
-            setUserLocation(location);
+            setUserLocation(location);
         } catch (err) {
             console.warn('Geolocation not available:', err.message);
             setLocationError(err.message);
@@ -86,7 +86,7 @@ export default function HomePage() {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-slate-50">
             {/* Header - Sticky */}
             <Header
                 selectedCity={selectedCity || {}}

@@ -71,7 +71,7 @@ export default function CategoryGrid() {
 
     if (error) {
         return (
-            <div className="w-full bg-white pt-6 pb-12">
+            <div className="w-full bg-white pt-6 pb-12 border-t border-slate-100">
                 <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
                     <SectionError
                         title="Couldn't load categories"
@@ -117,7 +117,7 @@ export default function CategoryGrid() {
     };
 
     return (
-        <div className="w-full bg-white pt-6 pb-12">
+        <div className="w-full bg-white pt-6 pb-12 border-t border-slate-100">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Loading State */}

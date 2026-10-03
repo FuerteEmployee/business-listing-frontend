@@ -37,7 +37,7 @@ export default function SearchBar({ selectedCity, cities = [] }) {
     }, [hp.countSource, hp.fixedCount]);
 
     return (
-        <div className="w-full bg-white pt-8 pb-6">
+        <div className="w-full bg-gradient-to-b from-orange-50 via-orange-50/40 to-white pt-8 pb-6">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
                 
                 {/* Hero Title */}

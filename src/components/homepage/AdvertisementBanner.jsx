@@ -139,7 +139,7 @@ export default function AdvertisementBanner() {
     };
 
     return (
-        <div className="bg-white py-8">
+        <div className="bg-slate-50 py-8">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
                 
                 {/* Category Header Banners (Wide) */}

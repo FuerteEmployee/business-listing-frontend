@@ -33,7 +33,7 @@ export default function ReviewsSection() {
 
     if (error) {
         return (
-            <div className="bg-white py-12">
+            <div className="bg-gradient-to-b from-slate-50 to-white py-12 border-t border-slate-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <SectionError
                         title="Couldn't load reviews"
@@ -50,7 +50,7 @@ export default function ReviewsSection() {
     }
 
     return (
-        <div className="bg-white py-12">
+        <div className="bg-gradient-to-b from-slate-50 to-white py-12 border-t border-slate-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
                 <div className="mb-10">
