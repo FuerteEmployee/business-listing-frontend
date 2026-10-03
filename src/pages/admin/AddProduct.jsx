@@ -630,6 +630,9 @@ export default function AddProduct() {
                             </button>
                         </div>
                         <div className="p-6 space-y-6">
+                            <p className="text-xs text-slate-500 -mt-2">
+                                Add key/value fields for detailed specs, or enter just a title (leave the fields empty) to list it as a product feature.
+                            </p>
                             {specifications.map((section, sIdx) => (
                                 <div key={sIdx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
                                     <div className="flex items-center gap-3">
@@ -641,7 +644,7 @@ export default function AddProduct() {
                                                 updated[sIdx].title = e.target.value;
                                                 setSpecifications(updated);
                                             }}
-                                            placeholder="Section Title (e.g. Dimensions, Display Features)"
+                                            placeholder="Section title or feature (e.g. Dimensions, Inventory Management)"
                                             className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 outline-none transition-colors"
                                         />
                                         {specifications.length > 1 && (

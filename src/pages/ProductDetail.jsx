@@ -262,6 +262,24 @@ export default function ProductDetail() {
     }
     specificationsList = filledPairs(specificationsList);
 
+    // Sectioned specs from the product form. Some sellers fill key/value tables,
+    // others only type section titles to list what the product offers — those
+    // title-only sections are shown together as a feature checklist.
+    const specSections = (Array.isArray(product.specifications) ? product.specifications : [])
+        .filter(sec => sec && typeof sec === 'object')
+        .map(sec => ({
+            title: String(sec.title ?? '').trim(),
+            items: (Array.isArray(sec.items) ? sec.items : [])
+                .map(item => ({
+                    key: String(item?.key ?? '').trim(),
+                    value: String(item?.value ?? '').trim()
+                }))
+                .filter(item => item.key || item.value)
+        }))
+        .filter(sec => sec.title || sec.items.length > 0);
+    const featureList = specSections.filter(sec => sec.items.length === 0).map(sec => sec.title);
+    const detailedSpecSections = specSections.filter(sec => sec.items.length > 0);
+
     // Ratings belong to the seller (Company), not the product. Show them only when
     // real reviews exist — never a placeholder score.
     const sellerRating = Number(product.listingId?.rating) || 0;
@@ -472,31 +490,62 @@ export default function ProductDetail() {
                                 </section>
                             )}
 
+                            {/* Product Features — title-only spec sections */}
+                            {featureList.length > 0 && (
+                                <section className="border-t border-slate-100 pt-8 mt-8">
+                                    <h3 className="text-lg font-bold text-slate-900 mb-6">Features</h3>
+                                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                                        {featureList.map((feature, fIdx) => (
+                                            <li key={fIdx} className="flex items-start gap-2.5 text-sm text-slate-800 font-medium">
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                                                <span style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                                                    {feature}
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </section>
+                            )}
+
                             {/* Product Specifications Section */}
-                            {product.specifications && product.specifications.length > 0 && (
+                            {detailedSpecSections.length > 0 && (
                                 <section className="border-t border-slate-100 pt-8 mt-8">
                                     <h3 className="text-lg font-bold text-slate-900 mb-6">Specifications</h3>
                                     <div className="space-y-6">
-                                        {product.specifications.map((section, sIdx) => (
+                                        {detailedSpecSections.map((section, sIdx) => (
                                             <div key={sIdx} className="space-y-3">
-                                                <h4 className="text-sm font-bold text-slate-800 tracking-tight border-b border-slate-100 pb-2 bg-slate-50/50 px-3 py-1.5 rounded-lg">
-                                                    {section.title}
-                                                </h4>
+                                                {section.title && (
+                                                    <h4 className="text-sm font-bold text-slate-800 tracking-tight border-b border-slate-100 pb-2 bg-slate-50/50 px-3 py-1.5 rounded-lg">
+                                                        {section.title}
+                                                    </h4>
+                                                )}
                                                 <div className="grid grid-cols-1 gap-y-3 px-3">
                                                     {section.items.map((item, iIdx) => (
                                                         <div key={iIdx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-slate-100/50 pb-2 text-sm">
-                                                            <span 
-                                                                className="text-slate-500 font-medium sm:col-span-1"
-                                                                style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
-                                                            >
-                                                                {item.key}
-                                                            </span>
-                                                            <span 
-                                                                className="text-slate-800 font-bold sm:col-span-2"
-                                                                style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
-                                                            >
-                                                                {item.value}
-                                                            </span>
+                                                            {item.key && item.value ? (
+                                                                <>
+                                                                    <span
+                                                                        className="text-slate-500 font-medium sm:col-span-1"
+                                                                        style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                                                                    >
+                                                                        {item.key}
+                                                                    </span>
+                                                                    <span
+                                                                        className="text-slate-800 font-bold sm:col-span-2"
+                                                                        style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                                                                    >
+                                                                        {item.value}
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                // Only one side filled — show it across the full row
+                                                                <span
+                                                                    className="text-slate-800 font-medium sm:col-span-3"
+                                                                    style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                                                                >
+                                                                    {item.key || item.value}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     ))}
                                                 </div>
