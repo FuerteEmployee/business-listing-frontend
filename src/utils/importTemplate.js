@@ -13,7 +13,8 @@ const SHEET_NAMES = {
     instructions: "Instructions",
     categories: "Categories",
     users: "Users",
-    listings: "Listings"
+    listings: "Listings",
+    keywords: "Keywords"
 };
 
 export const CATEGORY_COLUMNS = [
@@ -66,7 +67,7 @@ export const LISTING_COLUMNS = [
     { header: "Featured", key: "isFeatured", note: "Yes or No. Default: No.", example: "No" },
     { header: "Manual Rank", key: "manualRank", note: "Number; higher values surface first. Default: 0.", example: "0" },
     { header: "Price Range", key: "priceRange", note: "$, $$, $$$ or $$$$. Default: $$.", example: "$$" },
-    { header: "Tags", key: "tags", note: "Multiple values separated by | for example cnc|lathe|export.", example: "cnc|lathe|export" },
+    { header: "Tags", key: "tags", aliases: ["keywords", "keyword", "searchkeywords", "businesskeywords"], note: "Search keywords for the business, separated by | for example cnc|lathe|export. A column headed Keywords also works. Blank keeps the existing keywords.", example: "cnc|lathe|export" },
     { header: "Languages", key: "languages", note: "Separated by |.", example: "English|Hindi|Gujarati" },
     { header: "Payment Methods", key: "paymentMethods", note: "Separated by |.", example: "Cash|UPI|Bank Transfer" },
     { header: "GST/PAN", key: "gstPan", note: "Compliance number shown on the brand profile.", example: "24AAAAA0000A1Z5" },
@@ -92,10 +93,20 @@ export const LISTING_COLUMNS = [
     { header: "Hours Sunday", key: "hours_sunday", note: "Same format as Hours Monday.", example: "Closed" }
 ];
 
+export const KEYWORD_COLUMNS = [
+    { header: "Business Name", key: "name", required: true, aliases: ["business", "businessname", "company", "companyname", "listing", "listingname"], note: "Existing business (or one created in the Listings sheet of this file). Matched on the exact name.", example: "Shree Industries" },
+    { header: "City", key: "city", note: "Only needed when more than one business has the same name.", example: "Ahmedabad" },
+    { header: "Product Name", key: "productName", aliases: ["product", "productname", "item", "itemname"], note: "Fill Product Name or SKU to set keywords on that product. Leave both blank to set the business's own keywords.", example: "" },
+    { header: "SKU", key: "sku", aliases: ["productsku", "productcode", "code"], note: "Product SKU - more precise than Product Name when names repeat.", example: "" },
+    { header: "Keywords", key: "keywords", required: true, aliases: ["keyword", "searchkeywords", "tags", "tag"], note: "Separate with | or commas, for example cnc machine|lathe|milling.", example: "cnc machine|lathe|milling" },
+    { header: "Mode", key: "mode", note: "Add (default) keeps existing keywords and adds these. Replace overwrites them.", example: "Add" }
+];
+
 export const IMPORT_SHEETS = [
     { name: SHEET_NAMES.categories, label: "Categories", columns: CATEGORY_COLUMNS, payloadKey: "categories", order: 1 },
     { name: SHEET_NAMES.users, label: "Users", columns: USER_COLUMNS, payloadKey: "users", order: 2 },
-    { name: SHEET_NAMES.listings, label: "Listings", columns: LISTING_COLUMNS, payloadKey: "listings", order: 3 }
+    { name: SHEET_NAMES.listings, label: "Listings", columns: LISTING_COLUMNS, payloadKey: "listings", order: 3 },
+    { name: SHEET_NAMES.keywords, label: "Keywords", columns: KEYWORD_COLUMNS, payloadKey: "keywords", order: 4 }
 ];
 
 const normalizeHeader = (value) => (value === undefined || value === null ? "" : String(value))
@@ -185,7 +196,7 @@ const resolveSheetName = (workbook, wanted) =>
  */
 export const parseImportWorkbook = (arrayBuffer) => {
     const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: "array" });
-    const payload = { categories: [], users: [], listings: [] };
+    const payload = { categories: [], users: [], listings: [], keywords: [] };
     const warnings = [];
     const usedSheets = [];
     let matchedAnyNamedSheet = false;
@@ -217,11 +228,18 @@ export const parseImportWorkbook = (arrayBuffer) => {
             return { payload, warnings: ["The uploaded file contains no sheets."], usedSheets };
         }
         const { rows, detected, rawFirstRow } = rowsFromSheet(workbook, first, LISTING_COLUMNS);
-        if (!detected) {
+        // A single sheet with Business Name + Keywords but no category is a keywords-only file.
+        const keywordSheet = detected ? null : rowsFromSheet(workbook, first, KEYWORD_COLUMNS);
+        if (keywordSheet?.detected) {
+            payload.keywords = keywordSheet.rows;
+            if (keywordSheet.rows.length) {
+                usedSheets.push(`${first} (${keywordSheet.rows.length} keyword row${keywordSheet.rows.length === 1 ? "" : "s"}, read as Keywords)`);
+            }
+        } else if (!detected) {
             const found = (rawFirstRow || []).map(h => `"${h}"`).join(", ");
             warnings.push(
-                `No "Categories", "Users" or "Listings" sheet was found, and sheet "${first}" has no recognisable `
-                + `"Business Name" and "Primary Category" columns.`
+                `No "Categories", "Users", "Listings" or "Keywords" sheet was found, and sheet "${first}" has no recognisable `
+                + `"Business Name" and "Primary Category" columns (listings) or "Business Name" and "Keywords" columns (keywords).`
                 + (found ? ` Headers seen: [${found}]` : "")
                 + ` Download the template to see the expected format.`
             );
@@ -255,9 +273,10 @@ const buildInstructionsSheet = () => {
         ["Business Listing Platform - Bulk Import Template"],
         [],
         ["How to use this workbook"],
-        ["1.", "Fill the Categories, Users and Listings sheets. Every sheet is optional - import only the ones you need."],
+        ["1.", "Fill the Categories, Users, Listings and Keywords sheets. Every sheet is optional - import only the ones you need."],
         ["2.", "Do not rename the sheets or the header row. Columns may be reordered or deleted; only the starred ones are mandatory."],
-        ["3.", "Sheets are processed in order: Categories, then Users, then Listings. A listing can therefore reference a category or owner defined in the same file."],
+        ["3.", "Sheets are processed in order: Categories, Users, Listings, then Keywords. A listing can reference a category or owner defined in the same file, and a keyword row can target a listing defined in the same file."],
+        ["", "Keywords sheet: one row per business or product. Fill Product Name or SKU to set a product's keywords; leave both blank for the business's own keywords. Mode Add keeps existing keywords, Replace overwrites them."],
         ["4.", "Attach an owner to a listing with the Owner Email column, using the same email as the Users sheet."],
         ["5.", "Country, State, City, Area and Plan must already exist in the platform - unknown values are reported and left blank. Categories are created automatically."],
         ["6.", "Images cannot be embedded in a spreadsheet. Upload them first and paste the public https URL."],
@@ -283,8 +302,8 @@ const buildInstructionsSheet = () => {
 };
 
 /**
- * Generate and download the three-sheet import template, pre-filled with one
- * example row per sheet that lines up with the Listings example.
+ * Generate and download the four-sheet import template, pre-filled with example
+ * rows that line up with the Listings example.
  */
 export const downloadImportTemplate = () => {
     const workbook = XLSX.utils.book_new();
@@ -303,6 +322,12 @@ export const downloadImportTemplate = () => {
     XLSX.utils.book_append_sheet(workbook, buildSheet(LISTING_COLUMNS, [
         LISTING_COLUMNS.map(c => c.example ?? "")
     ]), SHEET_NAMES.listings);
+
+    // One business-level row and one product-level row
+    XLSX.utils.book_append_sheet(workbook, buildSheet(KEYWORD_COLUMNS, [
+        KEYWORD_COLUMNS.map(c => c.example ?? ""),
+        ["Shree Industries", "Ahmedabad", "CNC Lathe Machine", "", "cnc lathe|turning machine|lathe manufacturer", "Add"]
+    ]), SHEET_NAMES.keywords);
 
     XLSX.writeFile(workbook, "business-listing-import-template.xlsx");
 };

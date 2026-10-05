@@ -114,7 +114,7 @@ export default function Listings() {
                 setError(null);
 
                 const { payload, warnings, usedSheets } = parseImportWorkbook(event.target.result);
-                const rowCount = payload.categories.length + payload.users.length + payload.listings.length;
+                const rowCount = payload.categories.length + payload.users.length + payload.listings.length + payload.keywords.length;
 
                 if (rowCount === 0) {
                     setError(
@@ -125,7 +125,9 @@ export default function Listings() {
                     return;
                 }
 
-                const res = await fetchWithAuth(`${API_BASE_URL}/admin/listings/import`, {
+                // The combined importer handles every sheet (Categories, Users, Listings, Keywords)
+                // and returns the per-sheet results the modal below renders.
+                const res = await fetchWithAuth(`${API_BASE_URL}/admin/import`, {
                     method: "POST",
                     body: JSON.stringify(payload)
                 });
@@ -1011,9 +1013,15 @@ export default function Listings() {
                 <div className="space-y-6">
                     <div className="text-sm text-slate-600 space-y-2">
                         <p>
-                            One workbook, three sheets named <strong>Categories</strong>, <strong>Users</strong> and <strong>Listings</strong>.
+                            One workbook, four sheets named <strong>Categories</strong>, <strong>Users</strong>, <strong>Listings</strong> and <strong>Keywords</strong>.
                             Every sheet is optional and they are processed in that order, so a listing can point at a
                             category or owner defined in the same file.
+                        </p>
+                        <p>
+                            The <strong>Keywords</strong> sheet adds search keywords in bulk: one row per business, or per
+                            product when <strong>Product Name</strong> or <strong>SKU</strong> is filled. Mode <strong>Add</strong> keeps
+                            existing keywords; <strong>Replace</strong> overwrites them. A file with just Business Name and
+                            Keywords columns also works.
                         </p>
                         <p>
                             Columns marked <span className="text-rose-600 font-bold">*</span> are mandatory; the rest can be
