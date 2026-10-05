@@ -251,7 +251,7 @@ export default function NotificationSettings() {
                                     </div>
                                 ))}
                             </div>
-                            <span className="text-indigo-300 font-bold text-sm">Join 500+ merchants using Engitech</span>
+                            <span className="text-indigo-300 font-bold text-sm">Join 500+ brands using Engitech</span>
                         </div>
                     </div>
                     <div className="w-full md:w-72 aspect-square bg-white/10 backdrop-blur-md rounded-[2.5rem] p-8 flex flex-col items-center justify-center border border-white/20">

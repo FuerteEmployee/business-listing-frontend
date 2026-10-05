@@ -194,7 +194,7 @@ export default function FreeListing() {
                         </p>
                         <div className="space-y-3">
                             <Link to="/brand/dashboard" className="block w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">
-                                Go to Merchant Dashboard
+                                Go to Brand Dashboard
                             </Link>
                             <Link to="/" className="block w-full bg-slate-100 text-slate-700 py-4 rounded-xl font-bold hover:bg-slate-200 transition-all">
                                 Back to Home
@@ -216,7 +216,7 @@ export default function FreeListing() {
                     {/* Header Info */}
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Merchant Onboarding</h1>
+                            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Brand Onboarding</h1>
                             <p className="text-slate-500 text-sm">Step {formStep} of 5: {
                                 formStep === 1 ? "Business Identity" :
                                 formStep === 2 ? "Location & Map" :

@@ -3,7 +3,7 @@ import { DAYS, emptyBusinessHours } from "../../utils/businessHours";
 
 /**
  * Per-day opening hours editor, shared by the admin listing editor and the
- * merchant profile editor so the two can't drift apart.
+ * brand profile editor so the two can't drift apart.
  *
  * `value` is the full 7-day map ({ monday: { open, close, closed }, ... });
  * pass it through normalizeBusinessHours() when loading from the API so every

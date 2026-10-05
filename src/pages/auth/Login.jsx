@@ -41,7 +41,7 @@ export default function Login() {
 
             if (res.ok && data?.success) {
                 login(data.user, data.token);
-                const redirectPath = location.state?.from || (data.user.role === 'Super Admin' ? '/admin/dashboard' : ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(data.user.role) ? '/brand/products' : '/');
+                const redirectPath = location.state?.from || (data.user.role === 'Super Admin' ? '/admin/dashboard' : ['Brand Owner', 'Company Owner', 'owner', 'Owner', 'OWNER'].includes(data.user.role) ? '/brand/products' : '/');
                 navigate(redirectPath);
             } else {
                 const serverMessage = data?.msg || data?.error || (data && JSON.stringify(data)) || `${res.status} ${res.statusText}`;

@@ -136,7 +136,7 @@ export default function MyEnquiries() {
             <div className="flex items-center justify-between mb-12">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">My Enquiries</h1>
-                    <p className="text-slate-500 text-sm font-medium mt-1">Track your requests and merchant responses</p>
+                    <p className="text-slate-500 text-sm font-medium mt-1">Track your requests and business responses</p>
                 </div>
                 <Link to="/search" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
                     Send New Enquiry
@@ -250,7 +250,7 @@ export default function MyEnquiries() {
                                             </div>
                                         </div>
 
-                                        {/* Merchant Responses */}
+                                        {/* Business Responses */}
                                         {enquiry.responses && enquiry.responses.length > 0 && (
                                             <div className="border-t border-slate-100 pt-4">
                                                 <button
@@ -261,7 +261,7 @@ export default function MyEnquiries() {
                                                         <div className="flex items-center gap-2">
                                                             <CheckCircle className="w-4 h-4 text-emerald-600" />
                                                             <span className="text-sm font-semibold text-emerald-700">
-                                                                {enquiry.responses.length} Response{enquiry.responses.length !== 1 ? 's' : ''} from Merchants
+                                                                {enquiry.responses.length} Response{enquiry.responses.length !== 1 ? 's' : ''} from Businesses
                                                             </span>
                                                         </div>
                                                         <span className="text-xs text-slate-500">{expandedId === enquiry._id ? 'Collapse ▲' : 'View replies ▼'}</span>

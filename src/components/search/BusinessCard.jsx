@@ -7,6 +7,13 @@ import { getApiUrl, fetchWithAuth } from '../../config/api';
 import { toast } from 'react-hot-toast';
 import BrochureDownloadButton from '../ui/BrochureDownloadButton';
 
+// Labels for the search parameter a result matched on (matchedOn.type from /api/companies)
+const MATCH_LABELS = {
+    category: 'Category',
+    product: 'Sells',
+    keyword: 'Keyword'
+};
+
 export default function BusinessCard({ business, onEnquiryClick }) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [showPhoneModal, setShowPhoneModal] = useState(false);
@@ -178,6 +185,16 @@ export default function BusinessCard({ business, onEnquiryClick }) {
                                     Top Search
                                 </span>
                             </div>
+
+                            {/* Why this result matched the search. A name match needs no label - the title shows it. */}
+                            {business.matchedOn && business.matchedOn.type !== 'name' && business.matchedOn.value && (
+                                <div className="mt-2 text-xs text-slate-600 font-medium">
+                                    <span className="font-bold text-slate-500">
+                                        {MATCH_LABELS[business.matchedOn.type] || 'Matched'}:
+                                    </span>{' '}
+                                    <span className="text-orange-600 font-semibold">{business.matchedOn.value}</span>
+                                </div>
+                            )}
                         </div>
                         <button 
                             onClick={handleBookmarkToggle}

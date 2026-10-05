@@ -50,6 +50,10 @@ import FormSelect from "../../components/ui/FormSelect";
 import SearchableSelect from "../../components/ui/SearchableSelect";
 import toast from "react-hot-toast";
 
+// Roles that own a brand listing ('Company Owner' is the legacy name).
+const BRAND_ROLES = ['Brand Owner', 'Company Owner'];
+const isBrandRole = (role) => BRAND_ROLES.includes(role);
+
 const getActivityDetails = (action) => {
     switch (action) {
         case "USER_LOGIN":
@@ -355,7 +359,7 @@ export default function Users() {
             key: "role",
             render: (value, row) => (
                 <Badge variant={value === 'Super Admin' ? 'premium' : (value === 'Admin' ? 'indigo' : 'slate')} size="sm">
-                    {value === 'Merchant' || value === 'Company Owner' ? 'BRAND' : value.toUpperCase()}
+                    {value === 'Brand Owner' || value === 'Company Owner' ? 'BRAND' : value.toUpperCase()}
                 </Badge>
             )
         },
@@ -406,7 +410,7 @@ export default function Users() {
             onClick: async (user) => {
                 fetchBrands();
                 let assignedBrand = '';
-                if (user.role === 'Merchant' || user.role === 'Brand Owner' || user.role === 'Company Owner') {
+                if (isBrandRole(user.role)) {
                     try {
                         const res = await fetchWithAuth(`${API_BASE_URL}/admin/users/${user._id}`);
                         if (res.ok) {
@@ -538,7 +542,7 @@ export default function Users() {
                             { label: 'All Tiers', value: '' },
                             { label: 'Super Admin', value: 'Super Admin' },
                             { label: 'Admin', value: 'Admin' },
-                            { label: 'Brand / Owner', value: 'Merchant' },
+                            { label: 'Brand / Owner', value: 'Brand Owner' },
                             { label: 'User', value: 'User' }
                         ]}
                         className="!mb-0"
@@ -629,7 +633,7 @@ export default function Users() {
                                             <option value="all">All Interactions</option>
                                             <option value="reviews">Feedback History</option>
                                             <option value="enquiries">Business Enquiries</option>
-                                            {detailModal.user?.role === 'Merchant' && (
+                                            {isBrandRole(detailModal.user?.role) && (
                                                 <>
                                                     <option value="responses">Enquiry Responses</option>
                                                     <option value="products">Product Changes</option>
@@ -684,7 +688,7 @@ export default function Users() {
                                                         <thead>
                                                             <tr className="bg-slate-50 border-b border-slate-100">
                                                                 <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Business</th>
-                                                                {detailModal.user?.role === 'Merchant' && (
+                                                                {isBrandRole(detailModal.user?.role) && (
                                                                     <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Sender</th>
                                                                 )}
                                                                 <th className="px-3 py-2.5 font-black text-slate-400 uppercase tracking-widest text-[8px]">Message</th>
@@ -696,7 +700,7 @@ export default function Users() {
                                                                 detailModal.activity.recentEnquiries.map((enq, i) => (
                                                                     <tr key={i} className="hover:bg-slate-50 transition-colors">
                                                                         <td className="px-3 py-2.5 font-bold text-slate-700">{enq.businessIds[0]?.name || 'Direct Lead'}</td>
-                                                                        {detailModal.user?.role === 'Merchant' && (
+                                                                        {isBrandRole(detailModal.user?.role) && (
                                                                             <td className="px-3 py-2.5 font-bold text-slate-700 whitespace-nowrap">
                                                                                 <div>{enq.name}</div>
                                                                                 <div className="text-[9px] text-slate-400 font-semibold">{enq.phone}</div>
@@ -708,8 +712,8 @@ export default function Users() {
                                                                 ))
                                                             ) : (
                                                                 <tr>
-                                                                    <td colSpan={detailModal.user?.role === 'Merchant' ? 4 : 3} className="px-3 py-4 text-center text-xs text-slate-400 italic bg-white">
-                                                                        {detailModal.user?.role === 'Merchant' ? 'No enquiries received.' : 'No enquiries sent.'}
+                                                                    <td colSpan={isBrandRole(detailModal.user?.role) ? 4 : 3} className="px-3 py-4 text-center text-xs text-slate-400 italic bg-white">
+                                                                        {isBrandRole(detailModal.user?.role) ? 'No enquiries received.' : 'No enquiries sent.'}
                                                                     </td>
                                                                 </tr>
                                                             )}
@@ -719,7 +723,7 @@ export default function Users() {
                                             </div>
                                         )}
 
-                                        {detailModal.user?.role === 'Merchant' && (
+                                        {isBrandRole(detailModal.user?.role) && (
                                             <>
                                                 {/* Box: Enquiry Responses */}
                                                 {(activityFilter === 'all' || activityFilter === 'responses') && (
@@ -1024,7 +1028,7 @@ export default function Users() {
                             onChange={(e) => setUserModal(prev => ({ ...prev, formData: { ...prev.formData, role: e.target.value } }))}
                             options={[
                                 { label: 'User', value: 'User' },
-                                { label: 'Brand / Owner', value: 'Merchant' }
+                                { label: 'Brand / Owner', value: 'Brand Owner' }
                             ]}
                             required
                         />
@@ -1041,7 +1045,7 @@ export default function Users() {
                         />
                     </div>
 
-                    {userModal.formData.role === 'Merchant' && (
+                    {isBrandRole(userModal.formData.role) && (
                         <div className="grid grid-cols-1 gap-4">
                             <SearchableSelect 
                                 label="Assigned Brand (Listing)"

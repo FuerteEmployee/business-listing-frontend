@@ -5,7 +5,7 @@ const BrandOwnerLayout = lazy(() => import("./layouts/BrandOwnerLayout"));
 import Dashboard from "./pages/admin/Dashboard";
 import Categories from "./pages/admin/Categories";
 import Companies from "./pages/admin/Companies";
-const Catalogue = lazy(() => import("./pages/merchant/Catalogue"));
+const Catalogue = lazy(() => import("./pages/brand/Catalogue"));
 import Locations from "./pages/admin/Locations";
 import Users from "./pages/admin/Users";
 import HomePage from "./pages/HomePage";
@@ -28,20 +28,20 @@ import BusinessDetail from "./pages/BusinessDetail";
 import ProductDetail from "./pages/ProductDetail";
 const OnboardingWizard = lazy(() => import("./pages/OnboardingWizard"));
 import Leads from "./pages/admin/Leads";
-const MerchantLeads = lazy(() => import("./pages/merchant/Leads"));
-const MerchantReviews = lazy(() => import("./pages/merchant/Reviews"));
-const MerchantFAQs = lazy(() => import("./pages/merchant/FAQs"));
-const MerchantQuestions = lazy(() => import("./pages/merchant/Questions"));
-const BrandSettings = lazy(() => import("./pages/merchant/BrandSettings"));
-const OnboardingLanding = lazy(() => import("./pages/merchant/OnboardingLanding"));
-const LeadDetail = lazy(() => import("./pages/merchant/LeadDetail"));
-const ProfileEditor = lazy(() => import("./pages/merchant/ProfileEditor"));
-const Pricing = lazy(() => import("./pages/merchant/Pricing"));
-const Billing = lazy(() => import("./pages/merchant/Billing"));
-const Analytics = lazy(() => import("./pages/merchant/Analytics"));
-const Promotions = lazy(() => import("./pages/merchant/Promotions"));
-const Offers = lazy(() => import("./pages/merchant/Offers"));
-const SupportTickets = lazy(() => import("./pages/merchant/SupportTickets"));
+const BrandLeads = lazy(() => import("./pages/brand/Leads"));
+const BrandReviews = lazy(() => import("./pages/brand/Reviews"));
+const BrandFAQs = lazy(() => import("./pages/brand/FAQs"));
+const BrandQuestions = lazy(() => import("./pages/brand/Questions"));
+const BrandSettings = lazy(() => import("./pages/brand/BrandSettings"));
+const OnboardingLanding = lazy(() => import("./pages/brand/OnboardingLanding"));
+const LeadDetail = lazy(() => import("./pages/brand/LeadDetail"));
+const ProfileEditor = lazy(() => import("./pages/brand/ProfileEditor"));
+const Pricing = lazy(() => import("./pages/brand/Pricing"));
+const Billing = lazy(() => import("./pages/brand/Billing"));
+const Analytics = lazy(() => import("./pages/brand/Analytics"));
+const Promotions = lazy(() => import("./pages/brand/Promotions"));
+const Offers = lazy(() => import("./pages/brand/Offers"));
+const SupportTickets = lazy(() => import("./pages/brand/SupportTickets"));
 const MyReviews = lazy(() => import("./pages/user/MyReviews"));
 const MyEnquiries = lazy(() => import("./pages/user/MyEnquiries"));
 const ProfileLayout = lazy(() => import("./pages/user/ProfileLayout"));
@@ -51,7 +51,7 @@ const AddressBook = lazy(() => import("./pages/user/AddressBook"));
 const AccountSettings = lazy(() => import("./pages/user/AccountSettings"));
 const SecurityPage = lazy(() => import("./pages/user/SecurityPage"));
 const NotificationsPage = lazy(() => import("./pages/user/NotificationsPage"));
-const MerchantNotificationSettings = lazy(() => import("./pages/merchant/NotificationSettings"));
+const BrandNotificationSettings = lazy(() => import("./pages/brand/NotificationSettings"));
 const Sessions = lazy(() => import("./pages/user/Sessions"));
 
 // Essential Admin Modules
@@ -165,7 +165,7 @@ export default function App() {
         />
         <FcmTokenHandler />
         <Router>
-          {/* Admin, merchant, brand, profile and auth routes are lazy so a public
+          {/* Admin, brand, profile and auth routes are lazy so a public
               visitor never downloads them. Suspense catches the load gap. */}
           <Suspense fallback={<RouteLoading />}>
           <Routes>
@@ -261,11 +261,11 @@ export default function App() {
               <Route path="ads/analytics" element={<AdAnalytics />} />
             </Route>
 
-            {/* Brand/Merchant Owner Routes */}
+            {/* Brand Owner Routes */}
             <Route
               path="/brand"
               element={
-                <ProtectedRoute allowedRoles={['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER']}>
+                <ProtectedRoute allowedRoles={['Brand Owner', 'Company Owner', 'owner', 'Owner', 'OWNER']}>
                   <BrandOwnerLayout />
                 </ProtectedRoute>
               }
@@ -281,17 +281,17 @@ export default function App() {
               <Route path="products/edit/:id" element={<AddProduct />} />
               <Route path="catalogue" element={<Catalogue />} />
               <Route path="locations" element={<BrandLocations />} />
-              <Route path="leads" element={<MerchantLeads />} />
+              <Route path="leads" element={<BrandLeads />} />
               <Route path="lead/:leadId" element={<LeadDetail />} />
-              <Route path="reviews" element={<MerchantReviews />} />
-              <Route path="qa" element={<MerchantQuestions />} />
-              <Route path="faqs" element={<MerchantFAQs />} />
+              <Route path="reviews" element={<BrandReviews />} />
+              <Route path="qa" element={<BrandQuestions />} />
+              <Route path="faqs" element={<BrandFAQs />} />
               <Route path="pricing" element={<Pricing />} />
               <Route path="billing" element={<Billing />} />
               <Route path="promotions" element={<Promotions />} />
               <Route path="offers" element={<Offers />} />
               <Route path="analytics" element={<Analytics />} />
-              <Route path="notifications/settings" element={<MerchantNotificationSettings />} />
+              <Route path="notifications/settings" element={<BrandNotificationSettings />} />
               <Route path="support" element={<SupportTickets />} />
               <Route path="audit-logs" element={<AuditLogs />} />
             </Route>

@@ -670,7 +670,7 @@ export default function BrandSettings() {
                             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                                 <div className="p-6 border-b border-slate-100 bg-slate-50/50">
                                     <h3 className="text-lg font-semibold text-slate-800">Active Sessions</h3>
-                                    <p className="text-slate-500 text-xs mt-0.5">Locations and devices currently logged into your merchant account.</p>
+                                    <p className="text-slate-500 text-xs mt-0.5">Locations and devices currently logged into your brand account.</p>
                                 </div>
 
                                 <div className="p-6 divide-y divide-slate-100">

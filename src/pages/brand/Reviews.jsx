@@ -3,7 +3,7 @@ import { Star, MessageSquare, CheckCircle, Search, Filter, Loader2, User, Send, 
 import { API_BASE_URL, fetchWithAuth } from "../../config/api";
 import { useAuth } from "../../context/AuthContext";
 
-export default function MerchantReviews() {
+export default function BrandReviews() {
     const { user } = useAuth();
     const [reviews, setReviews] = useState([]);
     const [stats, setStats] = useState({
@@ -37,8 +37,8 @@ export default function MerchantReviews() {
         try {
             setIsLoading(true);
             const [reviewsRes, statsRes] = await Promise.all([
-                fetchWithAuth(`${API_BASE_URL}/reviews/merchant/all`),
-                fetchWithAuth(`${API_BASE_URL}/reviews/merchant/stats`)
+                fetchWithAuth(`${API_BASE_URL}/reviews/brand/all`),
+                fetchWithAuth(`${API_BASE_URL}/reviews/brand/stats`)
             ]);
 
             if (reviewsRes.ok) {
@@ -77,7 +77,7 @@ export default function MerchantReviews() {
                 setReplyText("");
                 setSelectedReview(null);
                 // Refresh stats to update response rate
-                const statsRes = await fetchWithAuth(`${API_BASE_URL}/reviews/merchant/stats`);
+                const statsRes = await fetchWithAuth(`${API_BASE_URL}/reviews/brand/stats`);
                 if (statsRes.ok) setStats(await statsRes.json());
             } else {
                 setToast({ message: "Failed to submit reply.", type: "error" });
@@ -136,7 +136,7 @@ export default function MerchantReviews() {
                 setReviews(prev => prev.map(r => r._id === reviewId ? { ...r, status: newStatus } : r));
                 
                 // Refresh statistics
-                const statsRes = await fetchWithAuth(`${API_BASE_URL}/reviews/merchant/stats`);
+                const statsRes = await fetchWithAuth(`${API_BASE_URL}/reviews/brand/stats`);
                 if (statsRes.ok) setStats(await statsRes.json());
             } else {
                 setToast({ message: "Failed to update review status.", type: "error" });

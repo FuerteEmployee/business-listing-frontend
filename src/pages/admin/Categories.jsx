@@ -13,7 +13,7 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function Categories() {
     const { user: currentUser } = useAuth();
-    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
+    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
     const [searchTerm, setSearchTerm] = useState("");
 
     // Modals state

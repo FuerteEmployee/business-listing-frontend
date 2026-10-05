@@ -96,11 +96,11 @@ To further enhance the platform's professional feel, the following components ar
 
 To simplify the user management experience, the platform unifies business-related roles to ensure clarity and data integrity.
 
-### **Unified Business Role: "Merchant"**
-- **Definition**: A **Merchant** is the primary owner or representative of a business listing.
-- **Unification**: The previously separate **"Company Owner"** and **"Merchant"** roles are now consolidated into a single **"Merchant / Owner"** identity in the UI.
-- **Requirement**: Use the value `Merchant` for all backend data transactions involving these users.
-- **UI Label**: Displayed as **"Merchant / Owner"** in creation forms and **"Merchants & Owners"** in filters.
+### **Unified Business Role: "Brand Owner"**
+- **Definition**: A **Brand Owner** is the primary owner or representative of a business listing. The platform has only two non-admin roles: **Brand Owner** and **User**.
+- **Retired role**: The old **"Merchant"** role was removed (Oct 2026) and all existing Merchant accounts were converted to Brand Owner. Never create or send `Merchant`; the backend rejects it and the User model coerces it to `Brand Owner`.
+- **Requirement**: Use the value `Brand Owner` for all backend data transactions involving these users.
+- **UI Label**: Displayed as **"Brand / Owner"** in creation forms.
 
 ---
 

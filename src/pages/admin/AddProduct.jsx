@@ -15,7 +15,7 @@ export default function AddProduct() {
     const { id } = useParams();
     const isEditMode = Boolean(id);
     const { user: currentUser } = useAuth();
-    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
+    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
     const basePath = isBrandOwner ? '/brand' : '/admin';
     
     // Form State
@@ -35,6 +35,9 @@ export default function AddProduct() {
         metaTitle: '',
         metaDescription: ''
     });
+
+    // Search keywords, edited as one comma-separated string and saved as Product.keywords[]
+    const [keywordsText, setKeywordsText] = useState('');
 
     const [highlights, setHighlights] = useState([{ key: '', value: '' }]);
     const [specifications, setSpecifications] = useState([
@@ -100,6 +103,7 @@ export default function AddProduct() {
                     metaDescription: data.metaDescription || ''
                 });
                 setHasPrice(data.price !== undefined && data.price !== null);
+                setKeywordsText(Array.isArray(data.keywords) ? data.keywords.join(', ') : '');
                 let initialHighlights = [{ key: '', value: '' }];
                 if (data.highlights) {
                     try {
@@ -321,6 +325,7 @@ export default function AddProduct() {
                 ...formData,
                 highlights: JSON.stringify(activeHighlights),
                 specifications: activeSpecs,
+                keywords: [...new Set(keywordsText.split(',').map(k => k.trim()).filter(Boolean))],
                 status: submitStatus,
                 images: uploadedImageUrls,
                 price: hasPrice && formData.price ? Number(formData.price) : null,
@@ -417,6 +422,18 @@ export default function AddProduct() {
                                 rows={2}
                                 placeholder="Brief summary of the product"
                             />
+
+                            <div>
+                                <FormInput
+                                    label="Search Keywords"
+                                    value={keywordsText}
+                                    onChange={e => setKeywordsText(e.target.value)}
+                                    placeholder="e.g. cnc machine, lathe, milling"
+                                />
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Separate with commas. Buyers searching any of these words will find this product's business.
+                                </p>
+                            </div>
 
                             <FormTextarea 
                                 label="Product Description"

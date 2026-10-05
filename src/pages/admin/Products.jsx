@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, Package, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,7 +18,7 @@ import AdminHeader from '../../components/admin/AdminHeader';
 export default function Products() {
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
-    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
+    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
     const basePath = isBrandOwner ? '/brand' : '/admin';
     
     const [products, setProducts] = useState([]);

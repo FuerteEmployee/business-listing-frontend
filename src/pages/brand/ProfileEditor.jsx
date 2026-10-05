@@ -8,8 +8,8 @@ import {
     Users, Calendar, Target, Plus, X, Search,
     Briefcase, Link as LinkIcon, Image as ImageIcon, Video
 } from "lucide-react";
-import MediaManager from "../../components/merchant/MediaManager";
-import BrochureManager from "../../components/merchant/BrochureManager";
+import MediaManager from "../../components/brand/MediaManager";
+import BrochureManager from "../../components/brand/BrochureManager";
 import { API_BASE_URL, fetchWithAuth, getApiUrl } from "../../config/api";
 import ImageUploadBox from "../../components/ui/ImageUploadBox";
 import LocationSelector from "../../components/location/LocationSelector";

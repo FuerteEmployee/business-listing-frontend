@@ -107,8 +107,8 @@ export default function Pricing() {
                             ...response,
                             businessId: selectedBusinessId,
                             billingDetails: {
-                                name: businesses.find(b => b._id === selectedBusinessId)?.name || 'Merchant',
-                                email: 'merchant@example.com' // Should come from user context
+                                name: businesses.find(b => b._id === selectedBusinessId)?.name || 'Brand',
+                                email: 'brand@example.com' // Should come from user context
                             }
                         })
                     });
@@ -123,7 +123,7 @@ export default function Pricing() {
                 },
                 prefill: {
                     name: businesses.find(b => b._id === selectedBusinessId)?.name,
-                    email: "merchant@example.com"
+                    email: "brand@example.com"
                 },
                 theme: { color: "#4f46e5" }
             };

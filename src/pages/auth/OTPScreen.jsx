@@ -72,7 +72,7 @@ export default function OTPScreen() {
                 if (data.token && data.user) {
                     login(data.user, data.token);
                     alert('Login successful!');
-                    const redirectPath = location.state?.from || (data.user.role === 'Super Admin' ? '/admin/dashboard' : ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(data.user.role) ? '/brand/products' : '/');
+                    const redirectPath = location.state?.from || (data.user.role === 'Super Admin' ? '/admin/dashboard' : ['Brand Owner', 'Company Owner', 'owner', 'Owner', 'OWNER'].includes(data.user.role) ? '/brand/products' : '/');
                     navigate(redirectPath);
                 } else {
                     alert('Verification successful!');

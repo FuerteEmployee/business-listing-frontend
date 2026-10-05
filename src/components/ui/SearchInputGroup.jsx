@@ -11,6 +11,9 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
     const [searchQuery, setSearchQuery] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    // Suggestion highlighted with the arrow keys; -1 means none (Enter runs a plain search).
+    const [activeIndex, setActiveIndex] = useState(-1);
+    const itemRefs = useRef([]);
     const [detectingLocation, setDetectingLocation] = useState(false);
 
     // Custom Dropdown State
@@ -112,9 +115,74 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
         }
     };
 
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handleSearch();
+    // The rows currently in the dropdown: live suggestions while typing, trending terms otherwise.
+    const trendingTerms = hp.trendingSearches && hp.trendingSearches.length > 0 ? hp.trendingSearches : [];
+    const dropdownItems = searchQuery.length > 0 ? suggestions : trendingTerms;
+    const itemText = (item) => (typeof item === 'string' ? item : item.text);
+
+    const selectItem = (item) => {
+        const text = itemText(item);
+        suppressSuggestionsRef.current = true;
+        setSearchQuery(text);
+        setShowSuggestions(false);
+        setActiveIndex(-1);
+        if (item.type === 'Business' && item.slug) {
+            navigate(`/business/${item.slug}`);
+        } else if (item.type === 'Product' && item.slug) {
+            navigate(`/product/${item.slug}`);
+        } else if (item.type === 'Category' && item.slug) {
+            navigate(`/search?category=${item.slug}&city=${activeCityId}`);
+        } else {
+            // Keywords and trending terms run a normal search, which also matches product keywords
+            handleQuickSearch(text);
+        }
+    };
+
+    // Any new list starts with nothing highlighted
+    useEffect(() => {
+        setActiveIndex(-1);
+    }, [suggestions, searchQuery.length > 0]);
+
+    // Keep the highlighted row visible inside the scrollable dropdown
+    useEffect(() => {
+        if (activeIndex >= 0) itemRefs.current[activeIndex]?.scrollIntoView({ block: 'nearest' });
+    }, [activeIndex]);
+
+    const handleKeyDown = (e) => {
+        const count = showSuggestions ? dropdownItems.length : 0;
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                if (!showSuggestions) { setShowSuggestions(true); return; }
+                if (count) setActiveIndex(i => (i + 1) % count);
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                if (count) setActiveIndex(i => (i <= 0 ? count - 1 : i - 1));
+                break;
+            case 'ArrowRight': {
+                // With the caret at the end, → copies the highlighted suggestion into the box so
+                // it can be refined. Otherwise ← / → move the caret as usual.
+                const atEnd = e.currentTarget.selectionStart === searchQuery.length;
+                if (activeIndex >= 0 && activeIndex < count && atEnd) {
+                    e.preventDefault();
+                    setSearchQuery(itemText(dropdownItems[activeIndex]));
+                    setActiveIndex(-1);
+                }
+                break;
+            }
+            case 'Enter':
+                e.preventDefault();
+                if (activeIndex >= 0 && activeIndex < count) selectItem(dropdownItems[activeIndex]);
+                else handleSearch();
+                break;
+            case 'Escape':
+                setShowSuggestions(false);
+                setActiveIndex(-1);
+                break;
+            default:
+                break;
         }
     };
 
@@ -249,8 +317,12 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
                     placeholder={isListening ? "Listening..." : (hp.searchPlaceholder || "Search for Spa & Salons")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyDown}
                     onFocus={() => setShowSuggestions(true)}
+                    role="combobox"
+                    aria-expanded={showSuggestions}
+                    aria-autocomplete="list"
+                    aria-activedescendant={activeIndex >= 0 ? `search-suggestion-${activeIndex}` : undefined}
                     className={`w-full h-full pl-2 md:pl-4 ${isHeader ? 'pr-16 md:pr-24 text-xs md:text-[13px]' : 'pr-20 md:pr-32 text-xs md:text-[15px]'} text-slate-900 placeholder-slate-400 border-none focus:ring-0 outline-none bg-transparent font-semibold md:font-medium`}
                 />
                 
@@ -293,26 +365,20 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
                 {showSuggestions && (
                     <div
                         onMouseDown={(e) => e.preventDefault()}
+                        role="listbox"
                         className="absolute top-full left-0 right-0 mt-3 bg-white border border-slate-200 rounded-lg shadow-2xl z-50 overflow-hidden max-h-80 overflow-y-auto"
                     >
                         {searchQuery.length > 0 ? (
                             suggestions.map((suggestion, idx) => (
                                 <button
                                     key={idx}
-                                    onClick={() => {
-                                        const text = typeof suggestion === 'string' ? suggestion : suggestion.text;
-                                        suppressSuggestionsRef.current = true;
-                                        setSearchQuery(text);
-                                        setShowSuggestions(false);
-                                        if (suggestion.type === 'Business' && suggestion.slug) {
-                                            navigate(`/business/${suggestion.slug}`);
-                                        } else if (suggestion.type === 'Category' && suggestion.slug) {
-                                            navigate(`/search?category=${suggestion.slug}&city=${activeCityId}`);
-                                        } else {
-                                            handleQuickSearch(text);
-                                        }
-                                    }}
-                                    className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center justify-between group transition-colors border-b border-slate-100 last:border-0"
+                                    id={`search-suggestion-${idx}`}
+                                    ref={el => { itemRefs.current[idx] = el; }}
+                                    role="option"
+                                    aria-selected={activeIndex === idx}
+                                    onClick={() => selectItem(suggestion)}
+                                    onMouseEnter={() => setActiveIndex(idx)}
+                                    className={`w-full text-left px-4 py-3 flex items-center justify-between group transition-colors border-b border-slate-100 last:border-0 ${activeIndex === idx ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <Search className="w-4 h-4 text-slate-400 group-hover:text-blue-500" />
@@ -332,19 +398,16 @@ export default function SearchInputGroup({ selectedCity, cities = [], variant = 
                                     <TrendingUp className="w-3 h-3 text-orange-500" />
                                     Trending Searches
                                 </div>
-                                {(hp.trendingSearches && hp.trendingSearches.length > 0 
-                                    ? hp.trendingSearches 
-                                    : []
-                                ).map((term, idx) => (
+                                {trendingTerms.map((term, idx) => (
                                     <button
                                         key={idx}
-                                        onClick={() => {
-                                            suppressSuggestionsRef.current = true;
-                                            setSearchQuery(term);
-                                            setShowSuggestions(false);
-                                            handleQuickSearch(term);
-                                        }}
-                                        className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 group transition-colors"
+                                        id={`search-suggestion-${idx}`}
+                                        ref={el => { itemRefs.current[idx] = el; }}
+                                        role="option"
+                                        aria-selected={activeIndex === idx}
+                                        onClick={() => selectItem(term)}
+                                        onMouseEnter={() => setActiveIndex(idx)}
+                                        className={`w-full text-left px-4 py-3 flex items-center gap-3 group transition-colors ${activeIndex === idx ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
                                     >
                                         <Search className="w-4 h-4 text-slate-300 group-hover:text-blue-500" />
                                         <span className="text-[14px] font-medium text-slate-600 group-hover:text-slate-900">{term}</span>

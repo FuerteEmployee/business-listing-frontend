@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import FormSelect from '../../components/ui/FormSelect';
 import { getApiUrl, fetchWithAuth, API_BASE_URL } from '../../config/api';
 
-export default function MerchantLeads() {
+export default function BrandLeads() {
     const [leads, setLeads] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -22,7 +22,7 @@ export default function MerchantLeads() {
     const [noteText, setNoteText] = useState("");
     const [isNotesOpen, setIsNotesOpen] = useState(false);
     const [isSavingNote, setIsSavingNote] = useState(false);
-    const [merchantReplyText, setMerchantReplyText] = useState("");
+    const [brandReplyText, setBrandReplyText] = useState("");
     const [isSavingReply, setIsSavingReply] = useState(false);
 
     useEffect(() => {
@@ -33,8 +33,8 @@ export default function MerchantLeads() {
         try {
             setLoading(true);
             setError(null);
-            // Brand-scoped endpoint - filters by the merchant's own business server-side.
-            const url = getApiUrl('merchant/leads');
+            // Brand-scoped endpoint - filters by the brand's own business server-side.
+            const url = getApiUrl('leads/brand');
             const response = await fetchWithAuth(url);
             const data = await response.json();
             if (response.ok && data.success) {
@@ -53,7 +53,7 @@ export default function MerchantLeads() {
     const handleUpdate = async (id, field, value) => {
         try {
             setUpdatingId(id);
-            const res = await fetchWithAuth(`${API_BASE_URL}/merchant/leads/${id}/status`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/leads/${id}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ [field]: value })
@@ -78,7 +78,7 @@ export default function MerchantLeads() {
 
         try {
             setIsSavingNote(true);
-            const res = await fetchWithAuth(`${API_BASE_URL}/merchant/leads/${selectedLead._id}/notes`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/leads/${selectedLead._id}/notes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: noteText })
@@ -120,18 +120,18 @@ export default function MerchantLeads() {
 
     const openNotes = (lead) => {
         setSelectedLead(lead);
-        setMerchantReplyText(lead.merchantReply?.text || "");
+        setBrandReplyText(lead.merchantReply?.text || "");
         setIsNotesOpen(true);
     };
 
-    const handleSaveMerchantReply = async (e) => {
+    const handleSaveBrandReply = async (e) => {
         e.preventDefault();
         try {
             setIsSavingReply(true);
-            const res = await fetchWithAuth(`${API_BASE_URL}/merchant/leads/${selectedLead._id}/status`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/leads/${selectedLead._id}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ merchantReply: merchantReplyText })
+                body: JSON.stringify({ merchantReply: brandReplyText })
             });
             const data = await res.json();
             if (res.ok && data.success) {
@@ -169,7 +169,7 @@ export default function MerchantLeads() {
                 </div>
             </div>
 
-            {/* Merchant Quick Stats */}
+            {/* Brand Quick Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {[
                     { label: 'Pending Response', value: leads.filter(l => l.status === 'New').length, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -190,7 +190,7 @@ export default function MerchantLeads() {
                 ))}
             </div>
 
-            {/* Merchant Table */}
+            {/* Leads Table */}
             <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm">
                 <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between">
                     <div className="relative w-full sm:w-80">
@@ -307,18 +307,18 @@ export default function MerchantLeads() {
                             <button onClick={() => setIsNotesOpen(false)} className="p-2.5 hover:bg-slate-100 rounded-2xl text-slate-400"><X className="w-5 h-5" /></button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-8 space-y-8">
-                            {/* Merchant Response Section */}
+                            {/* Brand Response Section */}
                             <div className="p-6 bg-indigo-50 border border-indigo-100 rounded-[32px]">
                                 <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                     <Send className="w-3 h-3" /> Response to Customer
                                 </h4>
-                                <form onSubmit={handleSaveMerchantReply} className="space-y-3">
+                                <form onSubmit={handleSaveBrandReply} className="space-y-3">
                                     <textarea 
                                         placeholder="Type your response here..."
                                         rows="3"
                                         className="w-full p-4 bg-white border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 resize-none"
-                                        value={merchantReplyText}
-                                        onChange={(e) => setMerchantReplyText(e.target.value)}
+                                        value={brandReplyText}
+                                        onChange={(e) => setBrandReplyText(e.target.value)}
                                     ></textarea>
                                     <button 
                                         type="submit" 

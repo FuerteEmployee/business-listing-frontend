@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { API_BASE_URL, fetchWithAuth } from "../../config/api";
 import { Button } from "../../components/ui/button";
-import CreateOfferModal from "../../components/merchant/CreateOfferModal";
+import CreateOfferModal from "../../components/brand/CreateOfferModal";
 
 export default function Offers() {
     const [offers, setOffers] = useState([]);
@@ -26,7 +26,7 @@ export default function Offers() {
         setIsLoading(true);
         try {
             const [offersRes, companiesRes] = await Promise.all([
-                fetchWithAuth(`${API_BASE_URL}/offers/merchant`),
+                fetchWithAuth(`${API_BASE_URL}/offers/brand`),
                 fetchWithAuth(`${API_BASE_URL}/companies/my-companies`)
             ]);
 

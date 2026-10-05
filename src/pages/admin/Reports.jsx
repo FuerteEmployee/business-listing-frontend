@@ -148,7 +148,7 @@ export default function Reports() {
                 />
                 <ReportCard 
                     title="Leads & Enquiries"
-                    description="Conversion tracking for lead generation and merchant enquiries."
+                    description="Conversion tracking for lead generation and brand enquiries."
                     icon={Megaphone}
                     colorClass="bg-purple-50 text-purple-700"
                     onExport={(fmt) => handleExport('leads', fmt)}

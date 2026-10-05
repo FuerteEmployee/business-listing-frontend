@@ -156,7 +156,7 @@ export default function LeadsAdmin() {
 
     const fetchUsers = async () => {
         try {
-            const res = await fetchWithAuth(`${API_BASE_URL}/users?role=Merchant`);
+            const res = await fetchWithAuth(`${API_BASE_URL}/users?role=${encodeURIComponent('Brand Owner')}`);
             const data = await res.json();
             if (res.ok && data.success) {
                 setUsers(data.users || []);
@@ -503,7 +503,7 @@ export default function LeadsAdmin() {
                     <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">
                         {name ? name.charAt(0) : '?'}
                     </div>
-                    <span className="text-xs font-semibold text-slate-600">{(name === 'Merchant Owner' ? 'Brand Owner' : name) || 'Unassigned'}</span>
+                    <span className="text-xs font-semibold text-slate-600">{name || 'Unassigned'}</span>
                 </div>
             )
         },
@@ -882,27 +882,27 @@ export default function LeadsAdmin() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 relative z-10">
-                            {analytics?.topPerformers?.map((merchant, i) => (
+                            {analytics?.topPerformers?.map((performer, i) => (
                                 <div key={i} className="relative p-6 bg-slate-50/50 rounded-2xl border border-slate-100 flex flex-col items-center text-center group hover:bg-white hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300">
                                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-indigo-600 text-white text-[10px] font-bold rounded-full shadow-sm">Rank #{i+1}</div>
                                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 p-0.5 mb-4">
                                         <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center font-bold text-indigo-600 text-lg">
-                                            {merchant.name.charAt(0)}
+                                            {performer.name.charAt(0)}
                                         </div>
                                     </div>
-                                    <h4 className="font-semibold text-slate-800 text-sm truncate w-full tracking-tight">{merchant.name}</h4>
+                                    <h4 className="font-semibold text-slate-800 text-sm truncate w-full tracking-tight">{performer.name}</h4>
                                     <div className="mt-3 flex items-center gap-2 px-3 py-1 bg-white rounded-lg border border-slate-200 shadow-sm">
                                         <span className="text-[10px] font-bold text-slate-400 uppercase">Index</span>
-                                        <span className="text-sm font-bold text-slate-900">{merchant.performanceScore}</span>
+                                        <span className="text-sm font-bold text-slate-900">{performer.performanceScore}</span>
                                     </div>
                                     <div className="mt-4 w-full grid grid-cols-2 gap-2">
                                         <div className="p-2 bg-white rounded-xl border border-slate-100">
                                             <p className="text-[10px] font-medium text-slate-400 uppercase">Leads</p>
-                                            <p className="text-sm font-bold text-slate-800">{merchant.leadStats?.totalAssigned || 0}</p>
+                                            <p className="text-sm font-bold text-slate-800">{performer.leadStats?.totalAssigned || 0}</p>
                                         </div>
                                         <div className="p-2 bg-white rounded-xl border border-slate-100">
                                             <p className="text-[10px] font-medium text-slate-400 uppercase">Latency</p>
-                                            <p className="text-sm font-bold text-slate-800">{merchant.leadStats?.avgResponseTime || 0}m</p>
+                                            <p className="text-sm font-bold text-slate-800">{performer.leadStats?.avgResponseTime || 0}m</p>
                                         </div>
                                     </div>
                                 </div>

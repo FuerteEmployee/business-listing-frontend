@@ -24,7 +24,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 import { API_BASE_URL, fetchWithAuth } from "../../config/api";
 import { Button } from "../../components/ui/button";
-import AddServiceModal from "../../components/merchant/AddServiceModal";
+import AddServiceModal from "../../components/brand/AddServiceModal";
 
 function SortableServiceItem({ service, onToggleStatus, onEdit, onDelete }) {
     const {

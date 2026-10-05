@@ -12,7 +12,7 @@ import EnquiryModal from '../components/ui/EnquiryModal';
 import { formatFileSize } from '../utils/fileSize';
 import BrochureDownloadButton from '../components/ui/BrochureDownloadButton';
 
-// Contact fields are free text: merchants type "www.example.com", "@handle" or a full
+// Contact fields are free text: brands type "www.example.com", "@handle" or a full
 // URL interchangeably, so normalise before using any of them as an href.
 const toExternalUrl = (value) => {
     const raw = (value || '').trim();
@@ -33,7 +33,7 @@ const SOCIAL_PLATFORMS = [
 ];
 
 // A bare "@handle" gets the platform's base URL prepended; anything containing a
-// slash or a leading www. is already a full link the merchant pasted in.
+// slash or a leading www. is already a full link the brand pasted in.
 const getSocialLinks = (socialLinks) => {
     if (!socialLinks) return [];
     return SOCIAL_PLATFORMS
@@ -969,7 +969,7 @@ export default function BusinessDetail() {
                                         <span>{business.name}</span>
                                         {business.claimed && <CheckCircle2 className="w-5 md:w-6 h-5 md:h-6 text-blue-500" title="Verified Owner" />}
                                     </h1>
-                                    {/* Tagline sits directly under the name, matching where the merchant
+                                    {/* Tagline sits directly under the name, matching where the brand
                                         editor pairs "Tagline / Catchphrase" with "Business Name". */}
                                     {business.tagline && (
                                         <p className="text-sm md:text-lg text-slate-600 font-medium mb-3 break-words">
@@ -1117,7 +1117,7 @@ export default function BusinessDetail() {
                             
                             {activeTab === 'overview' && (
                                 <>
-                                    {/* Only the merchant's own description renders here. It used to fall back to a
+                                    {/* Only the brand's own description renders here. It used to fall back to a
                                         generated "leading provider in <category>" sentence, which read as real copy
                                         the business never wrote. */}
                                     {business.description && (
@@ -1714,7 +1714,7 @@ export default function BusinessDetail() {
                                                                 </div>
                                                             )}
 
-                                                            {/* Merchant Response */}
+                                                            {/* Brand Response */}
                                                             {rev.ownerReply?.text && (
                                                                 <div className="mt-4 p-4 bg-slate-50 rounded-2xl border-l-4 border-indigo-500 relative">
                                                                     <div className="flex items-center gap-2 mb-2">

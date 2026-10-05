@@ -134,7 +134,7 @@ export default function Coupons() {
         <div className="space-y-6">
             <AdminHeader 
                 title="Discount Coupons"
-                subtitle="Generate and manage promotional codes for merchants."
+                subtitle="Generate and manage promotional codes for brands."
                 actions={
                     <Button 
                         onClick={() => handleOpenModal()} 
@@ -312,7 +312,7 @@ export default function Coupons() {
             >
                 <div className="text-center text-slate-600">
                     <p className="text-sm font-medium">Are you sure you want to delete <span className="font-bold text-slate-900">"{couponToDelete?.code}"</span>?</p>
-                    <p className="text-xs mt-2 leading-relaxed tracking-tight font-medium">Any merchants currently using this code in their checkout flow will find it invalid.</p>
+                    <p className="text-xs mt-2 leading-relaxed tracking-tight font-medium">Any brands currently using this code in their checkout flow will find it invalid.</p>
                 </div>
             </Modal>
         </div>

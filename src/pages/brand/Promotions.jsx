@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { API_BASE_URL, fetchWithAuth } from "../../config/api";
 import { Button } from "../../components/ui/button";
-import PromoteListingModal from "../../components/merchant/PromoteListingModal";
+import PromoteListingModal from "../../components/brand/PromoteListingModal";
 
 export default function Promotions() {
     const [ads, setAds] = useState([]);
@@ -25,8 +25,8 @@ export default function Promotions() {
         setIsLoading(true);
         try {
             const [adsRes, statsRes] = await Promise.all([
-                fetchWithAuth(`${API_BASE_URL}/merchant-ads`),
-                fetchWithAuth(`${API_BASE_URL}/merchant-ads/stats`)
+                fetchWithAuth(`${API_BASE_URL}/brand-ads`),
+                fetchWithAuth(`${API_BASE_URL}/brand-ads/stats`)
             ]);
 
             const adsData = await adsRes.json();
@@ -52,7 +52,7 @@ export default function Promotions() {
 
     const handleToggleStatus = async (adId) => {
         try {
-            const res = await fetchWithAuth(`${API_BASE_URL}/merchant-ads/${adId}/toggle`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/brand-ads/${adId}/toggle`, {
                 method: 'PATCH'
             });
             if (res.ok) {

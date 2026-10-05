@@ -169,7 +169,7 @@ export default function SubscriptionsAdmin() {
                                         <div className={`text-[10px] font-bold uppercase truncate ${
                                             selectedCompany?._id === company._id ? 'text-indigo-200' : 'text-slate-400'
                                         }`}>
-                                            {company.city_id?.name || 'Local Merchant'}
+                                            {company.city_id?.name || 'Local Business'}
                                         </div>
                                     </div>
                                     <ChevronRight className={`w-4 h-4 transition-transform group-hover:translate-x-1 ${
@@ -180,7 +180,7 @@ export default function SubscriptionsAdmin() {
                             {!searchTerm && !selectedCompany && (
                                 <div className="py-12 text-center border-2 border-dashed border-slate-100 rounded-[32px] space-y-3">
                                     <Building2 className="w-10 h-10 text-slate-200 mx-auto" />
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Type to find a merchant</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Type to find a brand</p>
                                 </div>
                             )}
                         </div>
@@ -189,7 +189,7 @@ export default function SubscriptionsAdmin() {
                             <div className="p-8 bg-indigo-50 rounded-[32px] border border-indigo-100 space-y-4 animate-in slide-in-from-top-4 duration-300">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Selected Merchant</span>
+                                        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Selected Brand</span>
                                         <h3 className="text-xl font-black text-indigo-900 uppercase leading-none">{selectedCompany.name}</h3>
                                     </div>
                                     <button 

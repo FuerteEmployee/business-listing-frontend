@@ -21,7 +21,7 @@ export const ConfigProvider = ({ children }) => {
                 const path = window.location.pathname;
                 let panel = 'frontend';
                 if (path.startsWith('/admin')) panel = 'admin';
-                else if (path.startsWith('/merchant')) panel = 'merchant';
+                else if (path.startsWith('/brand')) panel = 'brand';
 
                 // Use the standardized API_BASE_URL
                 const response = await axios.get(`${API_BASE_URL}/settings/panel-config?panel=${panel}`);

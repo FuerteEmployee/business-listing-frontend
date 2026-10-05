@@ -54,7 +54,7 @@ export default function Analytics() {
 
     const fetchOverview = async () => {
         try {
-            const res = await fetchWithAuth(`${API_BASE_URL}/analytics/merchant/overview`);
+            const res = await fetchWithAuth(`${API_BASE_URL}/analytics/brand/overview`);
             const data = await res.json();
             if (data.success) {
                 setOverviewData(data);
@@ -69,7 +69,7 @@ export default function Analytics() {
     const fetchDetailedAnalytics = async (businessId) => {
         try {
             setIsLoading(true);
-            const res = await fetchWithAuth(`${API_BASE_URL}/analytics/merchant/business/${businessId}`);
+            const res = await fetchWithAuth(`${API_BASE_URL}/analytics/brand/business/${businessId}`);
             const data = await res.json();
             if (data.success) {
                 setDetailedData(data);

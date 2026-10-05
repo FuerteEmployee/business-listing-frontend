@@ -358,7 +358,7 @@ export default function HomepageSettingsManager({ settings, onSave }) {
         { key: 'showPopular', label: 'Popular Search Tags', icon: TrendingUp },
         { key: 'showLatest', label: 'Recent Market Entries', icon: Plus },
         { key: 'showReviews', label: 'Public Review Feed', icon: Sparkles },
-        { key: 'showCTA', label: 'Merchant Onboarding CTA', icon: Layout },
+        { key: 'showCTA', label: 'Brand Onboarding CTA', icon: Layout },
         { key: 'showMobileApp', label: 'Application Ecosystem Promotion', icon: Layout },
         { key: 'showFooter', label: 'Footer Section', icon: Layout },
     ];

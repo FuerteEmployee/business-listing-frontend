@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { HelpCircle, Search, ChevronDown, ChevronUp, Loader2, BookOpen } from "lucide-react";
 import { API_BASE_URL } from "../../config/api";
 
-export default function MerchantFAQs() {
+export default function BrandFAQs() {
     const [faqs, setFaqs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState("business");

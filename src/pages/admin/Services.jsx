@@ -16,7 +16,7 @@ import AdminHeader from "../../components/admin/AdminHeader";
 export default function Services() {
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
-    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
+    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
     const basePath = isBrandOwner ? '/brand' : '/admin';
     
     const [services, setServices] = useState([]);

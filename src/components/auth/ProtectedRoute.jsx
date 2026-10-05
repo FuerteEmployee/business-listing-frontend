@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 
 // Roles that are explicitly NOT admin-panel roles.
 // Any user with one of these roles will be blocked from /admin routes.
-const PUBLIC_ROLES = ['User', 'Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'];
+const PUBLIC_ROLES = ['User', 'Brand Owner', 'Company Owner', 'owner', 'Owner', 'OWNER'];
 
 export default function ProtectedRoute({ children, allowedRoles, blockPublicRoles }) {
     const { isAuthenticated, user, isLoading } = useAuth();
@@ -24,7 +24,7 @@ export default function ProtectedRoute({ children, allowedRoles, blockPublicRole
 
     // blockPublicRoles mode: used for /admin routes.
     // Lets through Super Admin + any custom RBAC role.
-    // Blocks User, Brand Owner, Company Owner, Merchant.
+    // Blocks User, Brand Owner, Company Owner.
     if (blockPublicRoles) {
         if (PUBLIC_ROLES.includes(user.role)) {
             return (

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { MessageSquare, Search, Loader2, Send, X, Clock, HelpCircle, CheckCircle } from "lucide-react";
 import { API_BASE_URL, fetchWithAuth } from "../../config/api";
 
-export default function MerchantQuestions() {
+export default function BrandQuestions() {
     const [questions, setQuestions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -19,7 +19,7 @@ export default function MerchantQuestions() {
         try {
             setIsLoading(true);
             setError(null);
-            const res = await fetchWithAuth(`${API_BASE_URL}/companies/questions/merchant`);
+            const res = await fetchWithAuth(`${API_BASE_URL}/companies/questions/brand`);
             if (res.ok) {
                 const data = await res.json();
                 setQuestions(data || []);

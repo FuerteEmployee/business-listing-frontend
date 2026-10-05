@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
 import { useTheme } from "../context/ThemeContext";
 import Logo from "../components/ui/Logo";
-import NotificationBell from "../components/merchant/NotificationBell";
+import NotificationBell from "../components/brand/NotificationBell";
 import { API_BASE_URL } from "../config/api";
 
 export default function BrandOwnerLayout() {

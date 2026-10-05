@@ -1,4 +1,4 @@
-const DRAFT_KEY = 'merchant_onboarding_draft';
+const DRAFT_KEY = 'brand_onboarding_draft';
 
 export const saveDraft = (data) => {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({

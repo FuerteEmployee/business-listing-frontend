@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { API_BASE_URL, fetchWithAuth, getApiUrl } from "../../config/api";
 import { parseImportWorkbook, downloadImportTemplate, IMPORT_SHEETS } from "../../utils/importTemplate";
+import { listingContactEmail } from "../../utils/email";
 
 // System Standard Components
 import DataTable from "../../components/admin/DataTable";
@@ -327,7 +328,7 @@ export default function Listings() {
                     </div>
                     <div>
                         <div className="font-bold text-slate-900 leading-tight">{row.name}</div>
-                        <div className="text-[11px] text-slate-500 font-medium">{row.owner?.email || row.email || "Unclaimed"}</div>
+                        <div className="text-[11px] text-slate-500 font-medium">{listingContactEmail(row) || (row.owner ? "No email" : "Unclaimed")}</div>
                     </div>
                 </div>
             )

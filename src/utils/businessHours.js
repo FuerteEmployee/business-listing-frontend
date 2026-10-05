@@ -19,7 +19,7 @@ export const normalizeBusinessHours = (businessHours) => DAYS.reduce((acc, day) 
 }, {});
 
 // Open/closed state for a listing's businessHours map.
-// Hours the merchant never filled in report as unknown — we don't assume a window.
+// Hours the brand never filled in report as unknown — we don't assume a window.
 const UNKNOWN = { status: 'Timings not specified', color: 'text-slate-500', tone: 'unknown' };
 const CLOSED = { status: 'Closed Now', color: 'text-rose-600', tone: 'closed' };
 const OPEN = { status: 'Open Now', color: 'text-emerald-600', tone: 'open' };

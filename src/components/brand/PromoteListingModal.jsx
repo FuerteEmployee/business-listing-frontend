@@ -49,7 +49,7 @@ export default function PromoteListingModal({ isOpen, onClose, company, onPromot
 
     const fetchSlots = async () => {
         try {
-            const res = await fetchWithAuth(`${API_BASE_URL}/merchant-ads/slots`);
+            const res = await fetchWithAuth(`${API_BASE_URL}/brand-ads/slots`);
             const data = await res.json();
             if (data.success) {
                 // Focus on 'between_listings' or 'search' positions for "Boost"
@@ -84,7 +84,7 @@ export default function PromoteListingModal({ isOpen, onClose, company, onPromot
                 pricingModel: 'flat'
             };
 
-            const res = await fetchWithAuth(`${API_BASE_URL}/merchant-ads`, {
+            const res = await fetchWithAuth(`${API_BASE_URL}/brand-ads`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

@@ -147,7 +147,7 @@ export default function EnquiryModal({ isOpen, onClose, business, businessIds = 
                         {!user ? (
                             <div className="space-y-4">
                                 <p className="text-slate-500 text-xs">
-                                    Create an account to track your enquiry replies, message merchants, and receive notifications!
+                                    Create an account to track your enquiry replies, message businesses, and receive notifications!
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                     <button 

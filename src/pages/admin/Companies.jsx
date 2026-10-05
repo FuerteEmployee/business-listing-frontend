@@ -12,7 +12,8 @@ import { Button } from "../../components/ui/button";
 import Alert from "../../components/ui/Alert";
 import { Badge } from "../../components/ui/badge";
 import { API_BASE_URL, fetchWithAuth } from "../../config/api";
-import PromoteListingModal from "../../components/merchant/PromoteListingModal";
+import { listingContactEmail } from "../../utils/email";
+import PromoteListingModal from "../../components/brand/PromoteListingModal";
 import AdminHeader from "../../components/admin/AdminHeader";
 
 import { useAuth } from "../../context/AuthContext";
@@ -20,7 +21,7 @@ import { useAuth } from "../../context/AuthContext";
 export default function Companies() {
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
-    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'Merchant', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
+    const isBrandOwner = currentUser && ['Brand Owner', 'Company Owner', 'owner', 'Owner', 'OWNER'].includes(currentUser.role);
     const [searchTerm, setSearchTerm] = useState("");
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -349,7 +350,7 @@ export default function Companies() {
                                             {company.owner && typeof company.owner === 'object' ? (
                                                 <div>
                                                     <div className="text-sm font-medium text-slate-800">{company.owner.name}</div>
-                                                    <div className="text-xs text-slate-500">{company.owner.email}</div>
+                                                    <div className="text-xs text-slate-500">{listingContactEmail(company) || 'No email'}</div>
                                                 </div>
                                             ) : company.owner ? (
                                                 <div className="text-xs text-amber-600 font-mono break-all">

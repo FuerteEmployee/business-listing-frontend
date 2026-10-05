@@ -172,7 +172,7 @@ export default function Plans() {
         <div className="space-y-6">
             <AdminHeader 
                 title="Subscription Plans"
-                subtitle="Configure tiered pricing and merchant feature access."
+                subtitle="Configure tiered pricing and brand feature access."
                 actions={
                     <button 
                         onClick={() => handleOpenModal()}
@@ -298,7 +298,7 @@ export default function Plans() {
                             <textarea 
                                 rows="6"
                                 className="w-full px-8 py-6 bg-slate-50 border-none rounded-[28px] text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none"
-                                placeholder="Explain what this plan offers to merchants..."
+                                placeholder="Explain what this plan offers to brands..."
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             ></textarea>
