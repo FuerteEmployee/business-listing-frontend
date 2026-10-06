@@ -18,6 +18,7 @@ export default function SearchPage() {
     const [subCategories, setSubCategories] = useState([]);
     const [businesses, setBusinesses] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
+    const [searchMeta, setSearchMeta] = useState(null);
     const [viewType, setViewType] = useState('listing'); // 'listing' or 'subcategory'
     
     // UI/Experience State
@@ -141,6 +142,7 @@ export default function SearchPage() {
                     });
                 } else {
                     setBusinesses(result.data);
+                    setSearchMeta(result.searchMeta || null);
                     setViewType('listing');
                 }
                 setPagination(result.pagination);
@@ -194,6 +196,7 @@ export default function SearchPage() {
                                     onReset={handleResetFilters}
                                     onLoadMore={() => fetchData(true)}
                                     isLoadingMore={loadingMore}
+                                    searchMeta={searchMeta}
                                 />
                             </div>
                         )}

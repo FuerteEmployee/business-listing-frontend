@@ -98,7 +98,7 @@ const AdAnalytics = lazy(() => import("./pages/admin/AdAnalytics"));
 // Auth
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { ConfigProvider } from './context/ConfigContext';
+import { ConfigProvider, PanelConfigSync } from './context/ConfigContext';
 import { Toaster } from 'react-hot-toast';
 import FcmTokenHandler from './components/auth/FcmTokenHandler';
 const Login = lazy(() => import("./pages/auth/Login"));
@@ -165,6 +165,7 @@ export default function App() {
         />
         <FcmTokenHandler />
         <Router>
+          <PanelConfigSync />
           {/* Admin, brand, profile and auth routes are lazy so a public
               visitor never downloads them. Suspense catches the load gap. */}
           <Suspense fallback={<RouteLoading />}>

@@ -312,7 +312,7 @@ export default function LeadDetail() {
                             <div className="bg-indigo-50 border border-indigo-200 border-l-4 border-l-indigo-600 rounded-2xl p-6 mb-6">
                                 <p className="text-indigo-900 font-medium leading-relaxed">{lead.merchantReply.text}</p>
                                 <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest mt-3">
-                                    Replied: {new Date(lead.merchantReply.respondedAt).toLocaleDateString()}
+                                    Replied: {new Date(lead.merchantReply.date || lead.merchantReply.respondedAt).toLocaleDateString()}
                                 </p>
                             </div>
                         ) : null}

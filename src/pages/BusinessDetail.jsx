@@ -855,16 +855,28 @@ export default function BusinessDetail() {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-10">
                         <div className="flex flex-col lg:flex-row gap-5 lg:gap-10">
                             {/* Business Image/Gallery */}
-                            <div className="w-full lg:w-[36%] aspect-[16/9] bg-slate-100 rounded-2xl overflow-hidden relative shadow-inner group">
+                            {/* self-start keeps the 16:9 box: as a stretched flex item it took the height of the
+                                details column, so the cover was cropped at the sides. */}
+                            <div className="w-full lg:w-[36%] lg:self-start aspect-[16/9] bg-slate-100 rounded-2xl overflow-hidden relative shadow-inner group">
                                 {(() => {
                                     const displayImg = business.coverPhotoUrl || business.photos?.[0] || business.galleryPhotos?.[0] || business.logo || null;
                                     const isLogoOnly = !business.coverPhotoUrl && !business.photos?.[0] && !business.galleryPhotos?.[0] && business.logo;
                                     return displayImg ? (
-                                        <img 
-                                            src={displayImg} 
-                                            alt={business.name} 
-                                            className={`w-full h-full ${isLogoOnly ? 'object-contain p-6 bg-white' : 'object-cover'}`} 
-                                        />
+                                        isLogoOnly ? (
+                                            <img
+                                                src={displayImg}
+                                                alt={business.name}
+                                                className="w-full h-full object-contain p-6 bg-white"
+                                            />
+                                        ) : (
+                                            // Show the whole image whatever its shape (cover photos are often a
+                                            // logo or banner); object-cover cut off its sides.
+                                            <img
+                                                src={displayImg}
+                                                alt={business.name}
+                                                className="w-full h-full object-contain bg-white"
+                                            />
+                                        )
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-orange-50">
                                             <ImageIcon className="w-20 h-20 text-orange-200" />
@@ -925,19 +937,18 @@ export default function BusinessDetail() {
                                         )}
                                     </div>
                                 </div>
+                                {/* Only offer the gallery when there is something in it ("See 0 Photos" covered the image) */}
+                                {business.photos?.length > 0 && (
                                 <div className="absolute bottom-4 left-4">
                                     <button 
-                                        onClick={() => {
-                                            if (business.photos?.length > 0) {
-                                                setIsLightboxOpen(true);
-                                            }
-                                        }}
+                                        onClick={() => setIsLightboxOpen(true)}
                                         className="bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-black/80 transition-colors"
                                     >
                                         <ImageIcon className="w-4 h-4" />
-                                        See {business.photos?.length || 0} Photos
+                                        See {business.photos.length} Photos
                                     </button>
                                 </div>
+                                )}
                             </div>
 
                             {/* Basic Info */}

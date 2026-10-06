@@ -13,7 +13,8 @@ export default function BusinessListing({
     activeFilters, 
     onFilterChange, 
     onReset,
-    isLoadingMore
+    isLoadingMore,
+    searchMeta
 }) {
     const [isBulkEnquiryOpen, setIsBulkEnquiryOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState([]);
@@ -89,6 +90,31 @@ export default function BusinessListing({
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">
                         Best Deals - Top <span className="text-orange-600">{title}</span>
                     </h1>
+                    {/* How the search was interpreted, so a widened search is never silent */}
+                    {searchMeta && (searchMeta.corrected || searchMeta.cityRelaxed || searchMeta.detectedCity || searchMeta.mode === 'words') && (
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium">
+                            {searchMeta.corrected && (
+                                <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
+                                    No exact match for "{searchMeta.query}" - showing results for "{searchMeta.interpretedAs}"
+                                </span>
+                            )}
+                            {searchMeta.mode === 'words' && (
+                                <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                                    Matching all of: {searchMeta.interpretedAs}
+                                </span>
+                            )}
+                            {searchMeta.detectedCity && (
+                                <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                                    In {searchMeta.detectedCity.name}
+                                </span>
+                            )}
+                            {searchMeta.cityRelaxed && (
+                                <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
+                                    Nothing in your selected city - showing results from all cities
+                                </span>
+                            )}
+                        </div>
+                    )}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2">
                         <p className="text-sm text-slate-500 font-medium max-w-2xl">
                             Discover the highest-rated {title.toLowerCase()} verified for quality, response time, and customer satisfaction.

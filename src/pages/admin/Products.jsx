@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, Package, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
