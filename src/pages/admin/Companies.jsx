@@ -15,6 +15,7 @@ import { API_BASE_URL, fetchWithAuth } from "../../config/api";
 import { listingContactEmail } from "../../utils/email";
 import PromoteListingModal from "../../components/brand/PromoteListingModal";
 import AdminHeader from "../../components/admin/AdminHeader";
+import KeywordTagsInput from "../../components/ui/KeywordTagsInput";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -101,7 +102,8 @@ export default function Companies() {
         name: "", category: "", description: "",
         country_id: "", state_id: "", city_id: "", area_id: "",
         address: "", latitude: null, longitude: null,
-        status: "Pending", claimed: false, verified: false, verificationStatus: "Not Verified", isFeatured: false, manualRank: 0, image: null, owner: ""
+        status: "Pending", claimed: false, verified: false, verificationStatus: "Not Verified", isFeatured: false, manualRank: 0, image: null, owner: "",
+        tags: []
     };
     const [formData, setFormData] = useState(defaultFormState);
     const [imageFile, setImageFile] = useState(null);
@@ -174,7 +176,8 @@ export default function Companies() {
             isFeatured: company.isFeatured || false,
             manualRank: company.manualRank || 0,
             image: company.image || null,
-            owner: company.owner?._id || company.owner || ''
+            owner: company.owner?._id || company.owner || '',
+            tags: Array.isArray(company.tags) ? company.tags : []
         };
         
         setFormData(newFormData);
@@ -557,6 +560,11 @@ export default function Companies() {
                             onChange={handleInputChange}
                             placeholder="Short bio about the company..."
                             className="h-32"
+                        />
+
+                        <KeywordTagsInput
+                            value={formData.tags}
+                            onChange={tags => setFormData(prev => ({ ...prev, tags }))}
                         />
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">

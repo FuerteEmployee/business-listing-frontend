@@ -5,7 +5,7 @@ import {
     Globe, Phone, Mail, Instagram, Facebook, 
     Twitter, Linkedin, Youtube, CheckCircle, 
     AlertTriangle, Languages, CreditCard, 
-    Users, Calendar, Target, Plus, X, Search,
+    Users, Calendar, Target,
     Briefcase, Link as LinkIcon, Image as ImageIcon, Video
 } from "lucide-react";
 import MediaManager from "../../components/brand/MediaManager";
@@ -20,6 +20,7 @@ import { Button } from "../../components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs";
 import MapPicker from "../../components/location/MapPicker";
 import BusinessHoursEditor from "../../components/ui/BusinessHoursEditor";
+import KeywordTagsInput from "../../components/ui/KeywordTagsInput";
 import { emptyBusinessHours, normalizeBusinessHours } from "../../utils/businessHours";
 
 export default function ProfileEditor() {
@@ -59,8 +60,6 @@ export default function ProfileEditor() {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
-
-    const [newTag, setNewTag] = useState("");
 
     const languageOptions = ["English", "Hindi", "Gujarati", "Marathi", "Bengali", "Tamil", "Telegu", "Kannada", "Malayalam", "Spanish", "French", "German"];
     const paymentOptions = ["Cash", "Credit Card", "Debit Card", "UPI", "Net Banking", "Wallet", "Paytm", "Google Pay", "Apple Pay"];
@@ -145,20 +144,6 @@ export default function ProfileEditor() {
                 return { ...prev, [field]: [...current, value] };
             }
         });
-    };
-
-    const handleAddTag = (e) => {
-        if (e.key === 'Enter' || e.type === 'click') {
-            e.preventDefault();
-            if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-                setFormData(prev => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
-                setNewTag("");
-            }
-        }
-    };
-
-    const removeTag = (tagToRemove) => {
-        setFormData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tagToRemove) }));
     };
 
     const handleImageUpload = (e) => {
@@ -358,35 +343,11 @@ export default function ProfileEditor() {
                                 <FormInput label="Sub-Category" name="subCategory" value={formData.subCategory} onChange={handleInputChange} placeholder="Specific niche..." />
                             </div>
                             
-                            <div className="space-y-4 pt-4">
-                                <label className="block text-sm font-bold text-slate-700 uppercase tracking-wider mb-1">Keywords & Search Tags</label>
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                    {formData.tags.map(tag => (
-                                        <span key={tag} className="flex items-center gap-2 pl-3 pr-2 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl border border-indigo-100 text-xs font-bold transition-all hover:bg-indigo-100 group">
-                                            {tag}
-                                            <button onClick={() => removeTag(tag)} className="p-0.5 hover:bg-indigo-200 rounded-md">
-                                                <X className="w-3 h-3" />
-                                            </button>
-                                        </span>
-                                    ))}
-                                    {formData.tags.length === 0 && <p className="text-xs text-slate-400 italic">No tags added yet. Add some keywords to improve searchability.</p>}
-                                </div>
-                                <div className="flex gap-2 max-w-md">
-                                    <div className="relative flex-1">
-                                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                        <input 
-                                            type="text" 
-                                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            placeholder="Add keyword (hit Enter)..."
-                                            value={newTag}
-                                            onChange={(e) => setNewTag(e.target.value)}
-                                            onKeyDown={handleAddTag}
-                                        />
-                                    </div>
-                                    <Button type="button" variant="outline" onClick={handleAddTag} className="rounded-xl h-10">
-                                        <Plus className="w-4 h-4" />
-                                    </Button>
-                                </div>
+                            <div className="pt-4">
+                                <KeywordTagsInput
+                                    value={formData.tags}
+                                    onChange={tags => setFormData(prev => ({ ...prev, tags }))}
+                                />
                             </div>
                         </div>
                     </TabsContent>
