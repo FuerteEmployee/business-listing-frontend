@@ -11,6 +11,7 @@ import { useTheme } from "../context/ThemeContext";
 import Logo from "../components/ui/Logo";
 import NotificationBell from "../components/brand/NotificationBell";
 import { API_BASE_URL } from "../config/api";
+import { isPlaceholderEmail } from "../utils/email";
 
 export default function BrandOwnerLayout() {
     const { user, logout } = useAuth();
@@ -80,8 +81,9 @@ export default function BrandOwnerLayout() {
         // Check if feature is hidden by Master Control
         const featureKey = item.label.toLowerCase().replace(/\s+/g, '').replace(/&/g, '');
         // Special mapping for some keys
-        if (featureKey === 'promotionsads') return !hiddenFeatures.includes('ads');
-        if (featureKey === 'plansbilling') return !hiddenFeatures.includes('billing');
+        // Master Control stores these as 'promotionsads' / 'plansbilling'; older configs used 'ads' / 'billing'
+        if (featureKey === 'promotionsads') return !hiddenFeatures.includes('ads') && !hiddenFeatures.includes('promotionsads');
+        if (featureKey === 'plansbilling') return !hiddenFeatures.includes('billing') && !hiddenFeatures.includes('plansbilling');
         return !hiddenFeatures.includes(featureKey);
     });
 
@@ -163,7 +165,10 @@ export default function BrandOwnerLayout() {
                         <NavLink to="/brand/settings" className="flex items-center gap-3 group">
                             <div className="flex flex-col items-end hidden md:flex">
                                 <span className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{user?.name || 'Brand Owner'}</span>
-                                <span className="text-xs text-slate-500">{user?.email}</span>
+                                {/* Imported owners have an internal placeholder address (…@engitechexpo.local); don't show it */}
+                                {user?.email && !isPlaceholderEmail(user.email) && (
+                                    <span className="text-xs text-slate-500">{user.email}</span>
+                                )}
                             </div>
                             <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border border-indigo-200 uppercase group-hover:ring-2 group-hover:ring-indigo-300 transition-all">
                                 {user?.name?.substring(0, 2) || 'BO'}

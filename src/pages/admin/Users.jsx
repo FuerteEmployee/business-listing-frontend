@@ -432,11 +432,15 @@ export default function Users() {
                         name: user.name || '',
                         email: user.email || '',
                         mobileNumber: user.mobileNumber || '',
-                        role: user.role || 'User',
+                        // Legacy 'Company Owner' accounts are edited as Brand Owner
+                        role: isBrandRole(user.role) ? 'Brand Owner' : (user.role || 'User'),
                         status: user.status || 'Active',
                         isEmailVerified: user.isEmailVerified || false,
                         performanceScore: user.performanceScore || 100,
-                        assignedBrand
+                        assignedBrand,
+                        // The listing shown in the form; only this one is swapped if the admin picks
+                        // another, so the user's other listings are kept.
+                        previousBrand: assignedBrand
                     }
                 });
             }

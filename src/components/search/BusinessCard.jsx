@@ -78,7 +78,8 @@ export default function BusinessCard({ business, onEnquiryClick }) {
                         _id: business._id,
                         name: business.name,
                         slug: business.slug,
-                        image: business.image || business.images?.[0] || fallbackImage,
+                        // `fallbackImage` was never defined, so bookmarking a listing without an image threw
+                        image: business.image || business.photos?.[0] || business.images?.[0]?.url || business.images?.[0] || null,
                         category: typeof business.category === 'object' ? business.category.name : business.category,
                         rating: business.rating,
                         city: business.city_id?.name || business.city?.name || 'Location'
