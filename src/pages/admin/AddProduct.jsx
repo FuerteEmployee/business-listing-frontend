@@ -27,6 +27,7 @@ export default function AddProduct() {
         listingId: currentUser?.companyId || currentUser?.company || '',
         categoryId: '',
         subCategoryId: '',
+        brandLabel: '',
         price: '',
         discountPrice: '',
         sku: '',
@@ -49,6 +50,7 @@ export default function AddProduct() {
     const [customWarrantyNumber, setCustomWarrantyNumber] = useState('');
     const [customWarrantyUnit, setCustomWarrantyUnit] = useState('Months');
     const [hasPrice, setHasPrice] = useState(false);
+    const [showBrandLabel, setShowBrandLabel] = useState(false);
 
     // Image State
     const [existingImageUrls, setExistingImageUrls] = useState([]);
@@ -94,6 +96,7 @@ export default function AddProduct() {
                     listingId: data.listingId?._id || data.listingId || '',
                     categoryId: data.categoryId?._id || data.categoryId || '',
                     subCategoryId: data.subCategoryId?._id || data.subCategoryId || '',
+                    brandLabel: data.brandLabel || '',
                     price: data.price ? String(data.price) : '',
                     discountPrice: data.discountPrice ? String(data.discountPrice) : '',
                     sku: data.sku || '',
@@ -104,6 +107,7 @@ export default function AddProduct() {
                 });
                 setHasPrice(data.price !== undefined && data.price !== null);
                 setKeywordsText(Array.isArray(data.keywords) ? data.keywords.join(', ') : '');
+                setShowBrandLabel(Boolean(data.showBrandLabel && data.brandLabel));
                 let initialHighlights = [{ key: '', value: '' }];
                 if (data.highlights) {
                     try {
@@ -330,7 +334,9 @@ export default function AddProduct() {
                 images: uploadedImageUrls,
                 price: hasPrice && formData.price ? Number(formData.price) : null,
                 discountPrice: hasPrice && formData.discountPrice ? Number(formData.discountPrice) : null,
-                stock: Number(formData.stock)
+                stock: Number(formData.stock),
+                showBrandLabel,
+                brandLabel: showBrandLabel && formData.brandLabel.trim() ? formData.brandLabel.trim() : null
             };
 
             const endpoint = isEditMode ? `products/${id}` : 'products';
@@ -820,7 +826,7 @@ export default function AddProduct() {
                             />
 
                             {subCategories.length > 0 && (
-                                <FormSelect 
+                                <FormSelect
                                     label="Subcategory"
                                     value={formData.subCategoryId}
                                     onChange={e => setFormData({...formData, subCategoryId: e.target.value})}
@@ -828,6 +834,38 @@ export default function AddProduct() {
                                     placeholder="Select Subcategory..."
                                 />
                             )}
+
+                            <div className="w-full">
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <label className="text-sm font-medium text-slate-700">
+                                        Brand Label
+                                    </label>
+                                    <button
+                                        type="button"
+                                        role="checkbox"
+                                        aria-checked={showBrandLabel}
+                                        onClick={() => {
+                                            const checked = !showBrandLabel;
+                                            setShowBrandLabel(checked);
+                                            if (!checked) {
+                                                setFormData(prev => ({ ...prev, brandLabel: '' }));
+                                            }
+                                        }}
+                                        className="flex items-center gap-1.5 text-xs font-medium text-slate-500 cursor-pointer select-none"
+                                    >
+                                        <span className={`w-4 h-4 flex items-center justify-center rounded border transition-colors ${showBrandLabel ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-slate-300'}`}>
+                                            {showBrandLabel && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                                        </span>
+                                        Show on card
+                                    </button>
+                                </div>
+                                <FormInput
+                                    value={formData.brandLabel}
+                                    onChange={e => setFormData({...formData, brandLabel: e.target.value})}
+                                    disabled={!showBrandLabel}
+                                    placeholder="e.g. HAVELLS"
+                                />
+                            </div>
                         </div>
                     </div>
 

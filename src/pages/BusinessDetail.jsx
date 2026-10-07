@@ -1340,9 +1340,14 @@ export default function BusinessDetail() {
                                                             {/* Content */}
                                                             <div className="p-2.5 md:p-4 flex-1 flex flex-col">
                                                                 <div className="mb-2 md:mb-3">
-                                                                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
-                                                                        {item.brandId?.name || (isProduct ? 'HAVELLS' : 'Professional')}
-                                                                    </span>
+                                                                    {(() => {
+                                                                        const brandText = item.brandId?.name || (item.showBrandLabel && item.brandLabel) || (!isProduct ? 'Professional' : '');
+                                                                        return brandText ? (
+                                                                            <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                                                                                {brandText}
+                                                                            </span>
+                                                                        ) : null;
+                                                                    })()}
                                                                     <Link to={isProduct ? `/product/${item.slug}` : '#'}>
                                                                         <h4 className="text-xs md:text-sm font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">
                                                                             {item.name}

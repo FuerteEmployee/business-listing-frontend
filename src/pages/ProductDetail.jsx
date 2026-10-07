@@ -299,7 +299,7 @@ export default function ProductDetail() {
                     <div className="mb-8 flex justify-between items-start gap-4">
                         <div className="flex-1">
                             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">
-                                {product.brandId?.name && `${product.brandId.name} `}{product.name}
+                                {(product.brandId?.name || (product.showBrandLabel && product.brandLabel)) && `${product.brandId?.name || product.brandLabel} `}{product.name}
                             </h1>
                             
                             {/* Seller rating — only when the seller actually has reviews */}
